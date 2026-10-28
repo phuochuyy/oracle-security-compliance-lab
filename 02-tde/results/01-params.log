@@ -1,0 +1,77 @@
+# ./01_keystore.sh params
+Connected to "orcl"
+
+System altered.
+
+
+System altered.
+
+
+System altered.
+
+
+System altered.
+
+
+Pluggable database altered.
+
+XAG-216: Instance 'GG_A' is already running.
+Connected to "orcl"
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl     - Primary database
+    orcl_stb - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+SUCCESS   (status updated 0 seconds ago)
+== prm1
+
+PDB	   WRL_PARAMETER		STATUS		     WALLET_TYP KEYSTORE
+---------- ---------------------------- -------------------- ---------- --------
+CDB$ROOT   +DATA/orcl/tde/		NOT_AVAILABLE	     UNKNOWN	NONE
+PDB$SEED   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+ORCLPDB1   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+ORCLPDB2   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+DRILLPDB   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+SECPDB	   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+
+6 rows selected.
+
+
+PDB	   MASTER_KEYS LAST_KEY
+---------- ----------- ---------------------------------------------------------------------------
+CDB$ROOT	     0 (null)
+DRILLPDB	     0 (null)
+ORCLPDB1	     0 (null)
+ORCLPDB2	     0 (null)
+PDB$SEED	     0 (null)
+SECPDB		     0 (null)
+
+6 rows selected.
+
+== stb1
+
+PDB	   WRL_PARAMETER		STATUS		     WALLET_TYP KEYSTORE
+---------- ---------------------------- -------------------- ---------- --------
+CDB$ROOT   +DATA/orcl_stb/tde/		NOT_AVAILABLE	     UNKNOWN	NONE
+PDB$SEED   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+ORCLPDB1   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+ORCLPDB2   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+DRILLPDB   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+SECPDB	   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+
+6 rows selected.
+
+
+PDB	   MASTER_KEYS LAST_KEY
+---------- ----------- ---------------------------------------------------------------------------
+CDB$ROOT	     0 (null)
+DRILLPDB	     0 (null)
+ORCLPDB1	     0 (null)
+ORCLPDB2	     0 (null)
+PDB$SEED	     0 (null)
+SECPDB		     0 (null)
+
+6 rows selected.
+
