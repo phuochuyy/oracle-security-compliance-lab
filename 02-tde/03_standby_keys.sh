@@ -37,6 +37,8 @@ dml() {   # real change on the encrypted table, checksums unchanged
 alter session set container = secpdb;
 update bank.cards set status = status where card_id <= 1000;
 commit;
+-- from CDB$ROOT: inside the PDB it fails with ORA-65040 (the logs of both drills show it)
+alter session set container = cdb$root;
 alter system archive log current;
 SQL
 }
@@ -97,6 +99,10 @@ SQL
   sql $STB <<SQL
 administer key management set keystore open identified by $(pw) container = all;
 administer key management create auto_login keystore from keystore identified by $(pw);
+-- close the password-opened keystore: it reopens from cwallet.sso (AUTOLOGIN). Left open as PASSWORD,
+-- a PDB opened later (e.g. SECPDB after a switchover) could not open the keystore -> ORA-28365
+administer key management set keystore close identified by $(pw) container = all;
+select con_id, status, wallet_type from v\$encryption_wallet where con_id = 1;
 SQL
   printf "edit database orcl_stb set state='APPLY-ON';\n" | ssh -o BatchMode=yes oracle@$PRM "$ENV; dgmgrl -silent /" | tail -n 1 | tee -a "$out"
   lag_zero 300 && say "apply lag 0 — $(( $(ts) - t0 )) s after starting the restore" || say "apply lag NOT 0 after 300 s"
