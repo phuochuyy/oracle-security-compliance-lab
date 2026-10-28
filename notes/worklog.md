@@ -15,3 +15,75 @@
   "dgmgrl.*start observer"` matched my own `bash -c` command line. Observer was down ~1 min. Same
   `pgrep -f` self-match as in the perf lab — anchored the pattern to the binary path.
 - Side finding on stb3: no HugePages (`2048K pages available 0`, memlock 8 MB) — SGA on 4K pages.
+
+## SECPDB and the plaintext baseline (branch `setup/secpdb`)
+
+- Moved to RAC Region A (`labctl.sh dg-a`: prm1 + stb1 + obs-r1 + prm3). SECPDB created from the seed on
+  the primary; on the standby it stayed **MOUNTED** — `SAVE STATE` on the primary does not open it there.
+  `alter pluggable database secpdb open read only` on stb1, then the checksums matched.
+- First run of `check_plaintext.sh`: the archived log showed 0 hits for a card I had just inserted. The
+  query took the highest `SEQUENCE#` — seq 376 from **before the RESETLOGS** of the backup drills (current
+  incarnation is at seq ~41). Fixed by filtering on `V$DATABASE.RESETLOGS_CHANGE#`; then 3 hits.
+
+## TDE keystore (branch `tde/keystore`)
+
+- `WALLET_ROOT` is static: restarted the standby first, then the primary (FSFO disabled, GG_A stopped).
+  `agctl start goldengate GG_A` answered `XAG-216: already running` — XAG had already started GG_A with
+  the database.
+- The `WITH BACKUP` file of the first `SET KEY` is an empty keystore (3,584 bytes): taken before the change.
+- Tried to verify the off-host copy: `mkstore -list` and `orapki wallet display` → `Got tag 3 instead of 16`
+  (same md5 as in ASM, so not a broken copy — the 23ai keystore is not PKCS#12). `MERGE KEYSTORE ... INTO
+  NEW KEYSTORE` → `ORA-02000 missing EXISTING keyword` (23ai only merges into an existing keystore), then
+  `INTO EXISTING` → `ORA-46638`, trace `could not load the target with error 29106`. `BACKUP KEYSTORE ... TO
+  '/tmp/ksb'` → `ORA-46620`. Gave up on a file-level check; the restore drill will test the copy.
+- **My mistake:** the `ORA-02000` error printed the keystore password in my terminal. Changed the password,
+  deleted backups made under the old one, added masking to the script.
+- Password-change run: the keystore password changed, but the script then called itself (`"$0" escrow`),
+  which re-read `lab.env` with the **old** password → `ORA-46627 password mismatch` in the check. Nothing
+  broken — saved the new password, then rewrote the modes as functions.
+- md5 of `ewallet.p12` changed after every check: `BACKUP KEYSTORE` (my password check) rewrites it.
+  Check first, copy second.
+- Every `BACKUP KEYSTORE` also writes a `cwallet_<time>.sso`: password-free key copies piling up in ASM
+  and in my off-host folder. Off-host copy is `.p12` only now; extra `.sso` removed.
+
+## Online encryption (branch `tde/encrypt-online`)
+
+- First run lost the application numbers: `set serveroutput on` came before `alter session set container`
+  → no DBMS_OUTPUT at all in the PDB. Moved it after the switch; the numbers come from the REKEY run.
+- `residual_plaintext.sh` first said "0 of 51 logs" — the `ssh` inside `while read` swallowed the loop's
+  input, only one log was checked. `ssh -n`; then 2 logs with hits.
+- One of them was from DRILLPDB (same PAN as SECPDB, deterministic data): encrypted it too.
+
+## Observer Region A (branch `findings/observer-region-a`)
+
+- Found while preparing the TDE switchover: wanted the broker as a SYSDG user instead of SYS, ran the
+  failed-logon query on orcl → 1,689 SYS ORA-01031 from obs-r1. Same cause as Region B.
+- Scripts take the region now (`A`/`B`), separate passwords per CDB (`*_A` in lab.env).
+- obs-r1's `start_observer.sh` had the same unanchored `pgrep -if` — fixed before restarting this time.
+
+## TDE with Data Guard (branch `tde/dataguard`)
+
+- Rotation drill: my `dml()` ran `alter system archive log current` inside SECPDB → `ORA-65040`, but the log
+  line still said "log archived". The drill result holds anyway: real-time apply read the `SET KEY` redo from
+  the standby redo log and MRP stopped with `ORA-28374` within seconds. Fixed (switch to CDB$ROOT).
+- After copying the new keystore, the standby still showed 5 keys in `V$ENCRYPTION_KEYS` (primary: 6), but
+  apply ran again; after the next keystore open it showed 6.
+- **Switchover, first attempt:** the new primary orcl_stb had SECPDB `MOUNTED`; after opening it,
+  `ORA-28365 Wallet is not open` on the encrypted table, and my checksum query failed with it. Cause was my
+  own restore in the "lost keystore" drill: I opened the keystore with the password and created
+  `cwallet.sso`, but the keystore stayed `OPEN / PASSWORD` — a PDB opened later does not get the keystore.
+  Restore step now closes the keystore at the end, so it reopens as AUTOLOGIN. orcl_stb itself was fixed by
+  the restart Clusterware did during the switchback (`OPEN / AUTOLOGIN` after it).
+- **Switchback took 348 s** (switchover: 63 s). My script sent it 1 s after the first switchover; the broker
+  log shows `Forwarding CTL_SWITCH` at 19:26:17 and nothing until `Starting task: SWITCHOVER` at 19:31:26,
+  while orcl was just restarting as standby (and stb1 logged heavy swapping). The script now waits for
+  `VALIDATE DATABASE ... Ready for Switchover: Yes`. Rerun for clean numbers.
+
+## TDE and GoldenGate (branch `tde/goldengate`)
+
+- Expected Extract to need something for encrypted redo — it did not (Integrated Extract uses the database
+  keystore). The surprise was the other way: clear PANs in every trail after TDE.
+- `ENCRYPTTRAIL` + `ETROLLOVER` → both Extracts `ABENDED`, `OGG-06114`: no master key in the deployment
+  wallet (empty directory). `ADD MASTERKEY` on GG_A, copied `cwallet.sso` VM-to-VM to GG_B. `START EXTRACT
+  EXTA` said "already running": the HA profile had restarted it in the meantime (autoRestart 15 s).
+- Cleanup followed the A-A rule (Replicats stopped after passing the last change, drop, start): no abend.

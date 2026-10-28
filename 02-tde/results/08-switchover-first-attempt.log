@@ -1,0 +1,84 @@
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl     - Primary database
+    orcl_stb - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+SUCCESS   (status updated 45 seconds ago)
+19:24:58 SWITCHOVER TO orcl_stb
+2026-10-28T19:24:57.485+07:00
+Performing switchover NOW, please wait...
+2026-10-28T19:24:57.499+07:00
+Operation requires a connection to database "orcl_stb"
+Connecting ...
+2026-10-28T19:24:57.566+07:00
+Continuing with the switchover...
+2026-10-28T19:25:33.854+07:00
+New primary database "orcl_stb" is opening...
+2026-10-28T19:25:33.854+07:00
+Oracle Clusterware is restarting database "orcl" ...
+2026-10-28T19:26:00.583+07:00
+Switchover succeeded, new primary is "orcl_stb"
+2026-10-28T19:26:00.634+07:00
+Switchover processing complete, broker ready.
+19:26:01 switchover command returned after 63 s
+19:26:01 new primary stb1:
+DB	   DATABASE_ROLE    WALLET		 SECPDB
+---------- ---------------- -------------------- ------------
+orcl_stb   PRIMARY	    OPEN/PASSWORD	 MOUNTED
+19:26:02 SECPDB not READ WRITE -> open it
+Pluggable database altered.
+ERROR at line 19:
+Session altered.
+insert into bank.cards values (999998, 1, '4999000011112222', '12/30', 'ACTIVE', sysdate)
+                 *
+ERROR at line 1:
+ORA-28365: Wallet is not open.
+Help: https://docs.oracle.com/error-help/db/ora-28365/
+delete bank.cards where card_id = 999998
+            *
+ERROR at line 1:
+ORA-28365: Wallet is not open.
+Help: https://docs.oracle.com/error-help/db/ora-28365/
+Commit complete.
+19:26:15 GG_A: Goldengate  instance 'GG_A' is running on stb1
+19:26:15 orcl_stb primary with GG_A after 77 s
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl_stb - Primary database
+    orcl     - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+SUCCESS   (status updated 78 seconds ago)
+19:26:16 SWITCHOVER TO orcl
+2026-10-28T19:26:17.414+07:00
+Performing switchover NOW, please wait...
+2026-10-28T19:31:35.786+07:00
+New primary database "orcl" is opening...
+2026-10-28T19:31:35.786+07:00
+Oracle Clusterware is restarting database "orcl_stb" ...
+2026-10-28T19:32:03.237+07:00
+Switchover succeeded, new primary is "orcl"
+2026-10-28T19:32:03.242+07:00
+Switchover processing complete, broker ready.
+19:32:04 switchover command returned after 348 s
+19:32:04 new primary prm1:
+DB	   DATABASE_ROLE    WALLET		 SECPDB
+---------- ---------------- -------------------- ------------
+orcl	   PRIMARY	    OPEN/AUTOLOGIN	 READ WRITE
+Session altered.
+1 row created.
+1 row deleted.
+Commit complete.
+19:32:06 GG_A: Goldengate  instance 'GG_A' is running on prm1
+19:32:06 orcl primary with GG_A after 350 s
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl     - Primary database
+    orcl_stb - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+SUCCESS   (status updated 348 seconds ago)

@@ -1,0 +1,9 @@
+
+W		   RETURN_CODE U	H		      N
+------------------ ----------- -------- ------------ ----------
+before 19:17-19:20	  1031 SYS	(null)		     15
+before 19:17-19:20	  1017 (null)	stb1.rac	      2
+before 19:17-19:20	  1031 SYS	obs-r1.rac	     15
+
+3 rows selected.
+
