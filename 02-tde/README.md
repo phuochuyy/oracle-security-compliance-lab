@@ -77,3 +77,60 @@ BANKDB checksums match on both sites after encryption.
 
 **Key rotation, two levels:** `SET KEY` rotates the **master key** (re-wraps the tablespace keys, no data
 rewritten, seconds); `REKEY` changes the **tablespace key** and rewrites the file (above: 6 s for 512 MB).
+
+## 3. TDE and Data Guard — [`03_standby_keys.sh`](03_standby_keys.sh), [`04_switchover.sh`](04_switchover.sh)
+
+| Drill | What happened | Recovery |
+|-------|---------------|----------|
+| **New master key on the primary, keystore not copied** (`rotate`) | within seconds MRP **stopped for the whole CDB** — every PDB, also ORCLPDB2 that GoldenGate reads: `ORA-28374: typed master key not found in wallet` (`kcv_tsemkey_rekey_common: ... new master key does not exist in the wallet`). Redo still arrived (RPO 0), apply lag grew | copy the keystore, `APPLY-ON`: apply lag 0 after **37 s** |
+| **Standby keystore lost** (`lost`: files deleted, standby restarted) | keystore `NOT_AVAILABLE`, MRP not running, SECPDB on the standby: `ORA-28365: Wallet is not open` | **off-host `ewallet.p12`** into ASM, open with the password, recreate auto-login on the standby: apply lag 0 after **19 s**, 6 keys, data readable — the off-host copy is proven by a real restore |
+| **Switchover + switchback** | see below | — |
+
+Logs: [`results/07-standby-rotate.log`](results/07-standby-rotate.log), [`results/07-standby-lost.log`](results/07-standby-lost.log).
+
+**Switchover** (broker as `C##DGADMIN`, SYSDG — no SYS password; checks on each new primary: keystore,
+SECPDB open, BANKDB checksums, a write to the encrypted `CARDS`, GG_A):
+
+| Run | orcl → orcl_stb | back to orcl | Problem found |
+|-----|-----------------|--------------|---------------|
+| 1 ([log](results/08-switchover-first-attempt.log)) | 63 s | 348 s | new primary: SECPDB `MOUNTED`, and after opening it **`ORA-28365`** — the standby keystore was still `OPEN / PASSWORD` from my restore drill, a PDB opened later cannot open it. Switchback sent 1 s after → broker waited ~5 min for the just-restarted standby |
+| 2 ([log](results/08-switchover.log)) | 57 s | 69 s | keystore `OPEN / AUTOLOGIN` both ways, write OK, checksums match; SECPDB still `MOUNTED` on orcl_stb until opened by hand |
+| 3 ([log](results/09-switchover-with-service.log)) | 59 s | 67 s | none: SECPDB `READ WRITE` by itself, GG_A running on the new primary ~2 s after the switchover |
+
+Fixes: the restore step closes the password-opened keystore at the end (it reopens as AUTOLOGIN); the script
+waits for `VALIDATE DATABASE ... Ready for Switchover: Yes`; SECPDB got a role-based service
+`secpdb_app` on both clusters ([`05_secpdb_service.sh`](05_secpdb_service.sh)) — `SAVE STATE` is per instance
+name, so it never covered orcl_stb1.
+
+**Rules that came out of it**
+- A master key change is a Data Guard change: copy the keystore to every standby **right after** `SET KEY`
+  — otherwise DR stops for all PDBs, not only the one whose key changed.
+- After restoring a keystore with the password, close it so it runs on auto-login (`WALLET_TYPE` in
+  `V$ENCRYPTION_WALLET` must say `AUTOLOGIN`) — check it before the next switchover, not during it.
+- Applications connect through a role-based service, never rely on saved PDB state across roles.
+
+## 4. TDE and GoldenGate Active-Active — [`06_goldengate.sh`](06_goldengate.sh)
+
+Test table `APP.CARD_EVENTS` (card-like numbers) on both sides, 5 rows written at each site per round,
+marker PANs counted in the newest trail files of both deployments. Log: [`results/10-goldengate.log`](results/10-goldengate.log).
+
+| Round | Setting | Replicated both ways | PAN in trails (GG_A local `ea`, GG_A received `eb`, GG_B received `ea`, GG_B local `eb`) |
+|-------|---------|----------------------|------------------|
+| 1 | no TDE | 10/10 rows both sides, 15 s | 5 / 5 / 5 / 5 |
+| 2 | **APP_DATA encrypted** (ORCLPDB2, online, 4 s) | 10/10, 10 s — Integrated Extract reads encrypted redo, nothing to configure | **5 / 5 / 5 / 5 — still clear text** |
+| 3 | + `ENCRYPTTRAIL AES256` on EXTA and EXTB | 10/10, 60 s (first round through the new encrypted trail files) | **0 / 0 / 0 / 0** |
+
+**What this shows**
+- TDE protects the database files; **GoldenGate decrypts on capture and writes the trail in clear** — on
+  DBFS on the RAC and, after the distribution path, on the other site. Encrypting tablespaces alone left
+  card numbers on two more file systems.
+- First `ENCRYPTTRAIL` start: both Extracts abended, `OGG-06114 Error retrieving master encryption key
+  OGG_DEFAULT_MASTERKEY` — the deployment wallet was empty. `ADD MASTERKEY` on GG_A, then the wallet copied
+  to GG_B (same md5), because the Replicat on the *other* site has to decrypt the trail with the same key.
+- Trail files written before the change still hold the clear PANs (round 1 markers: 5 hits in each) until
+  the trail purge removes them — same lesson as the archived logs.
+
+**Still to harden (noted, not done)**
+- The GG master key wallet (`cwallet.sso`, auto-login) lives on DBFS, i.e. in the unencrypted tablespace
+  `DBFS_TS` of ORCLPDB2 → encrypt `DBFS_TS` too (1 GB; host disk is short in this lab).
+- Both deployments use the same weak `oggadmin` password, written in the lab control script (PCI-DSS 8).

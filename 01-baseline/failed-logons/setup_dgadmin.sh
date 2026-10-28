@@ -1,11 +1,16 @@
 #!/bin/bash
 # Least-privilege observer: a common user with only SYSDG, and a new observer wallet that holds it.
-# Passwords come from lab.env at the repo root (DGADMIN_PASSWORD, OBS_WALLET_PASSWORD), passed on stdin.
-# usage (from the host): ./setup_dgadmin.sh    then ./restart_observer.sh
+# Passwords come from lab.env at the repo root, passed on stdin: DGADMIN_PASSWORD / OBS_WALLET_PASSWORD
+# for Region B, the same names with _A for Region A (one password per CDB).
+# usage (from the host): ./setup_dgadmin.sh [B | A]    then ./restart_observer.sh [B | A]
 set -eu
 . "$(cd "$(dirname "$0")/../.." && pwd)/lab.env"
+case ${1:-B} in
+  B) PRM=prm3 OBS=obs-r2 ALIASES="orcl3 orcl3_stb" ;;
+  A) PRM=prm1 OBS=obs-r1 ALIASES="orcl orcl_stb"
+     DGADMIN_PASSWORD=${DGADMIN_PASSWORD_A:-} OBS_WALLET_PASSWORD=${OBS_WALLET_PASSWORD_A:-} ;;
+esac
 : "${DGADMIN_PASSWORD:?}" "${OBS_WALLET_PASSWORD:?}"
-PRM=prm3 OBS=obs-r2 ALIASES="orcl3 orcl3_stb"
 
 printf 'create user c##dgadmin identified by "%s" container=all;\ngrant sysdg to c##dgadmin container=all;\nexit\n' \
   "$DGADMIN_PASSWORD" | ssh -o BatchMode=yes oracle@$PRM '. ~/.bash_profile >/dev/null 2>&1; sqlplus -s / as sysdba'

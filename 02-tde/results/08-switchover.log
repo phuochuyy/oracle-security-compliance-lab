@@ -1,0 +1,115 @@
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl     - Primary database
+    orcl_stb - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+SUCCESS   (status updated 24 seconds ago)
+  Database Role:     Physical standby database
+  Primary Database:  orcl
+  Ready for Switchover:  Yes
+  Ready for Failover:    Yes (Primary Running)
+  Managed by Clusterware:
+    orcl    :  YES            
+    orcl_stb:  YES            
+  Parameter Settings:
+    Parameter                       orcl Value               orcl_stb Value
+    DB_BLOCK_CHECKING               FALSE                    FALSE
+    DB_BLOCK_CHECKSUM               TYPICAL                  TYPICAL
+    DB_LOST_WRITE_PROTECT           AUTO                     AUTO
+19:33:32 SWITCHOVER TO orcl_stb
+2026-10-28T19:33:31.505+07:00
+Performing switchover NOW, please wait...
+2026-10-28T19:33:31.521+07:00
+Operation requires a connection to database "orcl_stb"
+Connecting ...
+2026-10-28T19:33:31.584+07:00
+Continuing with the switchover...
+2026-10-28T19:34:02.336+07:00
+New primary database "orcl_stb" is opening...
+2026-10-28T19:34:02.337+07:00
+Oracle Clusterware is restarting database "orcl" ...
+2026-10-28T19:34:28.756+07:00
+Switchover succeeded, new primary is "orcl_stb"
+2026-10-28T19:34:28.794+07:00
+Switchover processing complete, broker ready.
+19:34:29 switchover command returned after 57 s
+19:34:29 new primary stb1:
+DB	   DATABASE_ROLE    WALLET		 SECPDB
+---------- ---------------- -------------------- ------------
+orcl_stb   PRIMARY	    OPEN/AUTOLOGIN	 MOUNTED
+19:34:30 SECPDB not READ WRITE -> open it
+Pluggable database altered.
+Session altered.
+1 row created.
+1 row deleted.
+Commit complete.
+19:34:41 GG_A: Goldengate  instance 'GG_A' is running on stb1
+19:34:41 orcl_stb primary with GG_A after 69 s
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl_stb - Primary database
+    Warning: ORA-16869: fast-start failover target not initialized
+    orcl     - (*) Physical standby database 
+      Warning: ORA-16854: apply lag could not be determined
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+WARNING   (status updated 12 seconds ago)
+  Database Role:     Physical standby database
+  Primary Database:  orcl_stb
+  Ready for Switchover:  Yes
+  Ready for Failover:    Yes (Primary Running)
+  Managed by Clusterware:
+    orcl_stb:  YES            
+    orcl    :  YES            
+  Log Files Cleared:
+    orcl_stb Standby Redo Log Files:  Cleared
+    orcl Online Redo Log Files:       Not Cleared
+    orcl Standby Redo Log Files:      Available
+  Parameter Settings:
+    Parameter                       orcl_stb Value           orcl Value
+    DB_BLOCK_CHECKING               FALSE                    FALSE
+    DB_BLOCK_CHECKSUM               TYPICAL                  TYPICAL
+    DB_LOST_WRITE_PROTECT           AUTO                     AUTO
+19:34:42 SWITCHOVER TO orcl
+2026-10-28T19:34:43.387+07:00
+Performing switchover NOW, please wait...
+2026-10-28T19:35:27.938+07:00
+New primary database "orcl" is opening...
+2026-10-28T19:35:27.938+07:00
+Oracle Clusterware is restarting database "orcl_stb" ...
+2026-10-28T19:35:50.374+07:00
+Switchover succeeded, new primary is "orcl"
+2026-10-28T19:35:50.375+07:00
+Switchover processing complete, broker ready.
+19:35:51 switchover command returned after 69 s
+19:35:51 new primary prm1:
+DB	   DATABASE_ROLE    WALLET		 SECPDB
+---------- ---------------- -------------------- ------------
+orcl	   PRIMARY	    OPEN/AUTOLOGIN	 READ WRITE
+Session altered.
+1 row created.
+1 row deleted.
+Commit complete.
+19:35:53 GG_A: Goldengate  instance 'GG_A' is running on prm1
+19:35:53 orcl primary with GG_A after 71 s
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl     - Primary database
+    orcl_stb - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+SUCCESS   (status updated 71 seconds ago)
+prm1 BRANCHES 100 219112276800
+prm1 CUSTOMERS 20000 42985318080702
+prm1 ACCOUNTS 30000 64734798406535
+prm1 CARDS 24000 51687336812041
+prm1 TRANSACTIONS 500000 1074490917450361
+stb1 BRANCHES 100 219112276800
+stb1 CUSTOMERS 20000 42985318080702
+stb1 ACCOUNTS 30000 64734798406535
+stb1 CARDS 24000 51687336812041
+stb1 TRANSACTIONS 500000 1074490917450361
