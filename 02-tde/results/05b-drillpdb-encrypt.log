@@ -1,0 +1,11 @@
+# DRILLPDB (same BANKDB data, found by residual_plaintext.sh) encrypted the same way, one-off:
+Session altered.
+Elapsed: 00:00:00.02
+Tablespace altered.
+Elapsed: 00:00:06.04
+TABLESPACE_NAME 	       ENC
+------------------------------ ---
+BANK_DATA		       YES
+1 row selected.
+Elapsed: 00:00:00.01
+verify_drillpdb.sh: PASS (5 tables, counts and checksums match)
