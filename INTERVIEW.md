@@ -1,7 +1,8 @@
 # Interview prep — Oracle Security & Compliance
 
-> Status: **started.** Finding 1 (below) is done with evidence; the controls (TDE, auditing policies,
-> redaction, DBSAT) are preparation notes — present them as "what I know and what I am building".
+> Status: **in progress.** Finding 1 and **TDE (on RAC + Data Guard + GoldenGate) are done with evidence**;
+> auditing policies, redaction, Privilege Analysis and DBSAT are still preparation notes — present them as
+> "what I know and what I am building".
 
 ## What already exists (real evidence)
 
@@ -38,13 +39,42 @@ keystore with password, plus auto-login (or local auto-login) so the database op
 keystore with every key change — losing it means losing the data, and an RMAN backup of the database does
 not contain it.
 
-**TDE with Data Guard.** The standby needs the same keys: copy the keystore (or use OKV/HSM). Encrypted
-tablespaces stay encrypted in redo, so redo transport carries encrypted blocks. Re-keying on the primary
-requires copying the keystore again.
+## TDE — what I did and what broke (real evidence, [02-tde](02-tde/))
 
-**TDE with GoldenGate.** Integrated Extract reads redo of encrypted tablespaces through the database
-(keystore open). The trail on disk is a separate copy — encrypt it as well (trail encryption), otherwise
-card numbers sit in clear text in the trail files.
+**Setup in one breath.** RAC primary + ADG standby. `WALLET_ROOT` in ASM (static, so a restart — standby
+first), united-mode keystore, a master key per PDB, auto-login (not local, so it can be copied), the
+keystore copied to the standby, an off-host copy of the `.p12`. Then `ALTER TABLESPACE ... ENCRYPTION
+ONLINE ... ENCRYPT`: 6 s for 512 MB, the standby converted its own file while applying redo.
+
+**How did you prove it works?** I grep a real card number in the raw files, no database login: datafile on
+both sites, an archived log, an RMAN backup piece — 3–4 hits each before, 0 after. Plus a reader and a writer
+running during a REKEY: 0 errors. Checksums of the dataset equal on both sites.
+
+**What did TDE not fix?** Everything written before: 2 archived logs still had the card number — one of them
+from a *test* PDB with the same data that nobody had encrypted (encrypted it too: test copies of card data
+are in PCI scope). And GoldenGate: Integrated Extract reads encrypted redo without any change, but writes
+the **trail in clear** — on the RAC's DBFS and, after the distribution path, on the other site. Fixed with
+`ENCRYPTTRAIL AES256`; it needed a master key in the GG wallet, shared by both deployments because the
+other site's Replicat decrypts the trail.
+
+**TDE with Data Guard — the drill I would mention first.** I rotated the master key on the primary and did
+not copy the keystore: redo apply stopped within seconds with `ORA-28374` — for the **whole CDB**, not only
+that PDB. Copying the keystore fixed it in 37 s. Rule: copy the keystore to every standby right after
+`SET KEY`.
+
+**Did you ever restore the keystore backup?** Yes: deleted the standby's keystore and restarted it, restored
+from the off-host `.p12` with the password, recreated the auto-login keystore there: apply running again in
+19 s. And it taught me one more thing: the keystore stayed open as `PASSWORD` type, so after the next
+switchover the new primary could not open the keystore for a PDB (`ORA-28365`). After a password-based
+restore, close it so it runs on auto-login — and check `WALLET_TYPE` before a switchover.
+
+**Mistakes I made.** A failing `ADMINISTER KEY MANAGEMENT` statement printed the keystore password in my
+terminal (sqlplus echoes the statement). I changed the password, deleted backups made under the old one, and
+mask the password in every script output now. Also: every `BACKUP KEYSTORE` writes another `cwallet.sso` —
+a password-free copy of the keys — so the off-host copy keeps only `.p12` files.
+
+**Switchover with TDE.** 57–63 s each way with auto-login keystores, GG_A followed. The PDB stayed
+`MOUNTED` on the new primary (saved state is per instance name) → role-based service for it on both clusters.
 
 **Unified Auditing — what to audit first?** Logon failures, privileged users (SYS, DBA role) activity, DDL,
 grants, and access to sensitive tables. Audit policies are created with `CREATE AUDIT POLICY` and enabled
@@ -66,5 +96,5 @@ really uses during a period, so unused ones can be revoked with evidence.
 
 ## Planned evidence
 
-DBSAT before/after, TDE on BANKDB with a switchover proving Data Guard and GoldenGate still work
-(reusing `verify.py` from the HA/DR lab), audit records for each scenario.
+DBSAT before/after (needs the DBSAT download), audit records for each scenario, Privilege Analysis results,
+redaction/VPD queries as app vs auditor user, network encryption in `V$SESSION_CONNECT_INFO`.
