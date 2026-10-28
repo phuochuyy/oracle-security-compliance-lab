@@ -1,0 +1,27 @@
+Session altered.
+User created.
+Grant succeeded.
+Grant succeeded.
+  COUNT(*)
+----------
+     24000
+1 row selected.
+Procedure created.
+Procedure dropped.
+Revoke succeeded.
+User dropped.
+Session altered.
+EVENT_TI DBUSERNAM ACTION_NAME	     OBJECT			RC POLICIES
+-------- --------- ----------------- ------------------ ---------- ----------------------------------------
+20:50:06 SYS	   CREATE USER	     .ANALYST1			 0 ORA_SECURECONFIG
+20:50:06 SYS	   GRANT	     .				 0 SEC_CHANGES, C##SEC_CHANGES
+20:50:06 SYS	   GRANT	     .				 0 SEC_CHANGES, C##SEC_CHANGES
+20:50:06 SYS	   GRANT	     BANK.CARDS 		 0 SEC_CHANGES, C##SEC_CHANGES, ORA_SECUREC
+20:50:06 ANALYST1  LOGON	     .				 0 ORA_LOGIN_LOGOUT
+20:50:06 ANALYST1  SELECT	     BANK.CARDS 		 0 SEC_CARDS_ACCESS
+20:50:06 ANALYST1  CREATE PROCEDURE  ANALYST1.P_TEST		 0 SEC_CHANGES
+20:50:06 ANALYST1  DROP PROCEDURE    ANALYST1.P_TEST		 0 SEC_CHANGES
+20:50:06 ANALYST1  LOGOFF	     .				 0 ORA_LOGIN_LOGOUT
+20:50:07 SYS	   REVOKE	     BANK.CARDS 		 0 SEC_CHANGES, C##SEC_CHANGES, ORA_SECUREC
+20:50:07 SYS	   DROP USER	     .ANALYST1			 0 ORA_SECURECONFIG
+48 rows selected.

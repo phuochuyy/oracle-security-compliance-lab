@@ -175,6 +175,8 @@ begin
                 select p.audit_option from audit_unified_policies p
                   join audit_unified_enabled_policies e on e.policy_name = p.policy_name
                  where e.entity_name = ''ALL USERS'' and e.success = ''YES''
+                   -- in a PDB a common policy (enabled in the root) did not audit LOCAL users: count local ones
+                   and (sys_context(''userenv'', ''con_id'') = 1 or p.common = ''NO'')
                    and nvl(p.object_schema, ''NONE'') = ''NONE''
                    and p.audit_option_type in (''STANDARD ACTION'', ''SYSTEM PRIVILEGE''))');
       r(id, '5 audit', v is null, title, case when v is null then 'all audited' else 'missing: ' || v end);
@@ -197,10 +199,16 @@ begin
               join dba_tablespaces s on s.tablespace_name = t.tablespace_name
               where t.owner = ''BANK'' and s.encrypted = ''NO''');
       r('C01', 'PCI 3.5', v is null, 'card data stored in encrypted tablespaces only', case when v is null then 'all encrypted' else 'not encrypted: ' || v end);
-      v := q('select listagg(distinct p.policy_name, '','') within group (order by p.policy_name) from audit_unified_policies p
-              join audit_unified_enabled_policies e on e.policy_name = p.policy_name
-              where p.object_schema = ''BANK'' and p.object_name = ''CARDS''');
-      r('C02', 'PCI 10.2', v is not null, 'access to BANK.CARDS audited', nvl(v, 'no enabled policy on BANK.CARDS'));
+      -- every DML/query action must be tied to the object (a policy with "select, insert, update, delete
+      -- on bank.cards" has only DELETE on CARDS)
+      v := q('select listagg(o, '','') within group (order by o) from (
+                select column_value o from table(sys.odcivarchar2list(''SELECT'', ''INSERT'', ''UPDATE'', ''DELETE''))
+                minus
+                select p.audit_option from audit_unified_policies p
+                  join audit_unified_enabled_policies e on e.policy_name = p.policy_name
+                 where p.object_schema = ''BANK'' and p.object_name = ''CARDS'' and e.success = ''YES'')');
+      r('C02', 'PCI 10.2', v is null, 'SELECT/INSERT/UPDATE/DELETE on BANK.CARDS audited',
+        case when v is null then 'all four' else 'not audited on CARDS: ' || v end);
       v := q('select listagg(column_name || '':'' || function_type, '','') within group (order by column_name) from redaction_columns
               where object_owner = ''BANK'' and object_name = ''CARDS'' and column_name = ''PAN''');
       r('C03', 'PCI 3.4', v is not null, 'PAN masked for non-privileged readers (redaction)', nvl(v, 'no redaction policy on CARDS.PAN'));

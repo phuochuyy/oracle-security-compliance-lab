@@ -1,0 +1,85 @@
+	  create synonym, drop synonym, create public synonym, drop public synonym,
+                                        *
+ERROR at line 3:
+ORA-46356: missing or invalid action audit option
+Help: https://docs.oracle.com/error-help/db/ora-46356/
+audit policy sec_changes
+*
+ERROR at line 1:
+ORA-46357: Unified Audit policy SEC_CHANGES was not found.
+Help: https://docs.oracle.com/error-help/db/ora-46357/
+Audit succeeded.
+Audit succeeded.
+Session altered.
+Audit policy created.
+Audit succeeded.
+POLICY_NAME															 ENTITY_NAME															  SUC FAI
+-------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------------------------------------------------------------------- --- ---
+ORA$DICTIONARY_SENS_COL_ACCESS													 ALL USERS															  YES YES
+ORA_DV_DEFAULT_PROTECTION													 ALL USERS															  YES YES
+ORA_DV_SCHEMA_CHANGES														 ALL USERS															  YES YES
+ORA_LOGIN_LOGOUT														 ALL USERS															  NO  YES
+ORA_SECURECONFIG														 ALL USERS															  YES YES
+SEC_CARDS_ACCESS														 ALL USERS															  YES YES
+6 rows selected.
+create audit policy sec_changes actions grant, revoke, create synonym, alter synonym, drop synonym, create procedure, alter procedure, drop procedure, create function, alter function, drop function, create package, alter package, drop package, create package body, drop package body, create trigger, alter trigger, drop trigger container = all
+*
+ERROR at line 1:
+ORA-65095: invalid common object name
+Help: https://docs.oracle.com/error-help/db/ora-65095/
+audit policy sec_changes
+*
+ERROR at line 1:
+ORA-46357: Unified Audit policy SEC_CHANGES was not found.
+Help: https://docs.oracle.com/error-help/db/ora-46357/
+Noaudit succeeded.
+Audit succeeded.
+POLICY_NAME			 ENTITY_NAME  SUC FAI
+-------------------------------- ------------ --- ---
+ORA$DICTIONARY_SENS_COL_ACCESS	 ALL USERS    YES YES
+ORA_ALL_TOPLEVEL_ACTIONS	 SYS	      YES YES
+ORA_DV_DEFAULT_PROTECTION	 ALL USERS    YES YES
+ORA_DV_SCHEMA_CHANGES		 ALL USERS    YES YES
+ORA_LOGIN_LOGOUT		 ALL USERS    YES YES
+ORA_SECURECONFIG		 ALL USERS    YES YES
+6 rows selected.
+Session altered.
+POLICY_NAME			 ENTITY_NAME  SUC FAI
+-------------------------------- ------------ --- ---
+ORA$DICTIONARY_SENS_COL_ACCESS	 ALL USERS    YES YES
+ORA_DV_DEFAULT_PROTECTION	 ALL USERS    YES YES
+ORA_DV_SCHEMA_CHANGES		 ALL USERS    YES YES
+ORA_LOGIN_LOGOUT		 ALL USERS    NO  YES
+ORA_SECURECONFIG		 ALL USERS    YES YES
+SEC_CARDS_ACCESS		 ALL USERS    YES YES
+6 rows selected.
+Audit policy created.
+Audit succeeded.
+Session altered.
+Noaudit succeeded.
+Audit succeeded.
+POLICY_NAME			 ENTITY_NAME  SUC FAI
+-------------------------------- ------------ --- ---
+C##SEC_CHANGES			 ALL USERS    YES YES
+ORA$DICTIONARY_SENS_COL_ACCESS	 ALL USERS    YES YES
+ORA_DV_DEFAULT_PROTECTION	 ALL USERS    YES YES
+ORA_DV_SCHEMA_CHANGES		 ALL USERS    YES YES
+ORA_LOGIN_LOGOUT		 ALL USERS    YES YES
+ORA_SECURECONFIG		 ALL USERS    YES YES
+SEC_CARDS_ACCESS		 ALL USERS    YES YES
+7 rows selected.
+Session altered.
+Noaudit succeeded.
+Audit Policy dropped.
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+rows will be truncated
+POLICY_NAME															 AUDIT_OPTION	      OBJECT_SCHEMA
+-------------------------------------------------------------------------------------------------------------------------------- -------------------- --------------------------------------------------
+SEC_CARDS_ACCESS														 DELETE 	      BANK
+SEC_CARDS_ACCESS														 INSERT 	      BANK
+SEC_CARDS_ACCESS														 SELECT 	      BANK
+SEC_CARDS_ACCESS														 UPDATE 	      BANK
+4 rows selected.
