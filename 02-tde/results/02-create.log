@@ -1,0 +1,66 @@
+# ./01_keystore.sh create
+
+keystore altered.
+
+
+keystore altered.
+
+
+keystore altered.
+
+
+keystore altered.
+
+-rw------- 1 huy huy 11264 Oct 28 18:58 cwallet.sso
+-rw------- 1 huy huy  3584 Oct 28 18:58 ewallet_2026102811585146_initial.p12
+-rw------- 1 huy huy 11264 Oct 28 18:58 ewallet.p12
+== prm1
+
+PDB	   WRL_PARAMETER		STATUS		     WALLET_TYP KEYSTORE
+---------- ---------------------------- -------------------- ---------- --------
+CDB$ROOT   +DATA/orcl/tde/		OPEN		     PASSWORD	NONE
+PDB$SEED   (null)			OPEN		     PASSWORD	UNITED
+ORCLPDB1   (null)			OPEN		     PASSWORD	UNITED
+ORCLPDB2   (null)			OPEN		     PASSWORD	UNITED
+DRILLPDB   (null)			OPEN		     PASSWORD	UNITED
+SECPDB	   (null)			OPEN		     PASSWORD	UNITED
+
+6 rows selected.
+
+
+PDB	   MASTER_KEYS LAST_KEY
+---------- ----------- ---------------------------------------------------------------------------
+CDB$ROOT	     1 28-OCT-26 11.58.51.521260 AM +00:00
+DRILLPDB	     1 28-OCT-26 11.58.51.581398 AM +00:00
+ORCLPDB1	     1 28-OCT-26 11.58.51.539645 AM +00:00
+ORCLPDB2	     1 28-OCT-26 11.58.51.559846 AM +00:00
+PDB$SEED	     0 (null)
+SECPDB		     1 28-OCT-26 11.58.51.602367 AM +00:00
+
+6 rows selected.
+
+== stb1
+
+PDB	   WRL_PARAMETER		STATUS		     WALLET_TYP KEYSTORE
+---------- ---------------------------- -------------------- ---------- --------
+CDB$ROOT   +DATA/orcl_stb/tde/		NOT_AVAILABLE	     UNKNOWN	NONE
+PDB$SEED   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+ORCLPDB1   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+ORCLPDB2   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+DRILLPDB   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+SECPDB	   (null)			NOT_AVAILABLE	     UNKNOWN	UNITED
+
+6 rows selected.
+
+
+PDB	   MASTER_KEYS LAST_KEY
+---------- ----------- ---------------------------------------------------------------------------
+CDB$ROOT	     0 (null)
+DRILLPDB	     0 (null)
+ORCLPDB1	     0 (null)
+ORCLPDB2	     0 (null)
+PDB$SEED	     0 (null)
+SECPDB		     0 (null)
+
+6 rows selected.
+

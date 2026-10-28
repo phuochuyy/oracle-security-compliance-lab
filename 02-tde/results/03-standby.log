@@ -1,0 +1,54 @@
+# ./01_keystore.sh standby
+Type       Redund  Striped  Time             Sys  Name
+KEY_STORE  UNPROT  COARSE   OCT 28 18:00:00  N    cwallet.sso => +DATA/DB_UNKNOWN/KEY_STORE/ewallet.340.1247857161
+KEY_STORE  UNPROT  COARSE   OCT 28 18:00:00  N    ewallet.p12 => +DATA/DB_UNKNOWN/KEY_STORE/ewallet.339.1247857159
+== prm1
+
+PDB	   WRL_PARAMETER		STATUS		     WALLET_TYP KEYSTORE
+---------- ---------------------------- -------------------- ---------- --------
+CDB$ROOT   +DATA/orcl/tde/		OPEN		     PASSWORD	NONE
+PDB$SEED   (null)			OPEN		     PASSWORD	UNITED
+ORCLPDB1   (null)			OPEN		     PASSWORD	UNITED
+ORCLPDB2   (null)			OPEN		     PASSWORD	UNITED
+DRILLPDB   (null)			OPEN		     PASSWORD	UNITED
+SECPDB	   (null)			OPEN		     PASSWORD	UNITED
+
+6 rows selected.
+
+
+PDB	   MASTER_KEYS LAST_KEY
+---------- ----------- ---------------------------------------------------------------------------
+CDB$ROOT	     1 28-OCT-26 11.58.51.521260 AM +00:00
+DRILLPDB	     1 28-OCT-26 11.58.51.581398 AM +00:00
+ORCLPDB1	     1 28-OCT-26 11.58.51.539645 AM +00:00
+ORCLPDB2	     1 28-OCT-26 11.58.51.559846 AM +00:00
+PDB$SEED	     0 (null)
+SECPDB		     1 28-OCT-26 11.58.51.602367 AM +00:00
+
+6 rows selected.
+
+== stb1
+
+PDB	   WRL_PARAMETER		STATUS		     WALLET_TYP KEYSTORE
+---------- ---------------------------- -------------------- ---------- --------
+CDB$ROOT   +DATA/orcl_stb/tde/		OPEN		     AUTOLOGIN	NONE
+PDB$SEED   (null)			OPEN		     AUTOLOGIN	UNITED
+ORCLPDB1   (null)			OPEN		     AUTOLOGIN	UNITED
+ORCLPDB2   (null)			OPEN		     AUTOLOGIN	UNITED
+DRILLPDB   (null)			OPEN		     AUTOLOGIN	UNITED
+SECPDB	   (null)			OPEN		     AUTOLOGIN	UNITED
+
+6 rows selected.
+
+
+PDB	   MASTER_KEYS LAST_KEY
+---------- ----------- ---------------------------------------------------------------------------
+CDB$ROOT	     1 28-OCT-26 11.58.51.521260 AM +00:00
+DRILLPDB	     1 28-OCT-26 11.58.51.581398 AM +00:00
+ORCLPDB1	     1 28-OCT-26 11.58.51.539645 AM +00:00
+ORCLPDB2	     1 28-OCT-26 11.58.51.559846 AM +00:00
+PDB$SEED	     0 (null)
+SECPDB		     1 28-OCT-26 11.58.51.602367 AM +00:00
+
+6 rows selected.
+

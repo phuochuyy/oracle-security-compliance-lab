@@ -15,3 +15,41 @@
   "dgmgrl.*start observer"` matched my own `bash -c` command line. Observer was down ~1 min. Same
   `pgrep -f` self-match as in the perf lab — anchored the pattern to the binary path.
 - Side finding on stb3: no HugePages (`2048K pages available 0`, memlock 8 MB) — SGA on 4K pages.
+
+## SECPDB and the plaintext baseline (branch `setup/secpdb`)
+
+- Moved to RAC Region A (`labctl.sh dg-a`: prm1 + stb1 + obs-r1 + prm3). SECPDB created from the seed on
+  the primary; on the standby it stayed **MOUNTED** — `SAVE STATE` on the primary does not open it there.
+  `alter pluggable database secpdb open read only` on stb1, then the checksums matched.
+- First run of `check_plaintext.sh`: the archived log showed 0 hits for a card I had just inserted. The
+  query took the highest `SEQUENCE#` — seq 376 from **before the RESETLOGS** of the backup drills (current
+  incarnation is at seq ~41). Fixed by filtering on `V$DATABASE.RESETLOGS_CHANGE#`; then 3 hits.
+
+## TDE keystore (branch `tde/keystore`)
+
+- `WALLET_ROOT` is static: restarted the standby first, then the primary (FSFO disabled, GG_A stopped).
+  `agctl start goldengate GG_A` answered `XAG-216: already running` — XAG had already started GG_A with
+  the database.
+- The `WITH BACKUP` file of the first `SET KEY` is an empty keystore (3,584 bytes): taken before the change.
+- Tried to verify the off-host copy: `mkstore -list` and `orapki wallet display` → `Got tag 3 instead of 16`
+  (same md5 as in ASM, so not a broken copy — the 23ai keystore is not PKCS#12). `MERGE KEYSTORE ... INTO
+  NEW KEYSTORE` → `ORA-02000 missing EXISTING keyword` (23ai only merges into an existing keystore), then
+  `INTO EXISTING` → `ORA-46638`, trace `could not load the target with error 29106`. `BACKUP KEYSTORE ... TO
+  '/tmp/ksb'` → `ORA-46620`. Gave up on a file-level check; the restore drill will test the copy.
+- **My mistake:** the `ORA-02000` error printed the keystore password in my terminal. Changed the password,
+  deleted backups made under the old one, added masking to the script.
+- Password-change run: the keystore password changed, but the script then called itself (`"$0" escrow`),
+  which re-read `lab.env` with the **old** password → `ORA-46627 password mismatch` in the check. Nothing
+  broken — saved the new password, then rewrote the modes as functions.
+- md5 of `ewallet.p12` changed after every check: `BACKUP KEYSTORE` (my password check) rewrites it.
+  Check first, copy second.
+- Every `BACKUP KEYSTORE` also writes a `cwallet_<time>.sso`: password-free key copies piling up in ASM
+  and in my off-host folder. Off-host copy is `.p12` only now; extra `.sso` removed.
+
+## Online encryption (branch `tde/encrypt-online`)
+
+- First run lost the application numbers: `set serveroutput on` came before `alter session set container`
+  → no DBMS_OUTPUT at all in the PDB. Moved it after the switch; the numbers come from the REKEY run.
+- `residual_plaintext.sh` first said "0 of 51 logs" — the `ssh` inside `while read` swallowed the loop's
+  input, only one log was checked. `ssh -n`; then 2 logs with hits.
+- One of them was from DRILLPDB (same PAN as SECPDB, deterministic data): encrypted it too.

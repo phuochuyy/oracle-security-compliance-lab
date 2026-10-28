@@ -1,0 +1,41 @@
+19:08:06 before
+-- prm1
+TABLESPACE ENC ENCRYPTI STATUS
+---------- --- -------- ----------
+BANK_DATA  NO  (null)	(null)
+FILE_NAME
+----------------------------------------------------------------------
++DATA/ORCL/5EE6326ADFBA436CE0630A68A8C08768/DATAFILE/bank_data.376.124
+-- stb1
+TABLESPACE ENC ENCRYPTI STATUS
+---------- --- -------- ----------
+BANK_DATA  NO  (null)	(null)
+FILE_NAME
+----------------------------------------------------------------------
++DATA/ORCL_STB/5EE6326ADFBA436CE0630A68A8C08768/DATAFILE/bank_data.337
+19:08:17 ALTER TABLESPACE bank_data ENCRYPTION ONLINE USING 'AES256' ENCRYPT
+Session altered.
+Elapsed: 00:00:00.02
+Tablespace altered.
+Elapsed: 00:00:05.79
+19:08:23 conversion took 6 s on the primary
+19:09:37 application during the conversion:
+19:09:37 after (standby BANK_DATA encrypted=YES)
+-- prm1
+TABLESPACE ENC ENCRYPTI STATUS
+---------- --- -------- ----------
+BANK_DATA  YES AES256	NORMAL
+FILE_NAME
+----------------------------------------------------------------------
++DATA/ORCL/5EE6326ADFBA436CE0630A68A8C08768/DATAFILE/bank_data.373.124
+-- stb1
+TABLESPACE ENC ENCRYPTI STATUS
+---------- --- -------- ----------
+BANK_DATA  YES AES256	NORMAL
+FILE_NAME
+----------------------------------------------------------------------
++DATA/ORCL_STB/5EE6326ADFBA436CE0630A68A8C08768/DATAFILE/bank_data.341
+NAME				 VALUE
+-------------------------------- ----------------------------------------------------------------
+transport lag			 +00 00:00:00
+apply lag			 +00 00:00:00
