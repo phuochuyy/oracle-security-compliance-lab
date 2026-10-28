@@ -45,3 +45,11 @@
   Check first, copy second.
 - Every `BACKUP KEYSTORE` also writes a `cwallet_<time>.sso`: password-free key copies piling up in ASM
   and in my off-host folder. Off-host copy is `.p12` only now; extra `.sso` removed.
+
+## Online encryption (branch `tde/encrypt-online`)
+
+- First run lost the application numbers: `set serveroutput on` came before `alter session set container`
+  → no DBMS_OUTPUT at all in the PDB. Moved it after the switch; the numbers come from the REKEY run.
+- `residual_plaintext.sh` first said "0 of 51 logs" — the `ssh` inside `while read` swallowed the loop's
+  input, only one log was checked. `ssh -n`; then 2 logs with hits.
+- One of them was from DRILLPDB (same PAN as SECPDB, deterministic data): encrypted it too.
