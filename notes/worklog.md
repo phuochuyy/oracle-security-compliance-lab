@@ -53,3 +53,10 @@
 - `residual_plaintext.sh` first said "0 of 51 logs" — the `ssh` inside `while read` swallowed the loop's
   input, only one log was checked. `ssh -n`; then 2 logs with hits.
 - One of them was from DRILLPDB (same PAN as SECPDB, deterministic data): encrypted it too.
+
+## Observer Region A (branch `findings/observer-region-a`)
+
+- Found while preparing the TDE switchover: wanted the broker as a SYSDG user instead of SYS, ran the
+  failed-logon query on orcl → 1,689 SYS ORA-01031 from obs-r1. Same cause as Region B.
+- Scripts take the region now (`A`/`B`), separate passwords per CDB (`*_A` in lab.env).
+- obs-r1's `start_observer.sh` had the same unanchored `pgrep -if` — fixed before restarting this time.
