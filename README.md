@@ -1,7 +1,15 @@
 # Oracle Security & Compliance Lab — TDE · Unified Auditing · least privilege
 
-> Status: **planned**. Controls are mapped to PCI-DSS requirements and verified with a DBSAT
-> assessment before and after.
+> Status: **in progress** — first finding fixed (failed SYS logons from the Data Guard observer → observer
+> moved to a SYSDG-only user). Controls below are planned; each will be mapped to PCI-DSS and verified
+> with a DBSAT assessment before and after.
+
+## Findings
+
+| # | Finding | Fix | Result |
+|---|---------|-----|--------|
+| 1 | [1,325 failed SYS logons (ORA-01031) from the observer, every ~12 s](01-baseline/failed-logons/) — found from `Failed Logon Delay` in AWR | observer as `C##DGADMIN` with **SYSDG only**, new wallet | 0 failed logons; FSFO tested with the new observer (PCI-DSS 7, 10) |
+| 1b | 2 ORA-01017 (empty user) per standby start | — | **open**, hypotheses tested and ruled out are listed |
 
 Interview prep notes: [INTERVIEW.md](INTERVIEW.md).
 

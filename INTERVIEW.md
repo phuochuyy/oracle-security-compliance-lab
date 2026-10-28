@@ -1,15 +1,27 @@
 # Interview prep — Oracle Security & Compliance
 
-> Status: **not built yet.** These are preparation notes for the topics this lab will cover. Do not present
-> them as finished work; present them as "what I know and what I am building".
+> Status: **started.** Finding 1 (below) is done with evidence; the controls (TDE, auditing policies,
+> redaction, DBSAT) are preparation notes — present them as "what I know and what I am building".
 
 ## What already exists (real evidence)
 
 While tuning in [oracle-performance-tuning-lab](https://github.com/phuochuyy/oracle-performance-tuning-lab)
 the AWR wait list showed `Failed Logon Delay`. The unified audit trail showed **275 failed SYS logons
-(ORA-01031) from the Data Guard observer host every ~12 s**, plus 5 ORA-01017 from the standby around
-restarts — while FSFO reported the observer as healthy. Investigating that is the first task of this
-lab: a real security-monitoring finding, found from a performance symptom.
+(ORA-01031) from the Data Guard observer host every ~12 s** (1,325 by the time I fixed it) — while FSFO
+reported the observer as healthy.
+
+**Cause:** the observer's wallet held SYS. DGMGRL tries SYSDG first; SYS had no SYSDG in the password file,
+so every connection failed once and then succeeded as SYSDBA. **Fix:** a common user with only SYSDG
+(`C##DGADMIN`) in a new wallet — the old wallet's password was nowhere, which is its own finding. Tested
+the wallet with a temporary `TNS_ADMIN` before swapping, then enabled FSFO briefly to prove the
+observer still works: 0 failed logons. Least privilege (the observer does not need SYSDBA) and the
+failed-logon alert becomes meaningful again.
+
+**Still open, and I say so:** 2 ORA-01017 with an empty username each time the standby starts. I ruled out
+the password file (copied it — no change), the broker, a wallet and the startup scripts.
+
+**Why SYSDG and not SYSDBA for Data Guard?** Separation of duties (12c+): SYSDG can do Data Guard operations
+(switchover, failover, observer) but cannot read application data or change users.
 
 ## Topics and short answers
 
