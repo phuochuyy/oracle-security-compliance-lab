@@ -10,7 +10,7 @@
 set -eu
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 . "$REPO/lab.env"
-: "${BANK_PASSWORD:?}"
+: "${SECPDB_ADMIN_PASSWORD:?}"
 ENV=". ~/.bash_profile >/dev/null 2>&1"
 DBH=/u01/app/oracle/product/23.26.0/dbhome_1 GH=/u01/app/23.26.0/grid
 sql() { ssh -o BatchMode=yes oracle@$1 "$ENV; sqlplus -s / as sysdba" 2>&1 | grep -vE "^$"; }
@@ -41,9 +41,9 @@ lsnrctl reload LISTENER | grep -E 'completed|TNS-'; grep ADMIN_RESTRICTIONS \$f"
   done ;;
 
 verify)
-  echo "== new TCP connection (BANK via the listener to service secpdb_app)"
+  echo "== new TCP connection (PDBADMIN via the listener to service secpdb_app)"
   printf 'set heading off feedback off\nselect network_service_banner from v$session_connect_info where sid = sys_context(%s, %s);\nexit\n' "'userenv'" "'sid'" \
-    | ssh -o BatchMode=yes oracle@prm1 "$ENV; sqlplus -s -L 'bank/\"$BANK_PASSWORD\"@//prm1.rac:1521/secpdb_app.rac'" | grep -vE "^$" || true
+    | ssh -o BatchMode=yes oracle@prm1 "$ENV; sqlplus -s -L 'pdbadmin/\"$SECPDB_ADMIN_PASSWORD\"@//prm1.rac:1521/secpdb_app.rac'" | grep -vE "^$" || true
   for h in prm1 stb1; do
     echo "== $h: TCP sessions by program — encrypted (AES256) / checksummed (SHA256) / total"
     sql $h <<'SQL'
