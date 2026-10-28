@@ -87,3 +87,16 @@
   wallet (empty directory). `ADD MASTERKEY` on GG_A, copied `cwallet.sso` VM-to-VM to GG_B. `START EXTRACT
   EXTA` said "already running": the HA profile had restarted it in the meantime (autoRestart 15 s).
 - Cleanup followed the A-A rule (Replicats stopped after passing the last change, drop, start): no abend.
+
+## Assessment (DBSAT replaced) and parameters/network (branches `assessment/cis-baseline`, `hardening/params-network`)
+
+- DBSAT: MOS registration with the CSI of my OCI Free Tier tenancy failed (`VBCP-PPEP-776`). Wrote the
+  checks myself, CIS sections + PCI checks.
+- `checks.sql` first run: `PLS-00103` — a constant declared after the local procedures; then `nvl('missing: '
+  || v, ...)` was never null, so PASS lines said "missing:"; `REDACTION_COLUMNS` has no `POLICY_NAME`.
+- P01 `AUDIT_SYS_OPERATIONS=FALSE`: static, and only for traditional audit (desupported in 23ai). Changed
+  the check to accept the unified equivalent (`ORA_ALL_TOPLEVEL_ACTIONS` for SYS).
+- Test connection: `localhost` → `ORA-12541` (listener on the node IP), then `ORA-12514` (service name is
+  `secpdb_app.rac`, db_domain).
+- After the sqlnet change only *new* sessions were encrypted: restarted EXTA/REPA (graceful STOP is not
+  restarted by the HA profile — had to START them), the observer, and the standby for redo transport.
