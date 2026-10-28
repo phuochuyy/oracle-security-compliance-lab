@@ -124,3 +124,12 @@
   checks too (C02 needs all four actions on CARDS; in a PDB only local policies count).
 - Redaction log: the first run printed FRAUD_OPS's full (synthetic) PANs; masked the saved log with sed and
   added the same masking to the script before committing.
+- Audit volume: successful logons were 378/hour, mostly the observer reconnecting (C##DGADMIN, 57 in 10
+  min). Split successes into their own policy `EXCEPT c##dgadmin` — **no effect** (still 326/hour, all the
+  observer): it connects AS SYSDG, the session user is SYSDG. Replaced by a `WHEN` condition on
+  AUTHENTICATED_IDENTITY and HOST → 0 observer records, other logons still recorded. A09 lists exclusions;
+  first version printed every policy ("when NONE": AUDIT_CONDITION is the string 'NONE', not NULL).
+- Lab was stopped mid-way (user break) and started again before the last measurement.
+- Side note for finding 1b: the standby's own connections to the primary are audited as `PUBLIC` from
+  `oracle@stb1` (2 successful LOGON records after a restart) — the empty-user ORA-01017 may be the same
+  connections' first attempt. Not followed up yet.

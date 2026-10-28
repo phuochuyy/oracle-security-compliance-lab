@@ -1,0 +1,30 @@
+Noaudit succeeded.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+Session altered.
+Noaudit succeeded.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+POLICY_NAME		 ENTITY_NAME  ENABLED_OPTION  SUC FAI
+------------------------ ------------ --------------- --- ---
+C##SEC_LOGON_SUCCESS	 C##DGADMIN   EXCEPT USER     YES NO
+SEC_LOGON_SUCCESS	 C##DGADMIN   EXCEPT USER     YES NO
+ORA_LOGIN_LOGOUT	 ALL USERS    BY USER	      NO  YES
+3 rows selected.
+Noaudit succeeded.
+Audit Policy dropped.
+Audit policy created.
+Audit succeeded.
+Session altered.
+Noaudit succeeded.
+Audit Policy dropped.
+Audit policy created.
+Audit succeeded.
+POLICY_NAME		 ENTITY_NAME  ENABLED_OPTION  SUC FAI
+------------------------ ------------ --------------- --- ---
+ORA_LOGIN_LOGOUT	 ALL USERS    BY USER	      NO  YES
+SEC_LOGON_SUCCESS	 ALL USERS    BY USER	      YES NO
+C##SEC_LOGON_SUCCESS	 ALL USERS    BY USER	      YES NO
+3 rows selected.
