@@ -39,10 +39,22 @@ declare
 
 begin
   acc('P04') := 'Data Guard redo transport and SYSDG/SYSBACKUP logins need the password file';
+  acc('R04') := 'used by Oracle components and applications; removing needs per-component testing';
 
   --------------------------------------------------------------- 2 parameters (instance-wide: root only)
   if root then
-    r('P01', '2 params', p('audit_sys_operations') = 'TRUE', 'AUDIT_SYS_OPERATIONS = TRUE', p('audit_sys_operations'));
+    -- 23ai: traditional auditing is desupported and the parameter only drives it; the unified equivalent is
+    -- a policy auditing all top-level statements of SYS (predefined ORA_ALL_TOPLEVEL_ACTIONS)
+    declare v varchar2(400);
+    begin
+      v := q('select listagg(distinct e.policy_name, '','') within group (order by e.policy_name)
+              from audit_unified_enabled_policies e join audit_unified_policies p on p.policy_name = e.policy_name
+              where p.audit_option = ''ALL'' and p.audit_option_type = ''STANDARD ACTION''
+                and e.entity_name in (''SYS'', ''ALL USERS'') and e.success = ''YES''');
+      r('P01', '2 params', p('audit_sys_operations') = 'TRUE' or v is not null,
+        'SYS top-level actions audited (AUDIT_SYS_OPERATIONS or unified policy)',
+        'AUDIT_SYS_OPERATIONS=' || p('audit_sys_operations') || ', unified: ' || nvl(v, 'none'));
+    end;
     r('P02', '2 params', p('global_names') = 'TRUE', 'GLOBAL_NAMES = TRUE', p('global_names'));
     r('P03', '2 params', p('os_roles') = 'FALSE', 'OS_ROLES = FALSE', p('os_roles'));
     r('P04', '2 params', p('remote_login_passwordfile') = 'NONE', 'REMOTE_LOGIN_PASSWORDFILE = NONE', p('remote_login_passwordfile'));
@@ -90,6 +102,12 @@ begin
       chk('PASSWORD_VERIFY_FUNCTION', lim('PASSWORD_VERIFY_FUNCTION') not in ('NULL', 'UNLIMITED'));
       chk('SESSIONS_PER_USER',       n(lim('SESSIONS_PER_USER')) <= 10);
       chk('INACTIVE_ACCOUNT_TIME',   n(lim('INACTIVE_ACCOUNT_TIME')) <= 120);
+      -- service profiles (*SVC*): only expiry may deviate, shown as ACCEPT
+      if pr.profile like '%SVC%' and bad is not null
+         and regexp_replace(bad, 'PASSWORD_(LIFE|GRACE)_TIME=[^ ]+ ', '') is null then
+        acc('U10') := 'service account, credential in a wallet: no expiry, rotated by procedure';
+      elsif acc.exists('U10') then acc.delete('U10');
+      end if;
       r('U10', '3 users', bad is null, 'profile ' || pr.profile || ' meets the password/resource limits',
         nvl(bad, 'ok') || ' - users: ' || q('select listagg(username, '','') within group (order by username) from dba_users
           where profile = ''' || pr.profile || ''' and oracle_maintained = ''N'' and account_status = ''OPEN'''));
@@ -107,9 +125,11 @@ begin
     end;
   begin
     pub('R01', 'no PUBLIC EXECUTE on network packages', '''UTL_TCP'',''UTL_SMTP'',''UTL_MAIL'',''UTL_HTTP'',''HTTPURITYPE'',''UTL_INADDR'',''DBMS_LDAP''');
-    pub('R02', 'no PUBLIC EXECUTE on file packages', '''UTL_FILE'',''DBMS_ADVISOR'',''DBMS_LOB'',''DBMS_FILE_TRANSFER'',''DBMS_BACKUP_RESTORE''');
-    pub('R03', 'no PUBLIC EXECUTE on crypto/random packages', '''DBMS_CRYPTO'',''DBMS_OBFUSCATION_TOOLKIT'',''DBMS_RANDOM''');
-    pub('R04', 'no PUBLIC EXECUTE on dynamic SQL/job/java packages', '''DBMS_SQL'',''DBMS_SYS_SQL'',''DBMS_XMLGEN'',''DBMS_JOB'',''DBMS_SCHEDULER'',''DBMS_JAVA'',''DBMS_JAVA_TEST''');
+    pub('R02', 'no PUBLIC EXECUTE on file packages', '''UTL_FILE'',''DBMS_ADVISOR'',''DBMS_FILE_TRANSFER'',''DBMS_BACKUP_RESTORE''');
+    pub('R03', 'no PUBLIC EXECUTE on crypto packages', '''DBMS_CRYPTO'',''DBMS_OBFUSCATION_TOOLKIT''');
+    -- general-purpose packages Oracle components rely on (DBMS_LOB and DBMS_RANDOM were in R02/R03 in the
+    -- baseline run): kept, visible as ACCEPT
+    pub('R04', 'no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages', '''DBMS_SQL'',''DBMS_SYS_SQL'',''DBMS_XMLGEN'',''DBMS_JOB'',''DBMS_SCHEDULER'',''DBMS_JAVA'',''DBMS_JAVA_TEST'',''DBMS_LOB'',''DBMS_RANDOM''');
   end;
   declare v varchar2(4000);
   begin
@@ -155,6 +175,8 @@ begin
                 select p.audit_option from audit_unified_policies p
                   join audit_unified_enabled_policies e on e.policy_name = p.policy_name
                  where e.entity_name = ''ALL USERS'' and e.success = ''YES''
+                   -- in a PDB a common policy (enabled in the root) did not audit LOCAL users: count local ones
+                   and (sys_context(''userenv'', ''con_id'') = 1 or p.common = ''NO'')
                    and nvl(p.object_schema, ''NONE'') = ''NONE''
                    and p.audit_option_type in (''STANDARD ACTION'', ''SYSTEM PRIVILEGE''))');
       r(id, '5 audit', v is null, title, case when v is null then 'all audited' else 'missing: ' || v end);
@@ -177,10 +199,16 @@ begin
               join dba_tablespaces s on s.tablespace_name = t.tablespace_name
               where t.owner = ''BANK'' and s.encrypted = ''NO''');
       r('C01', 'PCI 3.5', v is null, 'card data stored in encrypted tablespaces only', case when v is null then 'all encrypted' else 'not encrypted: ' || v end);
-      v := q('select listagg(distinct p.policy_name, '','') within group (order by p.policy_name) from audit_unified_policies p
-              join audit_unified_enabled_policies e on e.policy_name = p.policy_name
-              where p.object_schema = ''BANK'' and p.object_name = ''CARDS''');
-      r('C02', 'PCI 10.2', v is not null, 'access to BANK.CARDS audited', nvl(v, 'no enabled policy on BANK.CARDS'));
+      -- every DML/query action must be tied to the object (a policy with "select, insert, update, delete
+      -- on bank.cards" has only DELETE on CARDS)
+      v := q('select listagg(o, '','') within group (order by o) from (
+                select column_value o from table(sys.odcivarchar2list(''SELECT'', ''INSERT'', ''UPDATE'', ''DELETE''))
+                minus
+                select p.audit_option from audit_unified_policies p
+                  join audit_unified_enabled_policies e on e.policy_name = p.policy_name
+                 where p.object_schema = ''BANK'' and p.object_name = ''CARDS'' and e.success = ''YES'')');
+      r('C02', 'PCI 10.2', v is null, 'SELECT/INSERT/UPDATE/DELETE on BANK.CARDS audited',
+        case when v is null then 'all four' else 'not audited on CARDS: ' || v end);
       v := q('select listagg(column_name || '':'' || function_type, '','') within group (order by column_name) from redaction_columns
               where object_owner = ''BANK'' and object_name = ''CARDS'' and column_name = ''PAN''');
       r('C03', 'PCI 3.4', v is not null, 'PAN masked for non-privileged readers (redaction)', nvl(v, 'no redaction policy on CARDS.PAN'));

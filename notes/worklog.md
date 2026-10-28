@@ -87,3 +87,40 @@
   wallet (empty directory). `ADD MASTERKEY` on GG_A, copied `cwallet.sso` VM-to-VM to GG_B. `START EXTRACT
   EXTA` said "already running": the HA profile had restarted it in the meantime (autoRestart 15 s).
 - Cleanup followed the A-A rule (Replicats stopped after passing the last change, drop, start): no abend.
+
+## Assessment (DBSAT replaced) and parameters/network (branches `assessment/cis-baseline`, `hardening/params-network`)
+
+- DBSAT: MOS registration with the CSI of my OCI Free Tier tenancy failed (`VBCP-PPEP-776`). Wrote the
+  checks myself, CIS sections + PCI checks.
+- `checks.sql` first run: `PLS-00103` — a constant declared after the local procedures; then `nvl('missing: '
+  || v, ...)` was never null, so PASS lines said "missing:"; `REDACTION_COLUMNS` has no `POLICY_NAME`.
+- P01 `AUDIT_SYS_OPERATIONS=FALSE`: static, and only for traditional audit (desupported in 23ai). Changed
+  the check to accept the unified equivalent (`ORA_ALL_TOPLEVEL_ACTIONS` for SYS).
+- Test connection: `localhost` → `ORA-12541` (listener on the node IP), then `ORA-12514` (service name is
+  `secpdb_app.rac`, db_domain).
+- After the sqlnet change only *new* sessions were encrypted: restarted EXTA/REPA (graceful STOP is not
+  restarted by the HA profile — had to START them), the observer, and the standby for redo transport.
+
+## Profiles and PUBLIC grants (branch `hardening/profiles-privs`)
+
+- Revoking network/file packages from PUBLIC invalidated 14 Oracle objects (CTXSYS, GSMADMIN_INTERNAL incl.
+  a LOGOFF trigger, MDSYS). Should have checked `DBA_DEPENDENCIES` first; fixed with direct grants.
+- `UTL_MAIL` is not installed here (`ORA-04042` on the revoke) — harmless.
+- First dependency query: `ORA-00918 CON_ID ambiguous` (two CDB views joined).
+- Network test switched from BANK to PDBADMIN, since BANK cannot log in any more.
+
+## Auditing and redaction (branches `auditing/policies`, `hardening/redaction`)
+
+- `CREATE PUBLIC SYNONYM` is not an action option (`ORA-46356`) — `CREATE SYNONYM` covers it.
+- Common policy without `C##` → `ORA-65095`.
+- `AUDIT POLICY ora_login_logout` on top of the default `WHENEVER NOT SUCCESSFUL` changed nothing: needed
+  `NOAUDIT` first. And enabling it in the root did not change SECPDB.
+- Test run 1: the strong verify function rejected my own random test password (`ORA-28003 ... 2 or more
+  digits`) — the profile works; the generator now always has 2 digits/upper/lower/special.
+- **Test run 2 found two real mistakes:** (1) `actions select, insert, update, delete on bank.cards` puts
+  `ON` only on DELETE — SELECT/INSERT/UPDATE were audited on *every* object (dictionary noise under the
+  CARDS policy). (2) The common `C##SEC_CHANGES` enabled in the root did not record DDL of a **local** user
+  in SECPDB (tested with and without a local policy). My assessment check had said PASS for both — fixed the
+  checks too (C02 needs all four actions on CARDS; in a PDB only local policies count).
+- Redaction log: the first run printed FRAUD_OPS's full (synthetic) PANs; masked the saved log with sed and
+  added the same masking to the script before committing.
