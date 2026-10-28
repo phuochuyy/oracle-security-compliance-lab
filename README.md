@@ -3,6 +3,8 @@
 > Status: **planned**. Controls are mapped to PCI-DSS requirements and verified with a DBSAT
 > assessment before and after.
 
+Interview prep notes: [INTERVIEW.md](INTERVIEW.md).
+
 ## Goal
 
 Harden a database that stores card-like data the way a bank or payment company would, and show
