@@ -88,5 +88,20 @@ service `ORCL3.rac`, listener `PROGRAM=oracle`. Redo transport, apply and the br
 Region A shows the same pattern: `oracle@stb1.rac` 478 and `oracle@stb2.rac` 412 records, and 2 within the
 minute I restarted orcl_stb (TDE drill) — so it is not specific to Region B's setup.
 
+**New evidence (found by the health-check playbook of the automation lab):** after a lab start, prm1's
+listener log shows the standby connecting to the primary in bursts — `PROGRAM=oracle`, `HOST=stb1`,
+`SERVICE_NAME=orcl.rac`, each connection redirected once with `INSTANCE_NAME=orcl1`:
+
+| Window | stb1 → prm1 connections (listener) | ORA-01017, empty user |
+|--------|-------------------------------------|-----------------------|
+| 22:06–22:09 (standby start) | 4 | 2 on prm1, 2 on stb1 (22:08:04) |
+| 22:19:08–22:19:10 | 22 | 4 on prm1, 4 on stb1 (22:19:10) |
+| 22:10–22:18, 22:20–22:29 | 0 | 0 |
+
+My own SQL that ran at 22:19 was ruled out: each statement alone on the standby, and the whole script,
+produced 0 new failures. So the failures come with Data Guard's internal standby→primary connections,
+not with a client. Next: what opens that burst ~11 min after the start (broker/FSFO health check, gap or
+statistics fetch), and a server-side trace of one of those connections.
+
 No account can be locked by these (no username). Next idea: `strace`/`bpftrace` on stb3 (not installed) or a
 server-side errorstack on the primary (`event 1017`).

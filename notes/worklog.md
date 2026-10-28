@@ -133,3 +133,6 @@
 - Side note for finding 1b: the standby's own connections to the primary are audited as `PUBLIC` from
   `oracle@stb1` (2 successful LOGON records after a restart) — the empty-user ORA-01017 may be the same
   connections' first attempt. Not followed up yet.
+- 1b, new lead (from the automation lab's health check): the empty-user ORA-01017 come in the same seconds as
+  bursts of standby→primary connections in prm1's listener log (4 at the standby start, 22 at 22:19). Bisected
+  my health SQL on the standby first — 0 new failures — so it was not my query.
