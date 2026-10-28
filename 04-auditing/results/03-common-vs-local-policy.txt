@@ -1,0 +1,16 @@
+Session altered.
+rows will be truncated
+rows will be truncated
+T	 DBUSERNAME															  ACTION_NAME
+-------- -------------------------------------------------------------------------------------------------------------------------------- --------------------------------------------------------------
+20:49:07 T_LOC																  LOGON
+20:49:07 T_LOC																  SELECT
+20:49:07 T_LOC																  LOGOFF
+20:49:07 T_LOC																  LOGON
+20:49:07 T_LOC																  SELECT
+20:49:07 T_LOC																  CREATE PROCEDURE
+20:49:07 T_LOC																  LOGOFF
+7 rows selected.
+Noaudit succeeded.
+Audit Policy dropped.
+User dropped.
