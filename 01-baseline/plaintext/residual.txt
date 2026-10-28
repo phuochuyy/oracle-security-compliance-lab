@@ -1,0 +1,4 @@
+PAN of card 1: 9000********0018
+seq 21   first change 01:32:38  hits=6
+seq 41   first change 18:50:39  hits=8
+archived logs checked: 	51
