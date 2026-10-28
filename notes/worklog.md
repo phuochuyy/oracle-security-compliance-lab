@@ -15,3 +15,12 @@
   "dgmgrl.*start observer"` matched my own `bash -c` command line. Observer was down ~1 min. Same
   `pgrep -f` self-match as in the perf lab — anchored the pattern to the binary path.
 - Side finding on stb3: no HugePages (`2048K pages available 0`, memlock 8 MB) — SGA on 4K pages.
+
+## SECPDB and the plaintext baseline (branch `setup/secpdb`)
+
+- Moved to RAC Region A (`labctl.sh dg-a`: prm1 + stb1 + obs-r1 + prm3). SECPDB created from the seed on
+  the primary; on the standby it stayed **MOUNTED** — `SAVE STATE` on the primary does not open it there.
+  `alter pluggable database secpdb open read only` on stb1, then the checksums matched.
+- First run of `check_plaintext.sh`: the archived log showed 0 hits for a card I had just inserted. The
+  query took the highest `SEQUENCE#` — seq 376 from **before the RESETLOGS** of the backup drills (current
+  incarnation is at seq ~41). Fixed by filtering on `V$DATABASE.RESETLOGS_CHANGE#`; then 3 hits.
