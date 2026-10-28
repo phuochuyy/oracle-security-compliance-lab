@@ -38,3 +38,32 @@ RAC primary, plus file checks on `sqlnet.ora` / `listener.ora`. One line per che
 
 Already good thanks to earlier work or 23ai defaults: no default passwords, no 10G hashes, no `ANY`
 privileges or DBA grants to non-Oracle users, pure unified auditing, card data in encrypted tablespaces.
+
+## After hardening — [`results/after.txt`](results/after.txt)
+
+**56 PASS, 0 FAIL, 5 ACCEPT, 4 INFO** (INFO: password file users, who can read CARDS, and A09 — every
+audit exclusion, so the logon-audit condition for the observer stays visible).
+
+| | Before | After |
+|-|--------|-------|
+| FAIL | **27** (23 under the final check rules) | **0** |
+| ACCEPT | 1 | 5 |
+| INFO | 2 | 4 |
+| PASS | 32 | 56 |
+
+The checks changed after the baseline, and I say so: `DBMS_LOB`/`DBMS_RANDOM` moved from R02/R03 to the
+accepted R04 group (counted with the final rules the baseline has 23 FAIL), P01 accepts the unified-audit
+equivalent, and two audit checks became **stricter** after my audit test showed they had passed wrongly
+(see [04-auditing](../04-auditing/)). More lines after (65 vs 62): new profiles are in use and A09 was added.
+
+**The 5 ACCEPTs** — deviations kept on purpose, visible in every run:
+
+| Check | Container | Why it stays |
+|-------|-----------|--------------|
+| P04 `REMOTE_LOGIN_PASSWORDFILE = EXCLUSIVE` | root | Data Guard redo transport and the SYSDG observer user need the password file |
+| U10 `C##SVC_PROFILE` without password expiry | root, SECPDB | the observer's password is in a wallet; an expired password would silently leave FSFO without observer — rotated by procedure instead |
+| R04 `PUBLIC` EXECUTE on `DBMS_SQL`, `DBMS_LOB`, `DBMS_SCHEDULER`, `DBMS_JOB`, `DBMS_RANDOM`, `DBMS_XMLGEN`, `DBMS_JAVA` | root, SECPDB | general-purpose packages used by Oracle components; the network/file revoke already broke 14 Oracle objects |
+
+How the 27 were fixed: [parameters + network](../03-hardening/README.md),
+[profiles + privileges](../03-hardening/README.md),
+[auditing](../04-auditing/), [redaction](../03-hardening/README.md).

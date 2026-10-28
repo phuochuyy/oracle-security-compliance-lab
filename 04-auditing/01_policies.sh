@@ -5,8 +5,8 @@
 #            object policy on BANK.CARDS (PCI-DSS 10.2.1.1: every access to cardholder data)
 #   test     a scenario in SECPDB: analyst user created, granted SELECT on CARDS, reads it, creates a
 #            procedure, gets revoked — then the audit records of that user
-#   volume   audit records per policy in the last hour (sizing the trail before any purge job)
-# usage (from the host): ./01_policies.sh apply | test | volume
+#   volume   audit records per policy since a time (sizing the trail before any purge job)
+# usage (from the host): ./01_policies.sh apply | test | volume ['YYYY-MM-DD HH24:MI:SS']
 set -eu
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 . "$REPO/lab.env"
@@ -26,16 +26,23 @@ create audit policy c##sec_changes
           create trigger, alter trigger, drop trigger
   container = all;
 audit policy c##sec_changes;
--- predefined, enabled WHENEVER NOT SUCCESSFUL by default: a plain AUDIT POLICY on top of that did not
--- change it — disable first, then enable for successes and failures
-noaudit policy ora_login_logout;
-audit policy ora_login_logout;
+-- logons: failures for everybody (predefined ORA_LOGIN_LOGOUT, WHENEVER NOT SUCCESSFUL by default);
+-- successes in a policy of their own, without the observer's routine reconnects. First version audited
+-- ORA_LOGIN_LOGOUT for successes too: 378 records/hour, 57 of 65 per 10 min were C##DGADMIN from obs-r1.
+-- "EXCEPT c##dgadmin" did not work: the observer connects AS SYSDG, the session user is SYSDG. A condition
+-- on the authenticated identity AND the host: the same wallet used from another host is still audited.
+create audit policy c##sec_logon_success actions logon, logoff
+  when 'SYS_CONTEXT(''USERENV'', ''AUTHENTICATED_IDENTITY'') <> ''C##DGADMIN'' OR SYS_CONTEXT(''USERENV'', ''HOST'') <> ''obs-r1.rac'''
+  evaluate per session container = all;
+audit policy c##sec_logon_success whenever successful;
 -- unified equivalent of AUDIT_SYS_OPERATIONS
 audit policy ora_all_toplevel_actions by sys;
 alter session set container = secpdb;
--- enabling ORA_LOGIN_LOGOUT in the root does not change it in the PDBs
-noaudit policy ora_login_logout;
-audit policy ora_login_logout;
+-- the common policy enabled in the root did not cover local users here (see SEC_CHANGES): local one too
+create audit policy sec_logon_success actions logon, logoff
+  when 'SYS_CONTEXT(''USERENV'', ''AUTHENTICATED_IDENTITY'') <> ''C##DGADMIN'' OR SYS_CONTEXT(''USERENV'', ''HOST'') <> ''obs-r1.rac'''
+  evaluate per session;
+audit policy sec_logon_success whenever successful;
 -- the common policy enabled in the root did not audit DDL of LOCAL users in this PDB (tested: a
 -- procedure created by a local user left no record) -> the same actions as a local policy here
 create audit policy sec_changes
@@ -96,13 +103,16 @@ SQL
   ;;
 
 volume)
-  sql <<'SQL'
+  since=${2:-$(date -d '-1 hour' '+%F %T')}
+  sql <<SQL
 set lines 200 pages 100
 col policy for a40
-select con_id, regexp_substr(unified_audit_policies, '[^,]+') policy, count(*) records_last_hour
-  from cdb_unified_audit_trail
- where event_timestamp > systimestamp - interval '1' hour
- group by con_id, regexp_substr(unified_audit_policies, '[^,]+') order by 1, 3 desc;
+select '$since' since, round((sysdate - to_date('$since', 'YYYY-MM-DD HH24:MI:SS')) * 1440) minutes from dual;
+select c.name container, regexp_substr(t.unified_audit_policies, '[^,]+') policy, count(*) records,
+       round(count(*) / ((sysdate - to_date('$since', 'YYYY-MM-DD HH24:MI:SS')) * 24)) per_hour
+  from cdb_unified_audit_trail t join v\$containers c on c.con_id = t.con_id
+ where t.event_timestamp > to_timestamp('$since', 'YYYY-MM-DD HH24:MI:SS')
+ group by c.name, regexp_substr(t.unified_audit_policies, '[^,]+') order by 1, 3 desc;
 SQL
   ;;
 esac

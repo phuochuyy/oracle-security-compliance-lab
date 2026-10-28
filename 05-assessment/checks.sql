@@ -174,7 +174,7 @@ begin
                 minus
                 select p.audit_option from audit_unified_policies p
                   join audit_unified_enabled_policies e on e.policy_name = p.policy_name
-                 where e.entity_name = ''ALL USERS'' and e.success = ''YES''
+                 where (e.entity_name = ''ALL USERS'' or e.enabled_option = ''EXCEPT USER'') and e.success = ''YES''
                    -- in a PDB a common policy (enabled in the root) did not audit LOCAL users: count local ones
                    and (sys_context(''userenv'', ''con_id'') = 1 or p.common = ''NO'')
                    and nvl(p.object_schema, ''NONE'') = ''NONE''
@@ -190,6 +190,15 @@ begin
     need('A07', 'code and trigger DDL audited', '''CREATE PROCEDURE'',''ALTER PROCEDURE'',''DROP PROCEDURE'',''CREATE FUNCTION'',''DROP FUNCTION'',''CREATE PACKAGE'',''DROP PACKAGE'',''CREATE TRIGGER'',''ALTER TRIGGER'',''DROP TRIGGER''');
     need('A08', 'logon and logoff audited', '''LOGON'',''LOGOFF''');
   end;
+  -- exclusions (EXCEPT USER, WHEN conditions) are allowed for A02-A08 but must stay visible
+  info('A09', '5 audit', 'exclusions in enabled audit policies (EXCEPT USER / WHEN)',
+    nvl(q('select listagg(x, ''; '') within group (order by x) from (
+             select e.policy_name || '' except '' || e.entity_name x from audit_unified_enabled_policies e
+              where e.enabled_option = ''EXCEPT USER''
+             union
+             select distinct p.policy_name || '' when '' || p.audit_condition from audit_unified_policies p
+               join audit_unified_enabled_policies e on e.policy_name = p.policy_name
+              where nvl(p.audit_condition, ''NONE'') <> ''NONE'' and p.policy_name not like ''ORA%'')'), 'none'));
 
   --------------------------------------------------------------- PCI-DSS: the card data (BANK schema)
   if q('select count(*) from dba_users where username = ''BANK''') = '1' then
