@@ -42,7 +42,18 @@ begin
 
   --------------------------------------------------------------- 2 parameters (instance-wide: root only)
   if root then
-    r('P01', '2 params', p('audit_sys_operations') = 'TRUE', 'AUDIT_SYS_OPERATIONS = TRUE', p('audit_sys_operations'));
+    -- 23ai: traditional auditing is desupported and the parameter only drives it; the unified equivalent is
+    -- a policy auditing all top-level statements of SYS (predefined ORA_ALL_TOPLEVEL_ACTIONS)
+    declare v varchar2(400);
+    begin
+      v := q('select listagg(distinct e.policy_name, '','') within group (order by e.policy_name)
+              from audit_unified_enabled_policies e join audit_unified_policies p on p.policy_name = e.policy_name
+              where p.audit_option = ''ALL'' and p.audit_option_type = ''STANDARD ACTION''
+                and e.entity_name in (''SYS'', ''ALL USERS'') and e.success = ''YES''');
+      r('P01', '2 params', p('audit_sys_operations') = 'TRUE' or v is not null,
+        'SYS top-level actions audited (AUDIT_SYS_OPERATIONS or unified policy)',
+        'AUDIT_SYS_OPERATIONS=' || p('audit_sys_operations') || ', unified: ' || nvl(v, 'none'));
+    end;
     r('P02', '2 params', p('global_names') = 'TRUE', 'GLOBAL_NAMES = TRUE', p('global_names'));
     r('P03', '2 params', p('os_roles') = 'FALSE', 'OS_ROLES = FALSE', p('os_roles'));
     r('P04', '2 params', p('remote_login_passwordfile') = 'NONE', 'REMOTE_LOGIN_PASSWORDFILE = NONE', p('remote_login_passwordfile'));
