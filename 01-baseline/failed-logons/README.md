@@ -76,7 +76,9 @@ before (+15 without host) → **0** in the 3 minutes after.
 `labctl.sh` (the lab control script, HA/DR repo) ran every broker command as `dgmgrl sys/<password>@...`:
 one more SYS ORA-01031 per call (SYSDG tried first), and the SYS password on the command line of the VM
 (visible in `ps`). Since 2026-10-29 it connects as `C##DGADMIN` with the password on stdin, read from a
-mode-600 file — 0 failed logons over a full scenario switch (`dg-a`, `dg-b`).
+mode-600 file — **0 SYS ORA-01031** since, across two scenario switches (`dg-a`, `dg-b`) and a snapshot
+standby drill. (The empty-user ORA-01017 of 1b still came with every standby restart: 10 on orcl3 from stb3
+during that drill, whose conversions restart the standby.)
 
 ## Still open — ORA-01017 with an empty username from the standby
 
