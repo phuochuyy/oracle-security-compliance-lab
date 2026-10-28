@@ -71,6 +71,13 @@ without host) since 10-26. Fixed the same way with its own passwords: `./setup_d
 [`region-a-before-after.txt`](region-a-before-after.txt): **15** SYS ORA-01031 from obs-r1 in the 3 minutes
 before (+15 without host) → **0** in the 3 minutes after.
 
+## My own lab script had the same problem
+
+`labctl.sh` (the lab control script, HA/DR repo) ran every broker command as `dgmgrl sys/<password>@...`:
+one more SYS ORA-01031 per call (SYSDG tried first), and the SYS password on the command line of the VM
+(visible in `ps`). Since 2026-10-29 it connects as `C##DGADMIN` with the password on stdin, read from a
+mode-600 file — 0 failed logons over a full scenario switch (`dg-a`, `dg-b`).
+
 ## Still open — ORA-01017 with an empty username from the standby
 
 Two records every time the standby instance ORCL3_STB starts, ~1 s after `Starting ORACLE instance`, to
