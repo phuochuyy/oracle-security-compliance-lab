@@ -1,0 +1,35 @@
+19:16:03 standby before:
+WALLET			     KEYS MRP		       APPLY_LAG
+---------------------- ---------- -------------------- ----------------------------------------------------------------
+OPEN/AUTOLOGIN			5 APPLYING_LOG	       +00 00:00:00
+19:16:04 SET KEY for SECPDB on the primary — keystore not copied
+Session altered.
+keystore altered.
+Session altered.
+1000 rows updated.
+Commit complete.
+alter system archive log current
+*
+ERROR at line 1:
+ORA-65040: Operation is not allowed from within a pluggable database.
+Help: https://docs.oracle.com/error-help/db/ora-65040/
+19:16:05 DML on BANK.CARDS, log archived
+19:16:35 standby 30 s later:
+WALLET			     KEYS MRP		       APPLY_LAG
+---------------------- ---------- -------------------- ----------------------------------------------------------------
+OPEN/AUTOLOGIN			5 (null)	       +00 00:00:30
+19:16:35 standby alert log since the rotation:
+ORA-28374: typed master key not found in wallet
+SECPDB(6):[kcv.c:30085] kcv_tsemkey_rekey_common: Apply redo for database master key re-key failed: new master key does not exist in the wallet
+19:16:35 copy the keystore to the standby (01_keystore.sh escrow)
+password check: keystore altered
+prm1: 0e039c897b0e9fc4500d78ae29db3f4e  ewallet.p12
+prm1: 86217a8f6731a948a707fb65bd87a8a2  cwallet.sso
+stb1: 0e039c897b0e9fc4500d78ae29db3f4e  ewallet.p12
+stb1: 86217a8f6731a948a707fb65bd87a8a2  cwallet.sso
+off-host: 0e039c897b0e9fc4500d78ae29db3f4e  ewallet.p12
+Connected to "orcl"
+19:17:12 apply lag 0 — 37 s after starting the copy
+WALLET			     KEYS MRP		       APPLY_LAG
+---------------------- ---------- -------------------- ----------------------------------------------------------------
+OPEN/AUTOLOGIN			5 APPLYING_LOG	       +00 00:00:00

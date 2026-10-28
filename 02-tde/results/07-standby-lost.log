@@ -1,0 +1,40 @@
+19:17:27 standby before:
+WALLET			     KEYS MRP		       APPLY_LAG
+---------------------- ---------- -------------------- ----------------------------------------------------------------
+OPEN/AUTOLOGIN			5 APPLYING_LOG	       +00 00:00:00
+19:17:28 delete the standby's keystore files and restart the standby
+Pluggable database altered.
+Session altered.
+1000 rows updated.
+Commit complete.
+alter system archive log current
+*
+ERROR at line 1:
+ORA-65040: Operation is not allowed from within a pluggable database.
+Help: https://docs.oracle.com/error-help/db/ora-65040/
+19:18:01 DML on BANK.CARDS, log archived
+19:18:31 standby without keystore:
+WALLET			     KEYS MRP		       APPLY_LAG
+---------------------- ---------- -------------------- ----------------------------------------------------------------
+NOT_AVAILABLE/UNKNOWN		0 (null)	       +00 00:00:57
+Session altered.
+select count(*) from bank.cards
+                          *
+ERROR at line 1:
+ORA-28365: Wallet is not open.
+Help: https://docs.oracle.com/error-help/db/ora-28365/
+19:18:32 standby alert log:
+ORA-28365: Wallet is not open.
+19:18:32 restore: off-host ewallet.p12 -> standby ASM, open with the password, recreate auto-login
+keystore altered.
+keystore altered.
+Connected to "orcl"
+19:18:51 apply lag 0 — 19 s after starting the restore
+WALLET			     KEYS MRP		       APPLY_LAG
+---------------------- ---------- -------------------- ----------------------------------------------------------------
+OPEN/PASSWORD			6 APPLYING_LOG	       +00 00:00:00
+Session altered.
+  COUNT(*)
+----------
+     24000
+1 row selected.
