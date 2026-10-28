@@ -48,3 +48,19 @@ In production: run the dependency query and the invalid-object count *before* re
 
 Checked afterwards: PDBADMIN connects (encrypted), BANK gets `ORA-01017`, the observer still logs in with
 the new profile, Data Guard `SUCCESS`. Log: [`results/02-profiles-privs.log`](results/02-profiles-privs.log).
+
+## 3. Data Redaction on `CARDS.PAN` — [`03_redaction.sh`](03_redaction.sh)
+
+`DBMS_REDACT.ADD_POLICY` partial redaction: digits 1–12 replaced by `*` unless the session has the role
+`CARD_FULL_VIEW` enabled (PCI-DSS 3.4.1). Log: [`results/03-redaction.log`](results/03-redaction.log).
+
+| Reader | `PAN` shown |
+|--------|-------------|
+| `ANALYST2` (SELECT on CARDS) | `************0018` |
+| `FRAUD_OPS` (SELECT + `CARD_FULL_VIEW`) | full number (masked to `9000########0018` by the script before it is logged) |
+| SYS / users with `EXEMPT REDACTION POLICY` | full number — redaction never applies to them |
+
+**What redaction does not do:** the analyst, who only sees masks, ran `WHERE pan LIKE '<BIN>%'` → 24,000
+rows, and `WHERE pan = '<full number>'` → 1 row. The predicate uses the real value, so a user can confirm
+or guess numbers. Redaction is display masking for applications and reports; who may query `CARDS` at all
+is access control (roles, VPD), and every query on it is audited (`SEC_CARDS_ACCESS`).

@@ -108,3 +108,19 @@
 - `UTL_MAIL` is not installed here (`ORA-04042` on the revoke) — harmless.
 - First dependency query: `ORA-00918 CON_ID ambiguous` (two CDB views joined).
 - Network test switched from BANK to PDBADMIN, since BANK cannot log in any more.
+
+## Auditing and redaction (branches `auditing/policies`, `hardening/redaction`)
+
+- `CREATE PUBLIC SYNONYM` is not an action option (`ORA-46356`) — `CREATE SYNONYM` covers it.
+- Common policy without `C##` → `ORA-65095`.
+- `AUDIT POLICY ora_login_logout` on top of the default `WHENEVER NOT SUCCESSFUL` changed nothing: needed
+  `NOAUDIT` first. And enabling it in the root did not change SECPDB.
+- Test run 1: the strong verify function rejected my own random test password (`ORA-28003 ... 2 or more
+  digits`) — the profile works; the generator now always has 2 digits/upper/lower/special.
+- **Test run 2 found two real mistakes:** (1) `actions select, insert, update, delete on bank.cards` puts
+  `ON` only on DELETE — SELECT/INSERT/UPDATE were audited on *every* object (dictionary noise under the
+  CARDS policy). (2) The common `C##SEC_CHANGES` enabled in the root did not record DDL of a **local** user
+  in SECPDB (tested with and without a local policy). My assessment check had said PASS for both — fixed the
+  checks too (C02 needs all four actions on CARDS; in a PDB only local policies count).
+- Redaction log: the first run printed FRAUD_OPS's full (synthetic) PANs; masked the saved log with sed and
+  added the same masking to the script before committing.
