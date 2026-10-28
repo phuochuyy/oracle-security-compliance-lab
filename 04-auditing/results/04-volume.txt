@@ -1,0 +1,58 @@
+SINCE		       MINUTES
+------------------- ----------
+2026-10-28 20:50:10	    10
+1 row selected.
+CONTAINER															 POLICY 				     RECORDS   PER_HOUR
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------- ---------- ----------
+CDB$ROOT															 ORA_LOGIN_LOGOUT				  65	    378
+CDB$ROOT															 ORA_ALL_TOPLEVEL_ACTIONS			  17	     99
+SECPDB																 ORA_LOGIN_LOGOUT				  14	     81
+SECPDB																 ORA_SECURECONFIG				   7	     41
+SECPDB																 SEC_CHANGES					   5	     29
+SECPDB																 SEC_CARDS_ACCESS				   4	     23
+6 rows selected.
+DBUSERNAME   CLIENT_PROGRAM_NAME		  ACTION_NAME								    N
+------------ ------------------------------------ ---------------------------------------------------------------- ----------
+C##DGADMIN   dgmgrl@obs-r1.rac			  LOGON 								   57
+SYS	     sqlplus@prm1.rac			  LOGON 								    7
+SYS	     sqlplus@prm1.rac			  LOGOFF								    2
+PUBLIC	     oracle@stb1.rac			  LOGON 								    2
+4 rows selected.
+
+== after splitting logon auditing (successes except C##DGADMIN), from 21:01:00
+SINCE		       MINUTES
+------------------- ----------
+2026-10-28 21:01:00	     5
+1 row selected.
+CONTAINER															 POLICY 				     RECORDS   PER_HOUR
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------- ---------- ----------
+CDB$ROOT															 C##SEC_LOGON_SUCCESS				  28	    326
+CDB$ROOT															 ORA_ALL_TOPLEVEL_ACTIONS			   3	     35
+CDB$ROOT															 ORA$MANDATORY					   1	     12
+CDB$ROOT															 ORA_LOGIN_LOGOUT				   1	     12
+4 rows selected.
+
+== after the WHEN condition (identity C##DGADMIN from obs-r1 excluded), lab restarted 22:06, from 22:10:00
+SINCE		       MINUTES
+------------------- ----------
+2026-10-28 22:10:00	     5
+1 row selected.
+CONTAINER															 POLICY 				     RECORDS   PER_HOUR
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------- ---------- ----------
+CDB$ROOT															 C##SEC_CHANGES 				  10	    114
+CDB$ROOT															 C##SEC_LOGON_SUCCESS				   7	     80
+CDB$ROOT															 ORA_ALL_TOPLEVEL_ACTIONS			   2	     23
+SECPDB																 SEC_LOGON_SUCCESS				   2	     23
+4 rows selected.
+rows will be truncated
+rows will be truncated
+rows will be truncated
+CON																 DBUSERNAME   PROG
+-------------------------------------------------------------------------------------------------------------------------------- ------------ ------------------
+CDB$ROOT															 DBSNMP       OraJavaAgentDriver
+CDB$ROOT															 DBSNMP       OraJavaAgentDriver
+CDB$ROOT															 SYS	      sqlplus@prm1.rac
+SECPDB																 PDBADMIN     sqlplus@prm1.rac
+CDB$ROOT															 SYS	      sqlplus@prm1.rac
+SECPDB																 PDBADMIN     sqlplus@prm1.rac
+6 rows selected.
