@@ -1,8 +1,8 @@
 # Interview prep — Oracle Security & Compliance
 
-> Status: **in progress.** Finding 1 and **TDE (on RAC + Data Guard + GoldenGate) are done with evidence**;
-> auditing policies, redaction, Privilege Analysis and DBSAT are still preparation notes — present them as
-> "what I know and what I am building".
+> Status: **done with evidence** — failed logons, TDE (RAC + Data Guard + GoldenGate), network encryption,
+> profiles/privileges, Unified Auditing, redaction, assessment 27 FAIL → 0. Still preparation notes only:
+> Privilege Analysis, VPD, audit retention — say so if asked.
 
 ## What already exists (real evidence)
 
@@ -76,25 +76,53 @@ a password-free copy of the keys — so the off-host copy keeps only `.p12` file
 **Switchover with TDE.** 57–63 s each way with auto-login keystores, GG_A followed. The PDB stayed
 `MOUNTED` on the new primary (saved state is per instance name) → role-based service for it on both clusters.
 
-**Unified Auditing — what to audit first?** Logon failures, privileged users (SYS, DBA role) activity, DDL,
-grants, and access to sensitive tables. Audit policies are created with `CREATE AUDIT POLICY` and enabled
-with `AUDIT POLICY ... BY/EXCEPT`.
+## Assessment without DBSAT
 
-**Least privilege.** Privilege Analysis (`DBMS_PRIVILEGE_CAPTURE`) records which privileges an application
-really uses during a period, so unused ones can be revoked with evidence.
+**Why no DBSAT?** It is free, but only through My Oracle Support with a support contract; registering my
+OCI Free Tier CSI failed. I wrote the checks myself in the CIS Benchmark sections (parameters, users,
+privileges, audit, network) plus PCI checks for the card table: 27 FAIL before, 0 after, 5 ACCEPTs with a
+written reason each. **What I learned about my own checks:** two audit checks said PASS while my test showed
+the gap — so a check that reads the dictionary is not enough, every control got a test scenario.
 
-**PCI-DSS v4.0 mapping (the lab's target).**
+## Network encryption
 
-| Requirement | Control in the lab |
-|-------------|--------------------|
-| 3 — protect stored account data | TDE, Data Redaction/VPD on `BANK.CARDS.PAN` (fake, Luhn-valid numbers from BANKDB) |
-| 4 — encrypt transmission | SQL*Net native encryption or TLS |
-| 7 — restrict access by need to know | roles + Privilege Analysis |
-| 8 — identify and authenticate | password profiles, lockout |
-| 10 — log and monitor | Unified Auditing policies |
-| 11 — test security regularly | DBSAT report before and after |
+`sqlnet.ora` on the server only: `ENCRYPTION_SERVER = REQUIRED` (AES256), `CRYPTO_CHECKSUM_SERVER =
+REQUIRED` (SHA256), `ALLOWED_LOGON_VERSION_SERVER = 12a`. Clients default to ACCEPTED, so they negotiate.
+Proof in `V$SESSION_CONNECT_INFO` (adapter banners). **Catch:** existing sessions stay unencrypted —
+GoldenGate, the observer and redo transport were encrypted only after reconnecting (redo transport: after a
+standby restart, 5/5). Before the change nothing was encrypted, including redo between the two sites.
 
-## Planned evidence
+## Profiles and least privilege
 
-DBSAT before/after (needs the DBSAT download), audit records for each scenario, Privilege Analysis results,
-redaction/VPD queries as app vs auditor user, network encryption in `V$SESSION_CONNECT_INFO`.
+People: 90-day expiry, lockout after 5, reuse limits, `ORA12C_STRONG_VERIFY_FUNCTION` (it rejected my own
+test password). Service accounts with a wallet password (observer): same, but no expiry — documented
+ACCEPT, because an expired wallet password silently leaves FSFO without an observer. The data owner `BANK`
+is schema-only (`NO AUTHENTICATION`). **What broke:** revoking `UTL_TCP/UTL_HTTP/...` from PUBLIC made 14
+Oracle objects invalid (Oracle Text incl. `DBMS_VECTOR_CHAIN`, GSM incl. a logoff trigger, Spatial).
+`DBA_DEPENDENCIES` showed which package each needed; direct grants + `UTL_RECOMP` → 0 invalid. Next time:
+dependency query and grants *before* the revoke.
+
+## Unified Auditing — what I audit and two mistakes I made
+
+Card table access (`SELECT/INSERT/UPDATE/DELETE ON bank.cards`), grants/revokes, code and trigger DDL,
+successful and failed logons, all SYS top-level statements (`ORA_ALL_TOPLEVEL_ACTIONS BY SYS`, the 23ai
+replacement for `AUDIT_SYS_OPERATIONS`), plus the predefined `ORA_SECURECONFIG`.
+1. `actions select, insert, update, delete on bank.cards` — `ON` binds only to the last action: SELECT was
+   audited on every object. Write `select on bank.cards, insert on bank.cards, ...`.
+2. A **common** policy enabled in the root did not audit DDL of a **local** user in the PDB — tested with a
+   procedure created with and without a local policy. Local users need local policies.
+
+## Data Redaction
+
+Partial redaction on PAN (last 4 visible) unless the session has a role. Not access control: a user who
+sees only masks can still run `WHERE pan = '...'` and confirm a number — so CARDS access is also audited and
+granted per role. SYS and `EXEMPT REDACTION POLICY` holders always see clear values.
+
+**PCI-DSS v4.0 mapping** — with evidence links: [05-assessment/pci-dss-mapping.md](05-assessment/pci-dss-mapping.md).
+3.4.1 redaction, 3.5.1 TDE + trail encryption, 3.6/3.7 key procedures, 4.2.1 network encryption, 7.2 least
+privilege, 8.3 profiles, 10.2.1 audit policies, 11.3 assessment before/after.
+
+## Not done yet (say it if asked)
+
+Privilege Analysis (`DBMS_PRIVILEGE_CAPTURE`) for an application user, VPD, audit trail retention/purge
+(PCI-DSS 10.5 — a deletion job I would agree with the team first), the 2 ORA-01017 per standby start.

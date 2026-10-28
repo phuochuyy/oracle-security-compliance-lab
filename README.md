@@ -1,9 +1,10 @@
 # Oracle Security & Compliance Lab — TDE · Unified Auditing · least privilege
 
-> Status: **in progress** — failed SYS logons from both Data Guard observers fixed (SYSDG-only user);
-> **TDE done** on the RAC primary + Active Data Guard standby + GoldenGate Active-Active, with drills.
-> Next: auditing policies, Privilege Analysis, profiles, redaction/VPD, network encryption; DBSAT
-> before/after once the tool is downloaded.
+> Status: **done for the database layer** — TDE on RAC + Active Data Guard + GoldenGate Active-Active,
+> network encryption, profiles, least privilege, Unified Auditing, Data Redaction; assessment
+> **27 FAIL → 0** (5 documented ACCEPTs). DBSAT needs a support contract, so the assessment is a
+> CIS-style script ([why](05-assessment/README.md)). Open: one finding (1b), Privilege Analysis, audit
+> retention.
 
 ## Findings
 
@@ -16,6 +17,10 @@
 | 3 | Same card data in a test PDB, never encrypted ([residual check](01-baseline/plaintext/residual_plaintext.sh)) | `BANK_DATA` encrypted too (6 s) | `verify_drillpdb.sh` PASS (not re-grepped) |
 | 4 | [GoldenGate trails held card numbers in clear after TDE](02-tde/README.md) — on both sites | `ENCRYPTTRAIL AES256`, shared GG master key | 5 hits per trail → **0**, replication both ways working (PCI-DSS 3, 4) |
 | 5 | [A master key change stops redo apply on the standby for the whole CDB](02-tde/README.md) (`ORA-28374`) | copy keystore right after `SET KEY`; tested restore from the off-host copy | recovered in 37 s / 19 s; switchover 57–63 s each way with TDE |
+| 6 | [No network encryption — not even redo transport between sites](03-hardening/README.md) | `sqlnet.ora`: AES256 + SHA256 required, logon version 12a | 0 → all new sessions, GoldenGate 8/8, redo transport 5/5 encrypted (PCI-DSS 4.2) |
+| 7 | [Every account on the DEFAULT profile; data owner could log in; PUBLIC could use UTL_TCP/HTTP/FILE](03-hardening/README.md) | service + admin profiles, schema-only `BANK`, revokes | revokes broke 14 Oracle objects → direct grants, 0 invalid |
+| 8 | [No audit of card data access, grants, code DDL, successful logons](04-auditing/README.md) | 5 policies | test shows each action once; found two of my own policy mistakes on the way |
+| 9 | [PAN shown in full to every reader](03-hardening/README.md) | Data Redaction (last 4) | analyst sees `************0018`; WHERE-clause inference documented |
 
 Interview prep notes: [INTERVIEW.md](INTERVIEW.md).
 
@@ -44,7 +49,9 @@ the effect of each control — including what it does to Data Guard and GoldenGa
 00-setup/      SECPDB on the RAC primary with BANKDB (card-like PANs)
 01-baseline/   failed-logons/ (finding 1), plaintext/ (card numbers in raw files, before/after TDE)
 02-tde/        keystore, online encryption, Data Guard drills, switchover, GoldenGate — scripts + results/
-03-access/ 04-auditing/ 05-assessment/   next
+03-hardening/  parameters + network encryption, profiles + privileges, Data Redaction
+04-auditing/   Unified Auditing policies + test scenario
+05-assessment/ assess.sh + checks.sql (CIS-style), before/after, PCI-DSS mapping
 notes/worklog.md   problems hit on the way, including my own mistakes
 ```
 
@@ -53,16 +60,16 @@ GG_B (orcl3 on prm3). Passwords in the git-ignored `lab.env` (`lab.env.example`)
 
 ## Deliverables checklist
 
-- [ ] `01-baseline/` DBSAT report before hardening
+- [x] `01-baseline/` findings before hardening (failed logons, plaintext card data) — DBSAT replaced, see 05
 - [x] `02-tde/` keystore setup, tablespace encryption, rotation, DG + GG impact notes
-- [ ] `03-access/` roles, privilege analysis results, profiles, redaction/VPD
-- [ ] `04-auditing/` policies + sample audit records for each scenario
-- [ ] `05-assessment/` DBSAT report after, findings table
-- [ ] PCI-DSS mapping table completed with evidence links
+- [x] `03-hardening/` parameters, network encryption, profiles, privileges, redaction (Privilege Analysis: open)
+- [x] `04-auditing/` policies + sample audit records for each scenario
+- [x] `05-assessment/` CIS-style assessment before/after (DBSAT unavailable)
+- [x] [PCI-DSS mapping](05-assessment/pci-dss-mapping.md) with evidence links
 
 ## CV line (fill only with real results)
 
-So far (real): `TDE on RAC + Active Data Guard + GoldenGate Active-Active: online encryption under load
-(0 errors), keystore drills (standby apply stopped by a key change → recovered in 37 s), GoldenGate trails
-found in clear text and encrypted; 1,300+ failed SYS logons from both FSFO observers removed (SYSDG-only).`
-To add after the next steps: Unified Auditing policies, Privilege Analysis, DBSAT findings before → after.
+`Hardened an Oracle 23ai RAC + Active Data Guard + GoldenGate Active-Active setup for PCI-DSS: TDE online
+under load (0 errors), keystore drills (standby apply stopped by a key change, recovered in 37 s), GoldenGate
+trails found in clear text and encrypted, network encryption incl. redo transport, Unified Auditing,
+redaction; security assessment 27 FAIL → 0; 3,000+ failed SYS logons from the FSFO observers removed.`
