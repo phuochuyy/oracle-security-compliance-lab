@@ -41,3 +41,39 @@ not affected (apply lag 0 after the keys were created, before the standby had th
   standby **before** the first encrypted change reaches it.
 - The off-host copy and the keystore password are stored apart (here: `~/oracle-lab/keystore-backup/`,
   password in the git-ignored `lab.env`). The password is never on a command line.
+
+## 2. Online tablespace encryption — [`02_encrypt_online.sh`](02_encrypt_online.sh)
+
+`ALTER TABLESPACE bank_data ENCRYPTION ONLINE USING 'AES256' ENCRYPT` in SECPDB (512 MB file, 65 MB used),
+while one session reads `CARDS`/`ACCOUNTS` and one updates `ACCOUNTS` every 50 ms.
+
+| Operation | Primary | Application (90 s) | Standby |
+|-----------|---------|--------------------|---------|
+| `ENCRYPT` | 6 s, new datafile (ASM/OMF, no `FILE_NAME_CONVERT` needed) | — (my output bug, see below) | converted its own copy while applying the redo, `ENCRYPTED=YES`, apply lag 0 |
+| `REKEY` (new tablespace key) | 6 s, datafile rewritten again | reader 1,711 ok / **0 errors**, writer 1,780 ok / **0 errors** | same, apply lag 0 |
+
+Logs: [`results/05-encrypt-online.log`](results/05-encrypt-online.log), [`results/06-rekey-online.log`](results/06-rekey-online.log).
+BANKDB checksums match on both sites after encryption.
+
+**Result** — [`../01-baseline/plaintext/after.txt`](../01-baseline/plaintext/after.txt):
+
+| File | PAN hits before | after |
+|------|-----------------|-------|
+| BANK_DATA datafile, primary | 4 | **0** |
+| BANK_DATA datafile, standby | 3 | **0** |
+| archived log with a new card | 3 | **0** |
+| RMAN backup piece | 4 | **0** |
+
+**What TDE did not fix** — [`residual_plaintext.sh`](../01-baseline/plaintext/residual_plaintext.sh), [`residual.txt`](../01-baseline/plaintext/residual.txt):
+- 2 of 51 archived logs still hold the card number in clear: seq 41 = the SECPDB load (before encryption),
+  and seq 21 from 01:32 — **DRILLPDB**, the backup-drill PDB with the *same* BANKDB data, never
+  encrypted. A test copy of card data is in PCI scope like production → DRILLPDB's `BANK_DATA` encrypted too
+  (6 s, `verify_drillpdb.sh` PASS, [`results/05b-drillpdb-encrypt.log`](results/05b-drillpdb-encrypt.log)).
+- Pre-encryption archived logs and backups stay readable until they age out. To do in production: a new
+  level 0 right after encrypting, then remove older backups/archived logs when the retention allows
+  (not done here — deleting backups is not my call in this lab).
+- New tablespaces are still created unencrypted (`TABLESPACE_ENCRYPTION=MANUAL_ENABLE`). Option:
+  `AUTO_ENABLE` (every new tablespace encrypted).
+
+**Key rotation, two levels:** `SET KEY` rotates the **master key** (re-wraps the tablespace keys, no data
+rewritten, seconds); `REKEY` changes the **tablespace key** and rewrites the file (above: 6 s for 512 MB).
