@@ -2,9 +2,13 @@
 # Online encryption of SECPDB's BANK_DATA (AES256) on the RAC primary, while an application keeps reading
 # and writing. Shows what the standby does with it (redo apply converts the standby's file too).
 # Writer: UPDATE ... SET balance = balance (real DML and redo, BANKDB checksums unchanged).
-# usage (from the host): ./02_encrypt_online.sh
+# rekey: new tablespace key (AES256), the datafile is rewritten online the same way — key rotation
+# usage (from the host): ./02_encrypt_online.sh [encrypt | rekey]
 set -eu
-dir=$(cd "$(dirname "$0")" && pwd); out=$dir/results/05-encrypt-online.log; : > "$out"
+action=${1:-encrypt}
+dir=$(cd "$(dirname "$0")" && pwd)
+case $action in encrypt) out=$dir/results/05-encrypt-online.log ;; rekey) out=$dir/results/06-rekey-online.log ;; *) exit 1 ;; esac
+: > "$out"
 ENV=". ~/.bash_profile >/dev/null 2>&1"
 PRM=prm1 STB=stb1
 say() { echo "$(date +%T) $*" | tee -a "$out"; }
@@ -63,12 +67,12 @@ load reader > "$dir/results/.reader" & r=$!
 load writer > "$dir/results/.writer" & w=$!
 sleep 10
 
-say "ALTER TABLESPACE bank_data ENCRYPTION ONLINE USING 'AES256' ENCRYPT"
+say "ALTER TABLESPACE bank_data ENCRYPTION ONLINE USING 'AES256' ${action^^}"
 t0=$(date +%s.%N)
-sql $PRM <<'SQL'
+sql $PRM <<SQL
 set timing on
 alter session set container = secpdb;
-alter tablespace bank_data encryption online using 'AES256' encrypt;
+alter tablespace bank_data encryption online using 'AES256' $action;
 SQL
 say "conversion took $(printf '%.0f' "$(echo "$(date +%s.%N) - $t0" | bc)") s on the primary"
 
