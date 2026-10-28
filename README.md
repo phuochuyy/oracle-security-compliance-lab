@@ -27,19 +27,19 @@
 Harden a database that stores card-like data the way a bank or payment company would, and show
 the effect of each control — including what it does to Data Guard and GoldenGate.
 
-## Controls
+## Controls — what was built, what was not
 
-| Area | Implementation | Verify | PCI-DSS (v4.0) |
-|------|----------------|--------|----------------|
-| Encryption at rest | TDE tablespace encryption, keystore, key rotation | `V$ENCRYPTED_TABLESPACES`, datafile `strings` test | Req 3 |
-| TDE with Data Guard | keystore on standby, redo/redo-apply still working | switchover after enabling TDE | Req 3 |
-| TDE with GoldenGate | Extract reading encrypted redo, trail encryption | replicated rows, trail not readable | Req 3, 4 |
-| Encryption in transit | Native network encryption or TLS for SQL*Net | `V$SESSION_CONNECT_INFO` | Req 4 |
-| Masking | Data Redaction / VPD on card number column | query as app vs auditor user | Req 3 |
-| Least privilege | roles per duty, Privilege Analysis (`DBMS_PRIVILEGE_CAPTURE`) | unused privileges revoked | Req 7 |
-| Authentication | password profile (complexity, lockout, lifetime) | failed-login test | Req 8 |
-| Auditing | Unified Auditing policies: privileged users, DDL, logon failures, access to card table | `UNIFIED_AUDIT_TRAIL` evidence | Req 10 |
-| Assessment | DBSAT collect + report | high/medium findings before vs after | Req 11 |
+| Area | Implementation | Verified by | PCI-DSS (v4.0) | Status |
+|------|----------------|-------------|----------------|--------|
+| Encryption at rest | TDE (united keystore in ASM, online encryption, master and tablespace key rotation) | raw-file grep of a card number: 3–4 hits → 0 | 3.5 | done |
+| TDE with Data Guard | keystore copied to the standby; drills: missing key, lost keystore; switchover | apply lag, switchover 57–69 s | 3.5, 3.6 | done |
+| TDE with GoldenGate | Integrated Extract on encrypted redo, `ENCRYPTTRAIL AES256` | trails 5 hits → 0, replication both ways | 3.5, 4 | done |
+| Encryption in transit | native network encryption AES256 + SHA256 required (TLS not set up) | `V$SESSION_CONNECT_INFO` incl. redo transport | 4.2 | done |
+| Masking | Data Redaction on `CARDS.PAN` | analyst vs `CARD_FULL_VIEW` user | 3.4 | done (**VPD not built**) |
+| Least privilege | schema-only owner, PUBLIC revokes, SYSDG observer, no ANY/DBA grants | assessment R0x checks | 7.2 | done (**Privilege Analysis not run**) |
+| Authentication | profiles for people and service accounts, strong verify function, 12a verifiers | assessment U10/N03, `ORA-28003` in the audit test | 8.3 | done |
+| Auditing | Unified Auditing: card table, grants, code DDL, logons, SYS | test scenario, volume tuning | 10.2 | done (**retention/purge not set up**) |
+| Assessment | CIS-style script — DBSAT needs a support contract | 27 FAIL → 0 | 11.3 | done |
 
 ## Layout
 
