@@ -1,0 +1,46 @@
+CDB$ROOT invalid objects: 0
+SECPDB invalid objects: 0
+Profile created.
+User altered.
+Session altered.
+Profile created.
+User altered.
+User altered.
+USERNAME															 PROFILE															  AUTHENTI ACCOUNT_STATUS
+-------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------------------------------------------------------------------- -------- --------------------------------
+BANK																 DEFAULT															  NONE	   OPEN
+C##DGADMIN															 C##SVC_PROFILE 														  PASSWORD OPEN
+PDBADMIN															 SEC_ADMIN_PROFILE														  PASSWORD OPEN
+3 rows selected.
+CDB$ROOT utl_mail: ORA-04042: procedure, function, package, or package body does not exist
+CDB$ROOT invalid objects: 11
+OWNER																 OBJECT_TYPE		 OBJECT_NAME
+-------------------------------------------------------------------------------------------------------------------------------- ----------------------- -----------------------------------------------
+CTXSYS																 PACKAGE BODY		 DBMS_VECTOR_CHAIN
+CTXSYS																 PACKAGE BODY		 DRVDML
+CTXSYS																 TYPE BODY		 TEXTOPTSTATS
+CTXSYS																 TYPE			 TEXTOPTSTATS
+GSMADMIN_INTERNAL														 TRIGGER		 CAT_ROLLBACK_TRIGGER
+GSMADMIN_INTERNAL														 PACKAGE BODY		 DBMS_GSM_CLOUDADMIN
+GSMADMIN_INTERNAL														 PACKAGE BODY		 DBMS_GSM_POOLADMIN
+GSMADMIN_INTERNAL														 TRIGGER		 DONE_TRIGGER
+GSMADMIN_INTERNAL														 TRIGGER		 GSMLOGOFF
+GSMADMIN_INTERNAL														 TRIGGER		 REQUEST_DELETE_TRIGGER
+MDSYS																 PACKAGE BODY		 SEM_RDFCTX_DR
+11 rows selected.
+SECPDB utl_mail: ORA-04042: procedure, function, package, or package body does not exist
+SECPDB invalid objects: 3
+OWNER																 OBJECT_TYPE		 OBJECT_NAME
+-------------------------------------------------------------------------------------------------------------------------------- ----------------------- -----------------------------------------------
+CTXSYS																 TYPE			 TEXTOPTSTATS
+CTXSYS																 TYPE BODY		 TEXTOPTSTATS
+MDSYS																 PACKAGE BODY		 SEM_RDFCTX_DR
+3 rows selected.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+CDB$ROOT invalid objects: 0
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+SECPDB invalid objects: 0
