@@ -78,3 +78,12 @@
   log shows `Forwarding CTL_SWITCH` at 19:26:17 and nothing until `Starting task: SWITCHOVER` at 19:31:26,
   while orcl was just restarting as standby (and stb1 logged heavy swapping). The script now waits for
   `VALIDATE DATABASE ... Ready for Switchover: Yes`. Rerun for clean numbers.
+
+## TDE and GoldenGate (branch `tde/goldengate`)
+
+- Expected Extract to need something for encrypted redo — it did not (Integrated Extract uses the database
+  keystore). The surprise was the other way: clear PANs in every trail after TDE.
+- `ENCRYPTTRAIL` + `ETROLLOVER` → both Extracts `ABENDED`, `OGG-06114`: no master key in the deployment
+  wallet (empty directory). `ADD MASTERKEY` on GG_A, copied `cwallet.sso` VM-to-VM to GG_B. `START EXTRACT
+  EXTA` said "already running": the HA profile had restarted it in the meantime (autoRestart 15 s).
+- Cleanup followed the A-A rule (Replicats stopped after passing the last change, drop, start): no abend.

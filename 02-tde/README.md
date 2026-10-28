@@ -108,3 +108,29 @@ name, so it never covered orcl_stb1.
 - After restoring a keystore with the password, close it so it runs on auto-login (`WALLET_TYPE` in
   `V$ENCRYPTION_WALLET` must say `AUTOLOGIN`) — check it before the next switchover, not during it.
 - Applications connect through a role-based service, never rely on saved PDB state across roles.
+
+## 4. TDE and GoldenGate Active-Active — [`06_goldengate.sh`](06_goldengate.sh)
+
+Test table `APP.CARD_EVENTS` (card-like numbers) on both sides, 5 rows written at each site per round,
+marker PANs counted in the newest trail files of both deployments. Log: [`results/10-goldengate.log`](results/10-goldengate.log).
+
+| Round | Setting | Replicated both ways | PAN in trails (GG_A local `ea`, GG_A received `eb`, GG_B received `ea`, GG_B local `eb`) |
+|-------|---------|----------------------|------------------|
+| 1 | no TDE | 10/10 rows both sides, 15 s | 5 / 5 / 5 / 5 |
+| 2 | **APP_DATA encrypted** (ORCLPDB2, online, 4 s) | 10/10, 10 s — Integrated Extract reads encrypted redo, nothing to configure | **5 / 5 / 5 / 5 — still clear text** |
+| 3 | + `ENCRYPTTRAIL AES256` on EXTA and EXTB | 10/10, 60 s (first round through the new encrypted trail files) | **0 / 0 / 0 / 0** |
+
+**What this shows**
+- TDE protects the database files; **GoldenGate decrypts on capture and writes the trail in clear** — on
+  DBFS on the RAC and, after the distribution path, on the other site. Encrypting tablespaces alone left
+  card numbers on two more file systems.
+- First `ENCRYPTTRAIL` start: both Extracts abended, `OGG-06114 Error retrieving master encryption key
+  OGG_DEFAULT_MASTERKEY` — the deployment wallet was empty. `ADD MASTERKEY` on GG_A, then the wallet copied
+  to GG_B (same md5), because the Replicat on the *other* site has to decrypt the trail with the same key.
+- Trail files written before the change still hold the clear PANs (round 1 markers: 5 hits in each) until
+  the trail purge removes them — same lesson as the archived logs.
+
+**Still to harden (noted, not done)**
+- The GG master key wallet (`cwallet.sso`, auto-login) lives on DBFS, i.e. in the unencrypted tablespace
+  `DBFS_TS` of ORCLPDB2 → encrypt `DBFS_TS` too (1 GB; host disk is short in this lab).
+- Both deployments use the same weak `oggadmin` password, written in the lab control script (PCI-DSS 8).
