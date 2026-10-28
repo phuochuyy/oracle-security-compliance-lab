@@ -9,7 +9,8 @@
 | # | Finding | Fix | Result |
 |---|---------|-----|--------|
 | 1 | [1,325 failed SYS logons (ORA-01031) from the observer, every ~12 s](01-baseline/failed-logons/) — found from `Failed Logon Delay` in AWR | observer as `C##DGADMIN` with **SYSDG only**, new wallet | 0 failed logons; FSFO tested with the new observer (PCI-DSS 7, 10) |
-| 1b | 2 ORA-01017 (empty user) per standby start | — | **open**, hypotheses tested and ruled out are listed |
+| 1a | same on Region A: 1,689 SYS ORA-01031 from obs-r1 | same fix (`C##DGADMIN` on orcl, own passwords) | 15 per 3 min → **0** |
+| 1b | 2 ORA-01017 (empty user) per standby start, both regions | — | **open**, hypotheses tested and ruled out are listed |
 
 Interview prep notes: [INTERVIEW.md](INTERVIEW.md).
 

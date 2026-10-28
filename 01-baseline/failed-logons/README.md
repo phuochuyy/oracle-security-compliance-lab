@@ -63,6 +63,14 @@ also matched the script's own `bash -c` command line. Fixed in [`start_observer.
 to the dgmgrl binary path); [`restart_observer.sh`](restart_observer.sh) waits for the old process.
 Reproducible setup: [`setup_dgadmin.sh`](setup_dgadmin.sh) (passwords from `lab.env`, see `lab.env.example`).
 
+## Region A — same finding, same fix
+
+The RAC region had the same observer setup: **1,689** SYS ORA-01031 from `dgmgrl@obs-r1` (plus 1,282
+without host) since 10-26. Fixed the same way with its own passwords: `./setup_dgadmin.sh A`,
+`./restart_observer.sh A` (which also anchored the same unanchored `pgrep` in obs-r1's `start_observer.sh`).
+[`region-a-before-after.txt`](region-a-before-after.txt): **15** SYS ORA-01031 from obs-r1 in the 3 minutes
+before (+15 without host) → **0** in the 3 minutes after.
+
 ## Still open — ORA-01017 with an empty username from the standby
 
 Two records every time the standby instance ORCL3_STB starts, ~1 s after `Starting ORACLE instance`, to
@@ -76,6 +84,9 @@ service `ORCL3.rac`, listener `PROGRAM=oracle`. Redo transport, apply and the br
 | a script on stb3 | `oracle-db.sh`, `ogg-ha-controller.sh` | both connect locally (`/ as sysdba`), not over the network |
 | client-side SQL*Net trace | `TRACE_LEVEL_CLIENT=16` during a restart | only the local sqlplus sessions were traced |
 | kernel audit of `connect()` | `auditctl -S connect -F uid=oracle` | no events recorded — to investigate |
+
+Region A shows the same pattern: `oracle@stb1.rac` 478 and `oracle@stb2.rac` 412 records, and 2 within the
+minute I restarted orcl_stb (TDE drill) — so it is not specific to Region B's setup.
 
 No account can be locked by these (no username). Next idea: `strace`/`bpftrace` on stb3 (not installed) or a
 server-side errorstack on the primary (`event 1017`).
