@@ -22,8 +22,6 @@
 | 8 | [No audit of card data access, grants, code DDL, successful logons](04-auditing/README.md) | 5 policies | test shows each action once; found two of my own policy mistakes on the way |
 | 9 | [PAN shown in full to every reader](03-hardening/README.md) | Data Redaction (last 4) | analyst sees `************0018`; WHERE-clause inference documented |
 
-Interview prep notes: [INTERVIEW.md](INTERVIEW.md).
-
 ## Goal
 
 Harden a database that stores card-like data the way a bank or payment company would, and show
