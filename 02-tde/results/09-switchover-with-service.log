@@ -1,0 +1,134 @@
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl     - Primary database
+    orcl_stb - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+SUCCESS   (status updated 54 seconds ago)
+  Database Role:     Physical standby database
+  Primary Database:  orcl
+  Ready for Switchover:  Yes
+  Ready for Failover:    Yes (Primary Running)
+  Managed by Clusterware:
+    orcl    :  YES            
+    orcl_stb:  YES            
+  Parameter Settings:
+    Parameter                       orcl Value               orcl_stb Value
+    DB_BLOCK_CHECKING               FALSE                    FALSE
+    DB_BLOCK_CHECKSUM               TYPICAL                  TYPICAL
+    DB_LOST_WRITE_PROTECT           AUTO                     AUTO
+19:37:00 SWITCHOVER TO orcl_stb
+2026-10-28T19:36:59.712+07:00
+Performing switchover NOW, please wait...
+2026-10-28T19:36:59.727+07:00
+Operation requires a connection to database "orcl_stb"
+Connecting ...
+2026-10-28T19:36:59.792+07:00
+Continuing with the switchover...
+2026-10-28T19:37:31.948+07:00
+New primary database "orcl_stb" is opening...
+2026-10-28T19:37:31.948+07:00
+Oracle Clusterware is restarting database "orcl" ...
+2026-10-28T19:37:58.401+07:00
+Switchover succeeded, new primary is "orcl_stb"
+2026-10-28T19:37:58.443+07:00
+Switchover processing complete, broker ready.
+19:37:59 switchover command returned after 59 s
+19:37:59 new primary stb1:
+DB	   DATABASE_ROLE    WALLET		 SECPDB
+---------- ---------------- -------------------- ------------
+orcl_stb   PRIMARY	    OPEN/AUTOLOGIN	 READ WRITE
+BRANCHES 100 219112276800
+CUSTOMERS 20000 42985318080702
+ACCOUNTS 30000 64734798406535
+CARDS 24000 51687336812041
+TRANSACTIONS 500000 1074490917450361
+Session altered.
+1 row created.
+1 row deleted.
+Commit complete.
+19:38:01 GG_A: Goldengate  instance 'GG_A' is running on stb1
+19:38:01 orcl_stb primary with GG_A after 61 s
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl_stb - Primary database
+    Warning: ORA-16869: fast-start failover target not initialized
+    orcl     - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+WARNING   (status updated 2 seconds ago)
+  Database Role:     Physical standby database
+  Primary Database:  orcl_stb
+  Ready for Switchover:  No
+    Fast-start Failover state is unsynchronized.
+    Fast-start Failover is enabled and this database is not the current target standby database.
+    The current apply lag exceeds the lag limit specified with the ApplyLagThreshold property.
+  Ready for Failover:    No (Primary Running)
+    Fast-start Failover is enabled and this database is not the current target standby database.
+    Fast-start Failover state is unsynchronized.
+  Managed by Clusterware:
+    orcl_stb:  YES            
+    orcl    :  YES            
+  Standby Apply-Related Information:
+    Apply State:      Running
+    Apply Lag:        Unknown
+    Apply Delay:      0 minutes
+  Log Files Cleared:
+    orcl_stb Standby Redo Log Files:  Cleared
+    orcl Online Redo Log Files:       Not Cleared
+    orcl Standby Redo Log Files:      Available
+  Parameter Settings:
+    Parameter                       orcl_stb Value           orcl Value
+    DB_BLOCK_CHECKING               FALSE                    FALSE
+    DB_BLOCK_CHECKSUM               TYPICAL                  TYPICAL
+    DB_LOST_WRITE_PROTECT           AUTO                     AUTO
+  Database Role:     Physical standby database
+  Primary Database:  orcl_stb
+  Ready for Switchover:  Yes
+  Ready for Failover:    Yes (Primary Running)
+  Managed by Clusterware:
+    orcl_stb:  YES            
+    orcl    :  YES            
+  Parameter Settings:
+    Parameter                       orcl_stb Value           orcl Value
+    DB_BLOCK_CHECKING               FALSE                    FALSE
+    DB_BLOCK_CHECKSUM               TYPICAL                  TYPICAL
+    DB_LOST_WRITE_PROTECT           AUTO                     AUTO
+19:38:12 SWITCHOVER TO orcl
+2026-10-28T19:38:12.518+07:00
+Performing switchover NOW, please wait...
+2026-10-28T19:38:54.875+07:00
+New primary database "orcl" is opening...
+2026-10-28T19:38:54.875+07:00
+Oracle Clusterware is restarting database "orcl_stb" ...
+2026-10-28T19:39:18.331+07:00
+Switchover succeeded, new primary is "orcl"
+2026-10-28T19:39:18.335+07:00
+Switchover processing complete, broker ready.
+19:39:19 switchover command returned after 67 s
+19:39:19 new primary prm1:
+DB	   DATABASE_ROLE    WALLET		 SECPDB
+---------- ---------------- -------------------- ------------
+orcl	   PRIMARY	    OPEN/AUTOLOGIN	 READ WRITE
+BRANCHES 100 219112276800
+CUSTOMERS 20000 42985318080702
+ACCOUNTS 30000 64734798406535
+CARDS 24000 51687336812041
+TRANSACTIONS 500000 1074490917450361
+Session altered.
+1 row created.
+1 row deleted.
+Commit complete.
+19:39:21 GG_A: Goldengate  instance 'GG_A' is running on prm1
+19:39:21 orcl primary with GG_A after 69 s
+Configuration - dg_orcl
+  Protection Mode: MaxAvailability
+  Members:
+  orcl     - Primary database
+    Warning: ORA-16869: fast-start failover target not initialized
+    orcl_stb - (*) Physical standby database 
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+WARNING   (status updated 3 seconds ago)

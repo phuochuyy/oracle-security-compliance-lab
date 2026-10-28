@@ -77,3 +77,34 @@ BANKDB checksums match on both sites after encryption.
 
 **Key rotation, two levels:** `SET KEY` rotates the **master key** (re-wraps the tablespace keys, no data
 rewritten, seconds); `REKEY` changes the **tablespace key** and rewrites the file (above: 6 s for 512 MB).
+
+## 3. TDE and Data Guard — [`03_standby_keys.sh`](03_standby_keys.sh), [`04_switchover.sh`](04_switchover.sh)
+
+| Drill | What happened | Recovery |
+|-------|---------------|----------|
+| **New master key on the primary, keystore not copied** (`rotate`) | within seconds MRP **stopped for the whole CDB** — every PDB, also ORCLPDB2 that GoldenGate reads: `ORA-28374: typed master key not found in wallet` (`kcv_tsemkey_rekey_common: ... new master key does not exist in the wallet`). Redo still arrived (RPO 0), apply lag grew | copy the keystore, `APPLY-ON`: apply lag 0 after **37 s** |
+| **Standby keystore lost** (`lost`: files deleted, standby restarted) | keystore `NOT_AVAILABLE`, MRP not running, SECPDB on the standby: `ORA-28365: Wallet is not open` | **off-host `ewallet.p12`** into ASM, open with the password, recreate auto-login on the standby: apply lag 0 after **19 s**, 6 keys, data readable — the off-host copy is proven by a real restore |
+| **Switchover + switchback** | see below | — |
+
+Logs: [`results/07-standby-rotate.log`](results/07-standby-rotate.log), [`results/07-standby-lost.log`](results/07-standby-lost.log).
+
+**Switchover** (broker as `C##DGADMIN`, SYSDG — no SYS password; checks on each new primary: keystore,
+SECPDB open, BANKDB checksums, a write to the encrypted `CARDS`, GG_A):
+
+| Run | orcl → orcl_stb | back to orcl | Problem found |
+|-----|-----------------|--------------|---------------|
+| 1 ([log](results/08-switchover-first-attempt.log)) | 63 s | 348 s | new primary: SECPDB `MOUNTED`, and after opening it **`ORA-28365`** — the standby keystore was still `OPEN / PASSWORD` from my restore drill, a PDB opened later cannot open it. Switchback sent 1 s after → broker waited ~5 min for the just-restarted standby |
+| 2 ([log](results/08-switchover.log)) | 57 s | 69 s | keystore `OPEN / AUTOLOGIN` both ways, write OK, checksums match; SECPDB still `MOUNTED` on orcl_stb until opened by hand |
+| 3 ([log](results/09-switchover-with-service.log)) | 59 s | 67 s | none: SECPDB `READ WRITE` by itself, GG_A running on the new primary ~2 s after the switchover |
+
+Fixes: the restore step closes the password-opened keystore at the end (it reopens as AUTOLOGIN); the script
+waits for `VALIDATE DATABASE ... Ready for Switchover: Yes`; SECPDB got a role-based service
+`secpdb_app` on both clusters ([`05_secpdb_service.sh`](05_secpdb_service.sh)) — `SAVE STATE` is per instance
+name, so it never covered orcl_stb1.
+
+**Rules that came out of it**
+- A master key change is a Data Guard change: copy the keystore to every standby **right after** `SET KEY`
+  — otherwise DR stops for all PDBs, not only the one whose key changed.
+- After restoring a keystore with the password, close it so it runs on auto-login (`WALLET_TYPE` in
+  `V$ENCRYPTION_WALLET` must say `AUTOLOGIN`) — check it before the next switchover, not during it.
+- Applications connect through a role-based service, never rely on saved PDB state across roles.

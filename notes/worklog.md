@@ -60,3 +60,21 @@
   failed-logon query on orcl → 1,689 SYS ORA-01031 from obs-r1. Same cause as Region B.
 - Scripts take the region now (`A`/`B`), separate passwords per CDB (`*_A` in lab.env).
 - obs-r1's `start_observer.sh` had the same unanchored `pgrep -if` — fixed before restarting this time.
+
+## TDE with Data Guard (branch `tde/dataguard`)
+
+- Rotation drill: my `dml()` ran `alter system archive log current` inside SECPDB → `ORA-65040`, but the log
+  line still said "log archived". The drill result holds anyway: real-time apply read the `SET KEY` redo from
+  the standby redo log and MRP stopped with `ORA-28374` within seconds. Fixed (switch to CDB$ROOT).
+- After copying the new keystore, the standby still showed 5 keys in `V$ENCRYPTION_KEYS` (primary: 6), but
+  apply ran again; after the next keystore open it showed 6.
+- **Switchover, first attempt:** the new primary orcl_stb had SECPDB `MOUNTED`; after opening it,
+  `ORA-28365 Wallet is not open` on the encrypted table, and my checksum query failed with it. Cause was my
+  own restore in the "lost keystore" drill: I opened the keystore with the password and created
+  `cwallet.sso`, but the keystore stayed `OPEN / PASSWORD` — a PDB opened later does not get the keystore.
+  Restore step now closes the keystore at the end, so it reopens as AUTOLOGIN. orcl_stb itself was fixed by
+  the restart Clusterware did during the switchback (`OPEN / AUTOLOGIN` after it).
+- **Switchback took 348 s** (switchover: 63 s). My script sent it 1 s after the first switchover; the broker
+  log shows `Forwarding CTL_SWITCH` at 19:26:17 and nothing until `Starting task: SWITCHOVER` at 19:31:26,
+  while orcl was just restarting as standby (and stb1 logged heavy swapping). The script now waits for
+  `VALIDATE DATABASE ... Ready for Switchover: Yes`. Rerun for clean numbers.
