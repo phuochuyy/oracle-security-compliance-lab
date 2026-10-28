@@ -1,0 +1,97 @@
+## setup
+Table created.
+PL/SQL procedure successfully completed.
+TABLESPACE_NAME
+------------------------------
+APP_DATA
+1 row selected.
+Table created.
+PL/SQL procedure successfully completed.
+TABLESPACE_NAME
+------------------------------
+APP_DATA
+1 row selected.
+## round 1 — before TDE on APP_DATA
+5 rows created.
+5 rows created.
+round 1 after 15 s: orcl/ORCLPDB2 has 10 of 10 rows, orcl3/GGREPL has 10 of 10
+GG_A  ea000000041    local  PAN hits=5
+GG_A  eb000000042    recvd  PAN hits=5
+GG_B  ea000000046    recvd  PAN hits=5
+GG_B  eb000000034    local  PAN hits=5
+## TDE on ORCLPDB2 APP_DATA (the tablespace EXTA captures)
+Tablespace altered.
+Elapsed: 00:00:03.91
+TABLESPACE_NAME 	       ENC
+------------------------------ ---
+APP_DATA		       YES
+1 row selected.
+Elapsed: 00:00:00.01
+## round 2 — APP_DATA encrypted, trail not
+5 rows created.
+5 rows created.
+round 2 after 10 s: orcl/ORCLPDB2 has 10 of 10 rows, orcl3/GGREPL has 10 of 10
+GG_A  ea000000041    local  PAN hits=5
+GG_A  eb000000042    recvd  PAN hits=5
+GG_B  ea000000046    recvd  PAN hits=5
+GG_B  eb000000034    local  PAN hits=5
+## ENCRYPTTRAIL AES256 on EXTA and EXTB
+ENCRYPTTRAIL AES256
+EXTTRAIL ea
+2026-10-28T12:43:19Z  INFO    OGG-00975  Extract group EXTA starting.
+2026-10-28T12:43:19Z  INFO    OGG-15426  Extract group EXTA started.
+ENCRYPTTRAIL AES256
+EXTTRAIL eb
+2026-10-28T12:43:35Z  INFO    OGG-00975  Extract group EXTB starting.
+2026-10-28T12:43:35Z  INFO    OGG-15426  Extract group EXTB started.
+OGG (http://localhost:9100 GG_A) 3> INFO ALL
+Program     Status      Group       Type                   Lag at Chkpt       Time Since Chkpt 
+ADMINSRVR   RUNNING   
+DISTSRVR    RUNNING   
+PMSRVR      STOPPED   
+RECVSRVR    RUNNING   
+EXTRACT     ABENDED     EXTA        INTEGRATED                  00:00:02           00:00:36    
+REPLICAT    RUNNING     REPA        PARALLEL INT                00:00:00           00:00:00    
+OGG (http://localhost:9100 GG_B) 3> INFO ALL
+Program     Status      Group       Type                   Lag at Chkpt       Time Since Chkpt 
+ADMINSRVR   RUNNING   
+DISTSRVR    RUNNING   
+PMSRVR      STOPPED   
+RECVSRVR    RUNNING   
+EXTRACT     ABENDED     EXTB        INTEGRATED                  00:00:00           00:00:24    
+REPLICAT    RUNNING     REPB        PARALLEL INT                00:00:00           00:00:10    
+## master key OGG_DEFAULT_MASTERKEY v1 added on GG_A (ADD MASTERKEY), wallet copied to GG_B (same md5), Extracts started
+## round 3 — APP_DATA encrypted + ENCRYPTTRAIL AES256
+5 rows created.
+5 rows created.
+round 3 after 60 s: orcl/ORCLPDB2 has 10 of 10 rows, orcl3/GGREPL has 10 of 10
+GG_A  ea000000043    local  PAN hits=0
+GG_A  eb000000043    recvd  PAN hits=0
+GG_B  ea000000047    recvd  PAN hits=0
+GG_B  eb000000036    local  PAN hits=0
+## residual: round 1 markers in the trail files written before ENCRYPTTRAIL
+GG_A  ea000000043    local  PAN hits=5
+GG_A  eb000000043    recvd  PAN hits=5
+GG_B  ea000000047    recvd  PAN hits=5
+GG_B  eb000000036    local  PAN hits=5
+## cleanup
+PL/SQL procedure successfully completed.
+Table dropped.
+PL/SQL procedure successfully completed.
+Table dropped.
+OGG (http://localhost:9100 GG_A) 3> INFO ALL
+Program     Status      Group       Type                   Lag at Chkpt       Time Since Chkpt 
+ADMINSRVR   RUNNING   
+DISTSRVR    RUNNING   
+PMSRVR      STOPPED   
+RECVSRVR    RUNNING   
+EXTRACT     RUNNING     EXTA        INTEGRATED                  00:00:03           00:00:04    
+REPLICAT    RUNNING     REPA        PARALLEL INT                00:00:20           00:00:03    
+OGG (http://localhost:9100 GG_B) 3> INFO ALL
+Program     Status      Group       Type                   Lag at Chkpt       Time Since Chkpt 
+ADMINSRVR   RUNNING   
+DISTSRVR    RUNNING   
+PMSRVR      STOPPED   
+RECVSRVR    RUNNING   
+EXTRACT     RUNNING     EXTB        INTEGRATED                  00:00:02           00:00:01    
+REPLICAT    RUNNING     REPB        PARALLEL INT                00:00:11           00:00:03    
