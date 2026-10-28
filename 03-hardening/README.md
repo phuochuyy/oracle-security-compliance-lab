@@ -29,3 +29,22 @@ the "after" numbers needed restarts of GoldenGate, the observer and the standby.
 
 **Still to do:** prm2 and stb2 (not running in this lab scenario) need the same `sqlnet.ora` and listener
 line before they start, otherwise connections through those nodes are unencrypted.
+
+## 2. Profiles, schema-only owner, PUBLIC grants — [`02_profiles_privs.sh`](02_profiles_privs.sh)
+
+| Change | Why |
+|--------|-----|
+| `C##SVC_PROFILE` (common) → `C##DGADMIN`: 5 failed logins, lock 1 day, reuse 20/365, `ORA12C_STRONG_VERIFY_FUNCTION`, 10 sessions, inactive 120 days, **no password expiry** | U10. The observer's password lives in a wallet: if it expired, FSFO would lose its observer silently. Expiry is the one visible ACCEPT; rotation is a manual procedure |
+| `SEC_ADMIN_PROFILE` (SECPDB) → `PDBADMIN`: all CIS limits incl. 90-day expiry | U10, PCI-DSS 8.3 |
+| `BANK` → `NO AUTHENTICATION` (schema-only account) | the data owner cannot log in at all; access goes through granted users (next step) |
+| `REVOKE EXECUTE ... FROM PUBLIC` on `UTL_TCP/SMTP/HTTP/INADDR`, `HTTPURITYPE`, `DBMS_LDAP`, `UTL_FILE`, `DBMS_ADVISOR` — root and SECPDB (the grants are local per container, `COMMON=NO`) | R01, R02 |
+| kept: `DBMS_SQL`, `DBMS_LOB`, `DBMS_SCHEDULER`, `DBMS_JOB`, `DBMS_RANDOM`, `DBMS_XMLGEN`, `DBMS_JAVA` — ACCEPT | used by Oracle components and applications; removing needs per-component testing |
+
+**What broke:** after the revokes, **11 Oracle objects invalid in CDB$ROOT and 3 in SECPDB** — Oracle Text
+(`CTXSYS`, including `DBMS_VECTOR_CHAIN`), GSM (`GSMADMIN_INTERNAL`, including the database logoff trigger
+`GSMLOGOFF`) and `MDSYS` used the `PUBLIC` grant. `DBA_DEPENDENCIES` of the invalid objects named the
+packages; a direct grant to exactly those owners + `UTL_RECOMP` → **0 invalid** in both containers.
+In production: run the dependency query and the invalid-object count *before* revoking, and grant first.
+
+Checked afterwards: PDBADMIN connects (encrypted), BANK gets `ORA-01017`, the observer still logs in with
+the new profile, Data Guard `SUCCESS`. Log: [`results/02-profiles-privs.log`](results/02-profiles-privs.log).

@@ -100,3 +100,11 @@
   `secpdb_app.rac`, db_domain).
 - After the sqlnet change only *new* sessions were encrypted: restarted EXTA/REPA (graceful STOP is not
   restarted by the HA profile — had to START them), the observer, and the standby for redo transport.
+
+## Profiles and PUBLIC grants (branch `hardening/profiles-privs`)
+
+- Revoking network/file packages from PUBLIC invalidated 14 Oracle objects (CTXSYS, GSMADMIN_INTERNAL incl.
+  a LOGOFF trigger, MDSYS). Should have checked `DBA_DEPENDENCIES` first; fixed with direct grants.
+- `UTL_MAIL` is not installed here (`ORA-04042` on the revoke) — harmless.
+- First dependency query: `ORA-00918 CON_ID ambiguous` (two CDB views joined).
+- Network test switched from BANK to PDBADMIN, since BANK cannot log in any more.
