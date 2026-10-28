@@ -1,0 +1,13 @@
+== new TCP connection (BANK via the listener to service secpdb_app)
+TCP/IP NT Protocol Adapter for Linux: Version 23.26.1.0.0 - Production
+Encryption service for Linux: Version 23.26.1.0.0 - Production
+Crypto-checksumming service for Linux: Version 23.26.1.0.0 - Production
+== prm1: TCP sessions by program — encrypted (AES256) / checksummed (SHA256) / total
+PROGRAM 				     AES256	SHA256	    TOTAL
+---------------------------------------- ---------- ---------- ----------
+extract@prm1.rac				  0	     0		4
+replicat@prm1.rac				  0	     0		4
+dbfs_client@prm1.rac				  0	     0		4
+dgmgrl@obs-r1.rac				  0	     0		2
+oracle@stb1.rac 				  0	     0		1
+5 rows selected.

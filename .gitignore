@@ -4,3 +4,5 @@
 *.sso
 lab.env
 *.env
+# interview preparation notes: kept on my machine only
+INTERVIEW.md

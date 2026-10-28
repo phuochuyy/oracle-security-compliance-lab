@@ -1,0 +1,23 @@
+Session altered.
+ORA-28003: The password chosen did not meet the required complexity rules set by your organization.
+ORA-20000: password must contain 2 or more digits
+ORA-01917: user or role 'ANALYST1' does not exist
+ORA-01917: user or role 'ANALYST1' does not exist
+ERROR:
+ORA-01017: invalid credential or not authorized; logon denied
+Help: https://docs.oracle.com/error-help/db/ora-01017/
+SP2-0751: Unable to connect to Oracle.  Exiting SQL*Plus
+Help: https://docs.oracle.com/error-help/db/sp2-0751/
+ORA-01917: user or role 'ANALYST1' does not exist
+ORA-01918: user 'ANALYST1' does not exist
+Session altered.
+EVENT_TI DBUSERNAM ACTION_NAME	     OBJECT			RC POLICIES
+-------- --------- ----------------- ------------------ ---------- ----------------------------------------
+20:48:16 SYS	   CREATE USER	     .ANALYST1		     28003 ORA_SECURECONFIG
+20:48:16 SYS	   GRANT	     .			      1917 C##SEC_CHANGES
+20:48:16 SYS	   GRANT	     .			      1917 C##SEC_CHANGES
+20:48:16 SYS	   GRANT	     BANK.CARDS 	      1917 C##SEC_CHANGES
+20:48:17 ANALYST1  LOGON	     .			      1017 ORA_LOGIN_LOGOUT
+20:48:18 SYS	   REVOKE	     BANK.CARDS 	      1917 C##SEC_CHANGES
+20:48:18 SYS	   DROP USER	     .ANALYST1		      1918 ORA_SECURECONFIG
+7 rows selected.

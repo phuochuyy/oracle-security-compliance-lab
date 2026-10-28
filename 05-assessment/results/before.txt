@@ -1,0 +1,72 @@
+# assessment 'before' — 2026-10-28 20:34:33 — orcl (RAC primary) CDB$ROOT + SECPDB
+# id|section|container|status|check|detail
+P01|2 params|CDB$ROOT|FAIL|AUDIT_SYS_OPERATIONS = TRUE|FALSE
+P02|2 params|CDB$ROOT|FAIL|GLOBAL_NAMES = TRUE|FALSE
+P03|2 params|CDB$ROOT|PASS|OS_ROLES = FALSE|FALSE
+P04|2 params|CDB$ROOT|ACCEPT|REMOTE_LOGIN_PASSWORDFILE = NONE|EXCLUSIVE - accepted: Data Guard redo transport and SYSDG/SYSBACKUP logins need the password file
+P05|2 params|CDB$ROOT|PASS|REMOTE_OS_ROLES = FALSE|FALSE
+P06|2 params|CDB$ROOT|PASS|SEC_MAX_FAILED_LOGIN_ATTEMPTS <= 3|3
+P07|2 params|CDB$ROOT|PASS|SEC_PROTOCOL_ERROR_FURTHER_ACTION = (DROP,3)|(DROP,3)
+P08|2 params|CDB$ROOT|FAIL|SEC_PROTOCOL_ERROR_TRACE_ACTION = LOG|TRACE
+P09|2 params|CDB$ROOT|PASS|SEC_RETURN_SERVER_RELEASE_BANNER = FALSE|FALSE
+P10|2 params|CDB$ROOT|PASS|SQL92_SECURITY = TRUE|TRUE
+P11|2 params|CDB$ROOT|PASS|RESOURCE_LIMIT = TRUE|TRUE
+U01|3 users|CDB$ROOT|PASS|no OPEN account with a default password|none
+U02|3 users|CDB$ROOT|PASS|no 10G password hashes|none
+U03|3 users|CDB$ROOT|PASS|no PUBLIC database links|none
+U10|3 users|CDB$ROOT|FAIL|profile DEFAULT meets the password/resource limits|FAILED_LOGIN_ATTEMPTS=10 PASSWORD_LIFE_TIME=180 PASSWORD_GRACE_TIME=7 PASSWORD_VERIFY_FUNCTION=NULL SESSIONS_PER_USER=UNLIMITED INACTIVE_ACCOUNT_TIME=365	- users: C##DGADMIN
+R01|4 privs|CDB$ROOT|FAIL|no PUBLIC EXECUTE on network packages|DBMS_LDAP,HTTPURITYPE,UTL_HTTP,UTL_INADDR,UTL_SMTP,UTL_TCP
+R02|4 privs|CDB$ROOT|FAIL|no PUBLIC EXECUTE on file packages|DBMS_ADVISOR,DBMS_LOB,UTL_FILE
+R03|4 privs|CDB$ROOT|FAIL|no PUBLIC EXECUTE on crypto/random packages|DBMS_RANDOM
+R04|4 privs|CDB$ROOT|FAIL|no PUBLIC EXECUTE on dynamic SQL/job/java packages|DBMS_JAVA,DBMS_JOB,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN
+R05|4 privs|CDB$ROOT|PASS|no ANY system privileges to non-Oracle grantees|none
+R06|4 privs|CDB$ROOT|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|CDB$ROOT|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|CDB$ROOT|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|CDB$ROOT|PASS|no access to sensitive SYS tables|none
+R10|4 privs|CDB$ROOT|INFO|password file users (admin privileges)|C##DGADMIN:SYSDG, SYS:SYSDBA SYSOPER
+A01|5 audit|CDB$ROOT|PASS|pure unified auditing|TRUE
+A02|5 audit|CDB$ROOT|PASS|user and role management audited|all audited
+A03|5 audit|CDB$ROOT|FAIL|grants and revokes audited|missing: GRANT,REVOKE
+A04|5 audit|CDB$ROOT|PASS|profile changes audited|all audited
+A05|5 audit|CDB$ROOT|FAIL|database links and synonyms audited|missing: CREATE SYNONYM,DROP SYNONYM
+A06|5 audit|CDB$ROOT|PASS|system changes audited|all audited
+A07|5 audit|CDB$ROOT|FAIL|code and trigger DDL audited|missing: ALTER PROCEDURE,ALTER TRIGGER,CREATE FUNCTION,CREATE PACKAGE,CREATE PROCEDURE,CREATE TRIGGER,DROP FUNCTION,DROP PACKAGE,DROP PROCEDURE,DROP TRIGGER
+A08|5 audit|CDB$ROOT|FAIL|logon and logoff audited|missing: LOGOFF,LOGON
+U01|3 users|SECPDB|PASS|no OPEN account with a default password|none
+U02|3 users|SECPDB|PASS|no 10G password hashes|none
+U03|3 users|SECPDB|PASS|no PUBLIC database links|none
+U10|3 users|SECPDB|FAIL|profile DEFAULT meets the password/resource limits|FAILED_LOGIN_ATTEMPTS=10 PASSWORD_LIFE_TIME=180 PASSWORD_GRACE_TIME=7 PASSWORD_VERIFY_FUNCTION=NULL SESSIONS_PER_USER=UNLIMITED INACTIVE_ACCOUNT_TIME=365  - users: BANK,C##DGADMIN,PDBADMIN
+R01|4 privs|SECPDB|FAIL|no PUBLIC EXECUTE on network packages|DBMS_LDAP,HTTPURITYPE,UTL_HTTP,UTL_INADDR,UTL_SMTP,UTL_TCP
+R02|4 privs|SECPDB|FAIL|no PUBLIC EXECUTE on file packages|DBMS_ADVISOR,DBMS_LOB,UTL_FILE
+R03|4 privs|SECPDB|FAIL|no PUBLIC EXECUTE on crypto/random packages|DBMS_RANDOM
+R04|4 privs|SECPDB|FAIL|no PUBLIC EXECUTE on dynamic SQL/job/java packages|DBMS_JAVA,DBMS_JOB,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN
+R05|4 privs|SECPDB|PASS|no ANY system privileges to non-Oracle grantees|none
+R06|4 privs|SECPDB|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|SECPDB|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|SECPDB|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|SECPDB|PASS|no access to sensitive SYS tables|none
+A01|5 audit|SECPDB|PASS|pure unified auditing|TRUE
+A02|5 audit|SECPDB|PASS|user and role management audited|all audited
+A03|5 audit|SECPDB|FAIL|grants and revokes audited|missing: GRANT,REVOKE
+A04|5 audit|SECPDB|PASS|profile changes audited|all audited
+A05|5 audit|SECPDB|FAIL|database links and synonyms audited|missing: CREATE SYNONYM,DROP SYNONYM
+A06|5 audit|SECPDB|PASS|system changes audited|all audited
+A07|5 audit|SECPDB|FAIL|code and trigger DDL audited|missing: ALTER PROCEDURE,ALTER TRIGGER,CREATE FUNCTION,CREATE PACKAGE,CREATE PROCEDURE,CREATE TRIGGER,DROP FUNCTION,DROP PACKAGE,DROP PROCEDURE,DROP TRIGGER
+A08|5 audit|SECPDB|FAIL|logon and logoff audited|missing: LOGOFF,LOGON
+C01|PCI 3.5|SECPDB|PASS|card data stored in encrypted tablespaces only|all encrypted
+C02|PCI 10.2|SECPDB|FAIL|access to BANK.CARDS audited|no enabled policy on BANK.CARDS
+C03|PCI 3.4|SECPDB|FAIL|PAN masked for non-privileged readers (redaction)|no redaction policy on CARDS.PAN
+C04|PCI 7|SECPDB|INFO|who has object privileges on BANK.CARDS|nobody but the owner
+N01|6 network|prm1|FAIL|server requires network encryption|not set in sqlnet.ora (file missing)
+N02|6 network|prm1|FAIL|server requires integrity checksums|not set in sqlnet.ora (file missing)
+N03|6 network|prm1|FAIL|allowed logon version >= 12a|not set in sqlnet.ora (file missing)
+N04|6 network|prm1|FAIL|listener admin restrictions on|not set in listener.ora (exists)
+#
+# summary: ACCEPT 1  FAIL 27  INFO 2  PASS 32  
+#   2 params: ACCEPT 1  FAIL 3  PASS 7  
+#   3 users: FAIL 2  PASS 6  
+#   4 privs: FAIL 8  INFO 1  PASS 10  
+#   5 audit: FAIL 8  PASS 8  
+#   6 network: FAIL 4  
+#   PCI: FAIL 2  INFO 1  PASS 1  
