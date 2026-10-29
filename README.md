@@ -14,13 +14,54 @@
 | 1a | same on Region A: 1,689 SYS ORA-01031 from obs-r1 | same fix (`C##DGADMIN` on orcl, own passwords) | 15 per 3 min → **0** |
 | 1b | 2 ORA-01017 (empty user) per standby start, both regions | — | **open**, hypotheses tested and ruled out are listed |
 | 2 | [Card numbers readable in datafiles, archived redo and backups on both sites](01-baseline/plaintext/) | [TDE](02-tde/): online AES256 encryption, 6 s per tablespace, under load | 3–4 hits per file → **0**; 0 application errors during the rewrite (PCI-DSS 3.5) |
-| 3 | Same card data in a test PDB, never encrypted ([residual check](01-baseline/plaintext/residual_plaintext.sh)) | `BANK_DATA` encrypted too (6 s) | `verify_drillpdb.sh` PASS (not re-grepped) |
+| 3 | Same card data in a test PDB, never encrypted ([residual check](01-baseline/plaintext/residual_plaintext.sh)) | `BANK_DATA` encrypted too (6 s) | `verify_drillpdb.sh` PASS; re-grepped on the re-run: **0 hits** on both sites |
 | 4 | [GoldenGate trails held card numbers in clear after TDE](02-tde/README.md) — on both sites | `ENCRYPTTRAIL AES256`, shared GG master key | 5 hits per trail → **0**, replication both ways working (PCI-DSS 3, 4) |
 | 5 | [A master key change stops redo apply on the standby for the whole CDB](02-tde/README.md) (`ORA-28374`) | copy keystore right after `SET KEY`; tested restore from the off-host copy | recovered in 37 s / 19 s; switchover 57–63 s each way with TDE |
 | 6 | [No network encryption — not even redo transport between sites](03-hardening/README.md) | `sqlnet.ora`: AES256 + SHA256 required, logon version 12a | 0 → all new sessions, GoldenGate 8/8, redo transport 5/5 encrypted (PCI-DSS 4.2) |
 | 7 | [Every account on the DEFAULT profile; data owner could log in; PUBLIC could use UTL_TCP/HTTP/FILE](03-hardening/README.md) | service + admin profiles, schema-only `BANK`, revokes | revokes broke 14 Oracle objects → direct grants, 0 invalid |
 | 8 | [No audit of card data access, grants, code DDL, successful logons](04-auditing/README.md) | 5 policies | test shows each action once; found two of my own policy mistakes on the way |
 | 9 | [PAN shown in full to every reader](03-hardening/README.md) | Data Redaction (last 4) | analyst sees `************0018`; WHERE-clause inference documented |
+| 10 | [The GoldenGate admin password in clear on the VMs](#re-run-2026-10-29) — adminclient echoes its `CONNECT ... PASSWORD` line; one lab script left that command file **world-readable in `/tmp` on 3 VMs** | output masked, command files `umask 077` and always removed; **password rotated** on 16 accounts that shared it ([runbook](03-hardening/password-rotation.md)) | 0 in output, 0 files left; never in Git (all 5 repos and history); old password refused everywhere |
+| 11 | [Trail files written before `ENCRYPTTRAIL` still hold clear PANs 3 days later](#re-run-2026-10-29) — no trail purge is set up | purge task on both deployments (every 6 h, only files all readers passed, keep 24 h); local trails blocked by `OGG-30480` → one-off purge by the same rule | 66 local + 68 received files removed; the last pre-encryption files are < 24 h old — **still 5 hits**, open until they age out |
+
+## Re-run 2026-10-29
+
+After the HA/DR re-run (2 FSFO failovers, GoldenGate moved to the standby and back) and the backup drills
+(a TDE datafile restored from backup), every check again:
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Assessment | **0 FAIL** — ACCEPT 5, INFO 4, PASS 56, same as `after` | [`05-assessment/results/rerun-20261029.txt`](05-assessment/results/rerun-20261029.txt) |
+| Card number in raw files (datafile ×2, new archived log, uncompressed backup piece) | 0 hits each | [`rerun-20261029.txt`](01-baseline/plaintext/rerun-20261029.txt) |
+| DRILLPDB datafile (restored from backup that day) on both sites | 0 hits — finding 3 now re-grepped | [`drillpdb-rerun-20261029.txt`](01-baseline/plaintext/drillpdb-rerun-20261029.txt) |
+| Network encryption | **19/19** TCP sessions AES256 + SHA256 on both sites, incl. redo transport after the failovers (dbfs_client 0/4 → 5/5: those sessions now postdate the change) | [`01-network-rerun-20261029.txt`](03-hardening/results/01-network-rerun-20261029.txt) |
+| Audit scenario | each action once; logons now under `SEC_LOGON_SUCCESS` (the logon tuning), not `ORA_LOGIN_LOGOUT` as in the first run | [`02-test-rerun-20261029.log`](04-auditing/results/02-test-rerun-20261029.log) |
+| Data Redaction | same masks; script failed on the existing role/policy (ORA-01921, ORA-28069) → made re-runnable | [`03-redaction-rerun-20261029.log`](03-hardening/results/03-redaction-rerun-20261029.log) |
+| GoldenGate trails | new rows: 0 hits on all 4 trails; **old trails: 5 hits each** (finding 11) | [`10-goldengate-rerun-20261029.log`](02-tde/results/10-goldengate-rerun-20261029.log) |
+| Failed logons, 6 h | **0 SYS ORA-01031**; 18 empty-user ORA-01017 (1b), all inside the failover test window | [`rerun-20261029.txt`](01-baseline/failed-logons/rerun-20261029.txt) |
+
+New on the way: **finding 10**. `tests/gg.sh` printed `CONNECT ... PASSWORD <the password>` on my terminal —
+adminclient echoes every command it reads. Looking for other copies: `timeline.sh` (HA/DR test harness)
+wrote the same line to `/tmp/tl.oby` and never removed it — mode 644 on prm1, stb1 and prm3. Fixed in the
+HA/DR repo (masked output, `umask 077`, `rm`), files deleted. The password should still be changed: it is
+the shared lab password and has been readable by any local user of those VMs.
+
+**Finding 11.** 109 trail files on GG_A and 108 on GG_B since 10-26 (18 MB / 16 MB): nothing purges them, so the
+clear PANs written before `ENCRYPTTRAIL` are still there. My TDE notes said "until the trail purge removes
+them" — there is no trail purge.
+
+Fix: an Admin Server task `purge_trails` on both deployments (REST `POST /services/v2/tasks/purge_trails`, body [`02-tde/purge_trails_task.json`](02-tde/purge_trails_task.json)):
+trails `ea` and `eb`, `useCheckpoints: true`, keep at least 24 h, every 6 h. Run once at once: the received
+trails were purged up to the 24 h limit; the **local** trails were not — `OGG-30480 Not purging trail
+sequence 'ea000000000' because a process is still using it`, although the Extract and the distribution
+path both checkpoint the newest file (seq 57) and no other checkpoint file exists. Not solved. So the local
+trails were purged once by hand with the same rule (older than 24 h **and** below the reader's
+checkpoint: 32 files on GG_A, 34 on GG_B). Replication both ways checked after (10 of 10 rows).
+The files written just before `ENCRYPTTRAIL` (10-28 18:50–19:44) are younger than 24 h, so the round 1
+markers are still found (5 hits each) — to re-check when they have aged out.
+
+Audit volume (3 h): 557 records/hour of `ORA_ALL_TOPLEVEL_ACTIONS` in the root — my own SYS scripts during
+the drills. With no retention/purge job the trail only grows ([`04-volume-rerun-20261029.txt`](04-auditing/results/04-volume-rerun-20261029.txt)).
 
 ## Goal
 

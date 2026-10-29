@@ -1,0 +1,7 @@
+FIRST LAST  DBUSERNAME	 USERHOST	RETURN_CODE   COUNT(*)
+----- ----- ------------ -------------- ----------- ----------
+12:04 13:00 (null)	 stb1.rac	       1017	    13
+12:22 12:35 (null)	 prm1.rac	       1017	     3
+12:22 12:53 /		 (null) 	       1017	     2
+12:35 12:35 DBSNMP	 prm1.rac	       1033	     1
+4 rows selected.

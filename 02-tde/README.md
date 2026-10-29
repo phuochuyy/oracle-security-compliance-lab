@@ -128,7 +128,8 @@ marker PANs counted in the newest trail files of both deployments. Log: [`result
   OGG_DEFAULT_MASTERKEY` — the deployment wallet was empty. `ADD MASTERKEY` on GG_A, then the wallet copied
   to GG_B (same md5), because the Replicat on the *other* site has to decrypt the trail with the same key.
 - Trail files written before the change still hold the clear PANs (round 1 markers: 5 hits in each) until
-  the trail purge removes them — same lesson as the archived logs.
+  they are deleted — same lesson as the archived logs. *Correction (re-run 2026-10-29): no trail purge is
+  set up; 3 days later all 109/108 trail files were still there, 5 hits each (finding 11).*
 
 **Still to harden (noted, not done)**
 - The GG master key wallet (`cwallet.sso`, auto-login) lives on DBFS, i.e. in the unencrypted tablespace
