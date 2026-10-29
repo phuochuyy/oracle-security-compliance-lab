@@ -3,7 +3,7 @@
 > Status: **done for the database layer** — TDE on RAC + Active Data Guard + GoldenGate Active-Active,
 > network encryption, profiles, least privilege, Unified Auditing, Data Redaction; assessment
 > **27 FAIL → 0** (5 documented ACCEPTs). DBSAT needs a support contract, so the assessment is a
-> CIS-style script ([why](05-assessment/README.md)). Open: one finding (1b), Privilege Analysis, audit
+> CIS-style script ([why](05-assessment/README.md)). Open: one finding (1b), audit
 > retention.
 
 ## Findings
@@ -77,7 +77,7 @@ the effect of each control — including what it does to Data Guard and GoldenGa
 | TDE with GoldenGate | Integrated Extract on encrypted redo, `ENCRYPTTRAIL AES256` | trails 5 hits → 0, replication both ways | 3.5, 4 | done |
 | Encryption in transit | native network encryption AES256 + SHA256 required (TLS not set up) | `V$SESSION_CONNECT_INFO` incl. redo transport | 4.2 | done |
 | Masking | Data Redaction on `CARDS.PAN` | analyst vs `CARD_FULL_VIEW` user | 3.4 | done (**VPD not built**) |
-| Least privilege | schema-only owner, PUBLIC revokes, SYSDG observer, no ANY/DBA grants | assessment R0x checks | 7.2 | done (**Privilege Analysis not run**) |
+| Least privilege | schema-only owner, PUBLIC revokes, SYSDG observer, no ANY/DBA grants | assessment R0x checks; [Privilege Analysis](03-hardening/README.md#privilege-analysis-2026-10-30): REPORT_RO used 4 of its 5 table grants, `SELECT` on `CARDS` never | 7.2 | done (role change belongs to the automation lab's `users.yml`) |
 | Authentication | profiles for people and service accounts, strong verify function, 12a verifiers | assessment U10/N03, `ORA-28003` in the audit test | 8.3 | done |
 | Auditing | Unified Auditing: card table, grants, code DDL, logons, SYS | test scenario, volume tuning | 10.2 | done (**retention/purge not set up**) |
 | Assessment | CIS-style script — DBSAT needs a support contract | 27 FAIL → 0 | 11.3 | done |
