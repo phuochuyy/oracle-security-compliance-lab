@@ -56,3 +56,9 @@ does not hide. Seen right after a database start: ~10 `GRANT` records by SYS on 
 **Retention (PCI-DSS 10.5.1: 12 months, 3 immediately available) — not set up:** that is a purge job
 (`DBMS_AUDIT_MGMT` with a last-archive timestamp after exporting the records), i.e. automatic deletion —
 agreed with the team first, not created on my own in this lab.
+
+## Re-run 2026-10-29
+
+Same records, each action once ([`results/02-test-rerun-20261029.log`](results/02-test-rerun-20261029.log)). The
+LOGON/LOGOFF lines are now under `SEC_LOGON_SUCCESS` — the example above is from before the logon tuning,
+when successes went to `ORA_LOGIN_LOGOUT`.
