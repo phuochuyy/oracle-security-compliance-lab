@@ -1,0 +1,75 @@
+# assessment 'check-20261030' — 2026-10-30 00:51:02 — orcl (RAC primary) CDB$ROOT + SECPDB
+# id|section|container|status|check|detail
+P01|2 params|CDB$ROOT|PASS|SYS top-level actions audited (AUDIT_SYS_OPERATIONS or unified policy)|AUDIT_SYS_OPERATIONS=FALSE, unified: ORA_ALL_TOPLEVEL_ACTIONS
+P02|2 params|CDB$ROOT|PASS|GLOBAL_NAMES = TRUE|TRUE
+P03|2 params|CDB$ROOT|PASS|OS_ROLES = FALSE|FALSE
+P04|2 params|CDB$ROOT|ACCEPT|REMOTE_LOGIN_PASSWORDFILE = NONE|EXCLUSIVE - accepted: Data Guard redo transport and SYSDG/SYSBACKUP logins need the password file
+P05|2 params|CDB$ROOT|PASS|REMOTE_OS_ROLES = FALSE|FALSE
+P06|2 params|CDB$ROOT|PASS|SEC_MAX_FAILED_LOGIN_ATTEMPTS <= 3|3
+P07|2 params|CDB$ROOT|PASS|SEC_PROTOCOL_ERROR_FURTHER_ACTION = (DROP,3)|(DROP,3)
+P08|2 params|CDB$ROOT|PASS|SEC_PROTOCOL_ERROR_TRACE_ACTION = LOG|LOG
+P09|2 params|CDB$ROOT|PASS|SEC_RETURN_SERVER_RELEASE_BANNER = FALSE|FALSE
+P10|2 params|CDB$ROOT|PASS|SQL92_SECURITY = TRUE|TRUE
+P11|2 params|CDB$ROOT|PASS|RESOURCE_LIMIT = TRUE|TRUE
+U01|3 users|CDB$ROOT|PASS|no OPEN account with a default password|none
+U02|3 users|CDB$ROOT|PASS|no 10G password hashes|none
+U03|3 users|CDB$ROOT|PASS|no PUBLIC database links|none
+U10|3 users|CDB$ROOT|ACCEPT|profile C##SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: C##DGADMIN,C##MON - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+R01|4 privs|CDB$ROOT|PASS|no PUBLIC EXECUTE on network packages|none
+R02|4 privs|CDB$ROOT|PASS|no PUBLIC EXECUTE on file packages|none
+R03|4 privs|CDB$ROOT|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|CDB$ROOT|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|CDB$ROOT|PASS|no ANY system privileges to non-Oracle grantees|none
+R06|4 privs|CDB$ROOT|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|CDB$ROOT|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|CDB$ROOT|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|CDB$ROOT|PASS|no access to sensitive SYS tables|none
+R10|4 privs|CDB$ROOT|INFO|password file users (admin privileges)|C##DGADMIN:SYSDG, SYS:SYSDBA SYSOPER
+A01|5 audit|CDB$ROOT|PASS|pure unified auditing|TRUE
+A02|5 audit|CDB$ROOT|PASS|user and role management audited|all audited
+A03|5 audit|CDB$ROOT|PASS|grants and revokes audited|all audited
+A04|5 audit|CDB$ROOT|PASS|profile changes audited|all audited
+A05|5 audit|CDB$ROOT|PASS|database links and synonyms audited|all audited
+A06|5 audit|CDB$ROOT|PASS|system changes audited|all audited
+A07|5 audit|CDB$ROOT|PASS|code and trigger DDL audited|all audited
+A08|5 audit|CDB$ROOT|PASS|logon and logoff audited|all audited
+A09|5 audit|CDB$ROOT|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|C##SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r1.rac'
+U01|3 users|SECPDB|PASS|no OPEN account with a default password|none
+U02|3 users|SECPDB|PASS|no 10G password hashes|none
+U03|3 users|SECPDB|PASS|no PUBLIC database links|none
+U10|3 users|SECPDB|ACCEPT|profile C##SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: C##DGADMIN,C##MON - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+U10|3 users|SECPDB|PASS|profile SEC_ADMIN_PROFILE meets the password/resource limits|ok - users: PDBADMIN,REPORT_RO
+R01|4 privs|SECPDB|PASS|no PUBLIC EXECUTE on network packages|none
+R02|4 privs|SECPDB|PASS|no PUBLIC EXECUTE on file packages|none
+R03|4 privs|SECPDB|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|SECPDB|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|SECPDB|PASS|no ANY system privileges to non-Oracle grantees|none
+R06|4 privs|SECPDB|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|SECPDB|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|SECPDB|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|SECPDB|PASS|no access to sensitive SYS tables|none
+A01|5 audit|SECPDB|PASS|pure unified auditing|TRUE
+A02|5 audit|SECPDB|PASS|user and role management audited|all audited
+A03|5 audit|SECPDB|PASS|grants and revokes audited|all audited
+A04|5 audit|SECPDB|PASS|profile changes audited|all audited
+A05|5 audit|SECPDB|PASS|database links and synonyms audited|all audited
+A06|5 audit|SECPDB|PASS|system changes audited|all audited
+A07|5 audit|SECPDB|PASS|code and trigger DDL audited|all audited
+A08|5 audit|SECPDB|PASS|logon and logoff audited|all audited
+A09|5 audit|SECPDB|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|C##SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r1.rac'; SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r1.rac'
+C01|PCI 3.5|SECPDB|PASS|card data stored in encrypted tablespaces only|all encrypted
+C02|PCI 10.2|SECPDB|PASS|SELECT/INSERT/UPDATE/DELETE on BANK.CARDS audited|all four
+C03|PCI 3.4|SECPDB|PASS|PAN masked for non-privileged readers (redaction)|PAN:PARTIAL REDACTION
+C04|PCI 7|SECPDB|INFO|who has object privileges on BANK.CARDS|BANK_READ:SELECT
+N01|6 network|prm1|PASS|server requires network encryption|SQLNET.ENCRYPTION_SERVER = REQUIRED
+N02|6 network|prm1|PASS|server requires integrity checksums|SQLNET.CRYPTO_CHECKSUM_SERVER = REQUIRED
+N03|6 network|prm1|PASS|allowed logon version >= 12a|SQLNET.ALLOWED_LOGON_VERSION_SERVER = 12a
+N04|6 network|prm1|PASS|listener admin restrictions on|ADMIN_RESTRICTIONS_LISTENER=ON
+#
+# summary: ACCEPT 5  INFO 4  PASS 56  
+#   2 params: ACCEPT 1  PASS 10  
+#   3 users: ACCEPT 2  PASS 7  
+#   4 privs: ACCEPT 2  INFO 1  PASS 16  
+#   5 audit: INFO 2  PASS 16  
+#   6 network: PASS 4  
+#   PCI: INFO 1  PASS 3  
