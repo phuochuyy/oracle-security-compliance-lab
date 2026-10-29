@@ -1,0 +1,47 @@
+## setup
+Table created.
+PL/SQL procedure successfully completed.
+TABLESPACE_NAME
+------------------------------
+APP_DATA
+1 row selected.
+Table created.
+PL/SQL procedure successfully completed.
+TABLESPACE_NAME
+------------------------------
+APP_DATA
+1 row selected.
+## round 4 — re-run 2026-10-29 (after 2 FSFO failovers, GG_A moved stb1 and back)
+5 rows created.
+5 rows created.
+round 4 after 15 s: orcl/ORCLPDB2 has 10 of 10 rows, orcl3/GGREPL has 10 of 10
+GG_A  ea000000056    local  PAN hits=0
+GG_A  eb000000052    recvd  PAN hits=0
+GG_B  ea000000064    recvd  PAN hits=0
+GG_B  eb000000043    local  PAN hits=0
+## residual: round 1 markers in trail files still on disk
+GG_A  ea000000056    local  PAN hits=5
+GG_A  eb000000052    recvd  PAN hits=5
+GG_B  ea000000064    recvd  PAN hits=5
+GG_B  eb000000043    local  PAN hits=5
+## cleanup
+PL/SQL procedure successfully completed.
+Table dropped.
+PL/SQL procedure successfully completed.
+Table dropped.
+OGG (http://localhost:9100 GG_A) 3> INFO ALL
+Program     Status      Group       Type                   Lag at Chkpt       Time Since Chkpt 
+ADMINSRVR   RUNNING   
+DISTSRVR    RUNNING   
+PMSRVR      STOPPED   
+RECVSRVR    RUNNING   
+EXTRACT     RUNNING     EXTA        INTEGRATED                  00:00:00           00:00:09    
+REPLICAT    RUNNING     REPA        PARALLEL INT                00:00:18           00:00:03    
+OGG (http://localhost:9100 GG_B) 3> INFO ALL
+Program     Status      Group       Type                   Lag at Chkpt       Time Since Chkpt 
+ADMINSRVR   RUNNING   
+DISTSRVR    RUNNING   
+PMSRVR      STOPPED   
+RECVSRVR    RUNNING   
+EXTRACT     RUNNING     EXTB        INTEGRATED                  00:00:03           00:00:06    
+REPLICAT    RUNNING     REPB        PARALLEL INT                00:00:11           00:00:03    
