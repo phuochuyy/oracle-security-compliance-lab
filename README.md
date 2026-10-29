@@ -21,8 +21,8 @@
 | 7 | [Every account on the DEFAULT profile; data owner could log in; PUBLIC could use UTL_TCP/HTTP/FILE](03-hardening/README.md) | service + admin profiles, schema-only `BANK`, revokes | revokes broke 14 Oracle objects → direct grants, 0 invalid |
 | 8 | [No audit of card data access, grants, code DDL, successful logons](04-auditing/README.md) | 5 policies | test shows each action once; found two of my own policy mistakes on the way |
 | 9 | [PAN shown in full to every reader](03-hardening/README.md) | Data Redaction (last 4) | analyst sees `************0018`; WHERE-clause inference documented |
-| 10 | [The GoldenGate admin password in clear on the VMs](#re-run-2026-10-29) — adminclient echoes its `CONNECT ... PASSWORD` line; one lab script left that command file **world-readable in `/tmp` on 3 VMs** | output masked, command files `umask 077` and always removed | 0 in output, 0 files left; never in Git (checked all 5 repos and their history) |
-| 11 | [Trail files written before `ENCRYPTTRAIL` still hold clear PANs 3 days later](#re-run-2026-10-29) — no trail purge is set up | **open**: purge task needs a decision (deletes trail data) | round 1 markers: 5 hits per deployment |
+| 10 | [The GoldenGate admin password in clear on the VMs](#re-run-2026-10-29) — adminclient echoes its `CONNECT ... PASSWORD` line; one lab script left that command file **world-readable in `/tmp` on 3 VMs** | output masked, command files `umask 077` and always removed; **password rotated** on 16 accounts that shared it ([runbook](03-hardening/password-rotation.md)) | 0 in output, 0 files left; never in Git (all 5 repos and history); old password refused everywhere |
+| 11 | [Trail files written before `ENCRYPTTRAIL` still hold clear PANs 3 days later](#re-run-2026-10-29) — no trail purge is set up | purge task on both deployments (every 6 h, only files all readers passed, keep 24 h); local trails blocked by `OGG-30480` → one-off purge by the same rule | 66 local + 68 received files removed; the last pre-encryption files are < 24 h old — **still 5 hits**, open until they age out |
 
 ## Re-run 2026-10-29
 
@@ -48,8 +48,17 @@ the shared lab password and has been readable by any local user of those VMs.
 
 **Finding 11.** 109 trail files on GG_A and 108 on GG_B since 10-26 (18 MB / 16 MB): nothing purges them, so the
 clear PANs written before `ENCRYPTTRAIL` are still there. My TDE notes said "until the trail purge removes
-them" — there is no trail purge. Fix needs a purge task (keep the trails the Replicats and a recovery
-still need); not done, it deletes data.
+them" — there is no trail purge.
+
+Fix: an Admin Server task `purge_trails` on both deployments (REST `POST /services/v2/tasks/purge_trails`, body [`02-tde/purge_trails_task.json`](02-tde/purge_trails_task.json)):
+trails `ea` and `eb`, `useCheckpoints: true`, keep at least 24 h, every 6 h. Run once at once: the received
+trails were purged up to the 24 h limit; the **local** trails were not — `OGG-30480 Not purging trail
+sequence 'ea000000000' because a process is still using it`, although the Extract and the distribution
+path both checkpoint the newest file (seq 57) and no other checkpoint file exists. Not solved. So the local
+trails were purged once by hand with the same rule (older than 24 h **and** below the reader's
+checkpoint: 32 files on GG_A, 34 on GG_B). Replication both ways checked after (10 of 10 rows).
+The files written just before `ENCRYPTTRAIL` (10-28 18:50–19:44) are younger than 24 h, so the round 1
+markers are still found (5 hits each) — to re-check when they have aged out.
 
 Audit volume (3 h): 557 records/hour of `ORA_ALL_TOPLEVEL_ACTIONS` in the root — my own SYS scripts during
 the drills. With no retention/purge job the trail only grows ([`04-volume-rerun-20261029.txt`](04-auditing/results/04-volume-rerun-20261029.txt)).

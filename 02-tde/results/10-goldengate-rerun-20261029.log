@@ -45,3 +45,12 @@ PMSRVR      STOPPED
 RECVSRVR    RUNNING   
 EXTRACT     RUNNING     EXTB        INTEGRATED                  00:00:03           00:00:06    
 REPLICAT    RUNNING     REPB        PARALLEL INT                00:00:11           00:00:03    
+## after the purge task + one-off local purge (2026-10-29 17:3x)
+# round 1 markers (written before ENCRYPTTRAIL):
+GG_A  ea000000057    local  PAN hits=5
+GG_A  eb000000054    recvd  PAN hits=5
+GG_B  ea000000066    recvd  PAN hits=5
+GG_B  eb000000043    local  PAN hits=5
+5 rows created.
+5 rows created.
+round 6 after 25 s: orcl/ORCLPDB2 has 10 of 10 rows, orcl3/GGREPL has 10 of 10
