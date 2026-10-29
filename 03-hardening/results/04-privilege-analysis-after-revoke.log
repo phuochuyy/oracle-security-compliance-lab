@@ -1,0 +1,39 @@
+### start
+PL/SQL procedure successfully completed.
+### work
+== report 1: balances per branch
+BRANCH	 ACCOUNTS    BALANCE
+------ ---------- ----------
+BR098	      377 1.8747E+11
+BR007	      328 1.7314E+11
+BR039	      352 1.7057E+11
+BR080	      328 1.6980E+11
+BR064	      314 1.6933E+11
+5 rows selected.
+== report 2: transactions per month (last 6)
+no rows selected
+== report 3: customers per segment
+SEGMENT     CUSTOMERS
+---------- ----------
+RETAIL		17081
+SME		 2329
+VIP		  590
+3 rows selected.
+### stop
+== used by REPORT_RO (object privileges, through which role)
+PRIVILEGE				 VIA
+---------------------------------------- ------------
+SELECT BANK.ACCOUNTS			 BANK_READ
+SELECT BANK.BRANCHES			 BANK_READ
+SELECT BANK.CUSTOMERS			 BANK_READ
+SELECT BANK.TRANSACTIONS		 BANK_READ
+SELECT SYS.DUAL 			 PUBLIC
+== used by REPORT_RO (system privileges)
+PRIVILEGE				 VIA
+---------------------------------------- ------------
+CREATE SESSION				 REPORT_RO
+== granted to REPORT_RO but not used
+== other users during the capture: privileges used
+GRANTEE      USED_PRIVS
+------------ ----------
+REPORT_RO	      6
