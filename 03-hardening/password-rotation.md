@@ -51,3 +51,13 @@ PDBADMIN (PERF, RCAT). GoldenGate: `oggadmin` in 4 user stores (Service Manager 
   until I re-ran without the option and shredded it.
 - While I was checking, GG_A stopped: not the password change — **the primary hung on a full `+FRA`**
   ("Stuck Archiver"), CRS stopped the `ogg_a` service tree with it. See the backup lab's README.
+
+## Missed, found by the next failover test (same evening)
+
+XAG stores the GoldenGate admin password **per cluster**. I updated it on the primary's cluster only; the
+standby's cluster (stb1/stb2) kept the old one. Nothing showed it until a failover to stb1: XAG's health
+check returned `3`, the start timed out after 300 s and GoldenGate stayed down (the database was fine,
+0 transactions lost). `agctl modify goldengate GG_A --adminuser oggadmin` on stb1, then the next failover
+recovered by itself in 1 min 49 s ([HA/DR run 3](https://github.com/phuochuyy/oracle-ha-dr-failover-lab#run-3--after-the-password-rotation-2026-10-29-evening)).
+Lesson: a credential inventory has to cover every cluster, and a rotation is only finished after a role change.
+
