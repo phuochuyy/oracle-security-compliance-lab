@@ -123,3 +123,12 @@ with reinstates: 13 from `oracle@stb1.rac (TNS V1-V3)`, 3 from `oracle@prm1.rac`
 roles changed), 2 pairs from `dgmgrl@stb1.rac` (an empty user, then `/`, 1 s later — not from my scripts,
 which connect as `C##DGADMIN` and would show that user). Fits the lead above: Data Guard's own connections at role
 changes and restarts. Still open.
+
+## 2026-10-30 — one more source of empty-user ORA-01017
+
+After a cold start the standby's audit trail had, besides the known `oracle@stb1.rac (TNS V1-V3)` records,
+2 empty-user ORA-01017 from **`OraJavaAgentDriver` on stb1** at the database start (00:48) — the Java agent
+of Grid's CVU, which on the primary logs in as DBSNMP with the credential from the cluster wallet `CVUDB`.
+The standby's cluster has no `CVUDB` wallet (`crsctl query wallet -type CVUDB` → CLSW-9), so its agent
+tries without a user. That explains those 2, not the `oracle@stb1` ones (different program) — 1b stays open.
+
