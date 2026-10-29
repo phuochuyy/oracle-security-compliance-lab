@@ -78,9 +78,15 @@ is access control (roles, VPD), and every query on it is audited (`SEC_CARDS_ACC
 
 So the reporting role carries the one grant PCI-DSS 7 cares most about without needing it (the PAN is
 redacted for it, but the right to read the table is still there). Recommendation: `BANK_READ` without
-`CARDS`, a separate role for whoever needs card data. Not changed here: `REPORT_RO` and `BANK_READ` are
-defined as code in the automation lab (`users.yml`) — a manual `REVOKE` would be reported as drift and put
-back. Limits: one run of the reports; a real capture covers a whole business cycle, month end included.
+`CARDS`, a separate role for whoever needs card data. Limits: one run of the reports; a real capture covers
+a whole business cycle, month end included.
+
+**Applied the same day, as code:** `REPORT_RO` and `BANK_READ` are defined in the automation lab's `users.yml`.
+I had written here that a manual `REVOKE` "would be put back" — wrong: the role only *added* missing grants, so
+removing the line from `users.yml` changed nothing either. The automation lab's role now also revokes object
+grants that are not in the file; run 1 `revoke SELECT on "BANK"."CARDS" from bank_read`, run 2 no change.
+Afterwards ([log](results/04-privilege-analysis-after-revoke.log)): Privilege Analysis — no unused privilege
+for REPORT_RO; assessment still 0 FAIL, C04 "who can read BANK.CARDS" = nobody but the owner.
 
 First run: `ORA-01017` for REPORT_RO — my script piped the password into `ssh` *and* gave it a heredoc,
 so the heredoc became stdin and `read` took the first SQL line as the password (2 of 5 allowed failures used,
