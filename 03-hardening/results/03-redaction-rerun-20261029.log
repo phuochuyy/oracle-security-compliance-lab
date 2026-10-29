@@ -1,0 +1,32 @@
+ORA-01921: role name 'CARD_FULL_VIEW' conflicts with another user or role name
+ORA-28069: A data redaction policy already exists on this object.
+ORA-06512: at "SYS.DBMS_REDACT_INT", line 3
+ORA-06512: at "SYS.DBMS_REDACT", line 53
+ORA-06512: at line 2
+User created.
+User created.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+== ANALYST2 (no role)
+   CARD_ID PAN			EXPIR
+---------- -------------------- -----
+	 1 ************0018	01/28
+	 2 ************0026	08/26
+	 3 ************0034	03/29
+== FRAUD_OPS (CARD_FULL_VIEW) — database returns the full PAN, middle digits replaced by # by this script
+   CARD_ID PAN			EXPIR
+---------- -------------------- -----
+	 1 9000########0018	01/28
+	 2 9000########0026	08/26
+	 3 9000########0034	03/29
+== ANALYST2: the WHERE clause still uses the real value (redaction is display masking, not access control)
+CARDS_MATCHING_GUESS
+--------------------
+	       24000
+EXACT_MATCH
+-----------
+	  1
+(the guessed values are the BIN of card 1 and the full PAN — run as the analyst, who only sees masks)
+User dropped.
+User dropped.

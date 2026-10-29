@@ -136,3 +136,14 @@
 - 1b, new lead (from the automation lab's health check): the empty-user ORA-01017 come in the same seconds as
   bursts of standby→primary connections in prm1's listener log (4 at the standby start, 22 at 22:19). Bisected
   my health SQL on the standby first — 0 new failures — so it was not my query.
+
+## 2026-10-29 — re-run
+
+- `03_redaction.sh` was not re-runnable: the role and the policy already existed (ORA-01921, ORA-28069),
+  the test still passed. Now creates them only if missing.
+- I saw the GoldenGate admin password on my own terminal from `tests/gg.sh` (adminclient echoes the
+  CONNECT line). I had masked it in `06_goldengate.sh` of this repo but not in the HA/DR scripts — and
+  `timeline.sh` never removed its command file: readable by every local user on three VMs. Masked and
+  removed everywhere; checked all 5 repos and their history — not in Git.
+- My TDE notes claimed a trail purge that does not exist (finding 11). I wrote what I expected, not what I
+  had checked.

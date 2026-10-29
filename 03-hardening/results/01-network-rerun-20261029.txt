@@ -1,0 +1,22 @@
+== new TCP connection (PDBADMIN via the listener to service secpdb_app)
+TCP/IP NT Protocol Adapter for Linux: Version 23.26.1.0.0 - Production
+Encryption service for Linux: Version 23.26.1.0.0 - Production
+AES256 Encryption service adapter for Linux: Version 23.26.1.0.0 - Production
+Crypto-checksumming service for Linux: Version 23.26.1.0.0 - Production
+SHA256 Crypto-checksumming service adapter for Linux: Version 23.26.1.0.0 - Production
+== prm1: TCP sessions by program — encrypted (AES256) / checksummed (SHA256) / total
+PROGRAM 				     AES256	SHA256	    TOTAL
+---------------------------------------- ---------- ---------- ----------
+dbfs_client@prm1.rac				  5	     5		5
+replicat@prm1.rac				  4	     4		4
+extract@prm1.rac				  4	     4		4
+dgmgrl@obs-r1.rac				  2	     2		2
+oracle@stb1.rac 				  1	     1		1
+oracle@prm1.rac 				  1	     1		1
+6 rows selected.
+== stb1: TCP sessions by program — encrypted (AES256) / checksummed (SHA256) / total
+PROGRAM 				     AES256	SHA256	    TOTAL
+---------------------------------------- ---------- ---------- ----------
+oracle@prm1.rac 				  6	     6		6
+dgmgrl@obs-r1.rac				  1	     1		1
+2 rows selected.

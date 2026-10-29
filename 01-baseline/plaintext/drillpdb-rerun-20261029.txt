@@ -1,0 +1,5 @@
+# DRILLPDB (finding 3) re-grepped 2026-10-29, after its datafile 40 was restored from backup in the backup drills
+DRILLPDB card 1: 9000********0018
+TDE: BANK_DATA=YES
+prm1   DRILLPDB BANK_DATA datafile (primary)      hits=0
+stb1   DRILLPDB BANK_DATA datafile (standby)      hits=0
