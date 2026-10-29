@@ -13,8 +13,13 @@ as() { ssh -o BatchMode=yes oracle@prm1 "$ENV; sqlplus -s -L '$1/\"$2\"@//prm1.r
 
 sql <<SQL | grep -E "ORA-|completed|created|succeeded"
 alter session set container = secpdb;
-create role card_full_view;
+-- re-runnable: role and policy are created only the first time (2026-10-29 re-run: ORA-01921, ORA-28069)
+declare n number;
 begin
+  select count(*) into n from dba_roles where role = 'CARD_FULL_VIEW';
+  if n = 0 then execute immediate 'create role card_full_view'; end if;
+  select count(*) into n from redaction_policies where object_owner = 'BANK' and object_name = 'CARDS';
+  if n > 0 then return; end if;
   dbms_redact.add_policy(
     object_schema       => 'BANK',
     object_name         => 'CARDS',
