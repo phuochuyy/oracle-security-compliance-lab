@@ -61,3 +61,11 @@ check returned `3`, the start timed out after 300 s and GoldenGate stayed down (
 recovered by itself in 1 min 49 s ([HA/DR run 3](https://github.com/phuochuyy/oracle-ha-dr-failover-lab#run-3--after-the-password-rotation-2026-10-29-evening)).
 Lesson: a credential inventory has to cover every cluster, and a rotation is only finished after a role change.
 
+## Follow-up 2026-10-30 — DBSNMP still used with the old password
+
+The audit trail after the rotation: 8 × `ORA-01017` for **DBSNMP** from `OraJavaAgentDriver` on prm1, at
+every database start (20:49, 21:03, 23:38, 00:48). The CVUDB wallet update of 10-29 had returned no
+error and, it seems, changed nothing. Run again as oracle on 10-30 00:52 — `rc=0`. Not yet proven: the
+next database start must show a successful DBSNMP logon. The account was not locked (4 of 10 failures:
+the counter resets on a successful logon). Not the Cluster Health Advisor: `ora.chad` is disabled on prm1.
+

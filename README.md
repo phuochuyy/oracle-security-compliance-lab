@@ -3,7 +3,7 @@
 > Status: **done for the database layer** — TDE on RAC + Active Data Guard + GoldenGate Active-Active,
 > network encryption, profiles, least privilege, Unified Auditing, Data Redaction; assessment
 > **27 FAIL → 0** (5 documented ACCEPTs). DBSAT needs a support contract, so the assessment is a
-> CIS-style script ([why](05-assessment/README.md)). Open: one finding (1b), Privilege Analysis, audit
+> CIS-style script ([why](05-assessment/README.md)). Open: one finding (1b), audit
 > retention.
 
 ## Findings
@@ -22,7 +22,7 @@
 | 8 | [No audit of card data access, grants, code DDL, successful logons](04-auditing/README.md) | 5 policies | test shows each action once; found two of my own policy mistakes on the way |
 | 9 | [PAN shown in full to every reader](03-hardening/README.md) | Data Redaction (last 4) | analyst sees `************0018`; WHERE-clause inference documented |
 | 10 | [The GoldenGate admin password in clear on the VMs](#re-run-2026-10-29) — adminclient echoes its `CONNECT ... PASSWORD` line; one lab script left that command file **world-readable in `/tmp` on 3 VMs** | output masked, command files `umask 077` and always removed; **password rotated** on 16 accounts that shared it ([runbook](03-hardening/password-rotation.md)) | 0 in output, 0 files left; never in Git (all 5 repos and history); old password refused everywhere |
-| 11 | [Trail files written before `ENCRYPTTRAIL` still hold clear PANs 3 days later](#re-run-2026-10-29) — no trail purge is set up | purge task on both deployments (every 6 h, only files all readers passed, keep 24 h); local trails blocked by `OGG-30480` → one-off purge by the same rule | 66 local + 68 received files removed; the last pre-encryption files are < 24 h old — **still 5 hits**, open until they age out |
+| 11 | [Trail files written before `ENCRYPTTRAIL` still hold clear PANs 3 days later](#re-run-2026-10-29) — no trail purge is set up | purge task on both deployments (every 6 h, only files all readers passed, keep 24 h); local trails blocked by `OGG-30480` → one-off purge by the same rule | 66 local + 68 received files removed; after 24 h a second local purge by the same rule (17 + 7 files): **0 hits on all 4 trails** (2026-10-30), replication checked after — **closed**; the local-trail purge stays manual (`OGG-30480`) |
 
 ## Re-run 2026-10-29
 
@@ -77,7 +77,7 @@ the effect of each control — including what it does to Data Guard and GoldenGa
 | TDE with GoldenGate | Integrated Extract on encrypted redo, `ENCRYPTTRAIL AES256` | trails 5 hits → 0, replication both ways | 3.5, 4 | done |
 | Encryption in transit | native network encryption AES256 + SHA256 required (TLS not set up) | `V$SESSION_CONNECT_INFO` incl. redo transport | 4.2 | done |
 | Masking | Data Redaction on `CARDS.PAN` | analyst vs `CARD_FULL_VIEW` user | 3.4 | done (**VPD not built**) |
-| Least privilege | schema-only owner, PUBLIC revokes, SYSDG observer, no ANY/DBA grants | assessment R0x checks | 7.2 | done (**Privilege Analysis not run**) |
+| Least privilege | schema-only owner, PUBLIC revokes, SYSDG observer, no ANY/DBA grants | assessment R0x checks; [Privilege Analysis](03-hardening/README.md#privilege-analysis-2026-10-30): REPORT_RO used 4 of its 5 table grants, `SELECT` on `CARDS` never | 7.2 | done (role change belongs to the automation lab's `users.yml`) |
 | Authentication | profiles for people and service accounts, strong verify function, 12a verifiers | assessment U10/N03, `ORA-28003` in the audit test | 8.3 | done |
 | Auditing | Unified Auditing: card table, grants, code DDL, logons, SYS | test scenario, volume tuning | 10.2 | done (**retention/purge not set up**) |
 | Assessment | CIS-style script — DBSAT needs a support contract | 27 FAIL → 0 | 11.3 | done |

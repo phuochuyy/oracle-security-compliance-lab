@@ -134,4 +134,5 @@ marker PANs counted in the newest trail files of both deployments. Log: [`result
 **Still to harden (noted, not done)**
 - The GG master key wallet (`cwallet.sso`, auto-login) lives on DBFS, i.e. in the unencrypted tablespace
   `DBFS_TS` of ORCLPDB2 → encrypt `DBFS_TS` too (1 GB; host disk is short in this lab).
-- Both deployments use the same weak `oggadmin` password, written in the lab control script (PCI-DSS 8).
+- ~~Both deployments use the same weak `oggadmin` password, written in the lab control script (PCI-DSS 8).~~
+  Done 2026-10-29: rotated, read from a mode-600 file, masked in every output ([runbook](../03-hardening/password-rotation.md)).
