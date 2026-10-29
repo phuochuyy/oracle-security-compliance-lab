@@ -147,3 +147,11 @@
   removed everywhere; checked all 5 repos and their history — not in Git.
 - My TDE notes claimed a trail purge that does not exist (finding 11). I wrote what I expected, not what I
   had checked.
+- Password rotation (finding 10): 16 accounts shared the exposed value. Dependencies I would have missed
+  without the inventory: the DBFS wallets on all 6 nodes (wallet password never recorded → rebuilt), the
+  CVU cluster wallet for DBSNMP, XAG's copy of the GG admin password, the path credentials on the *other*
+  site. My REST script assumed one user store per site — Service Manager and Admin Server have one each
+  (HTTP 403 on the second port). The vault re-encryption failed once and left the decrypted copy on disk
+  for a minute until I noticed and shredded it.
+- Trail purge (finding 11): the purge task does not purge local trails here (`OGG-30480`), reason not
+  found; purged those once by hand with the task's own rule.
