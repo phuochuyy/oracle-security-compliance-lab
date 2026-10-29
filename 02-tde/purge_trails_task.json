@@ -1,0 +1,12 @@
+{
+  "description": "Purge trail files every reader has passed, keep at least 24 h (security lab finding 11)",
+  "enabled": true,
+  "schedule": {"every": {"units": "hours", "value": 6}},
+  "command": {
+    "name": "purge",
+    "purgeType": "trails",
+    "trails": [{"name": "ea"}, {"name": "eb"}],
+    "useCheckpoints": true,
+    "keep": [{"type": "min", "units": "hours", "value": 24}]
+  }
+}

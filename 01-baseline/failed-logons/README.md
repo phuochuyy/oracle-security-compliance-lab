@@ -114,3 +114,21 @@ statistics fetch), and a server-side trace of one of those connections.
 
 No account can be locked by these (no username). Next idea: `strace`/`bpftrace` on stb3 (not installed) or a
 server-side errorstack on the primary (`event 1017`).
+
+## Re-run 2026-10-29 — 1b during failovers
+
+6 hours including the HA/DR failover tests ([`rerun-20261029.txt`](rerun-20261029.txt)): **0 SYS ORA-01031**.
+18 empty-user ORA-01017, all between 12:04 and 13:01, the window of the switchovers and the two FSFO failovers
+with reinstates: 13 from `oracle@stb1.rac (TNS V1-V3)`, 3 from `oracle@prm1.rac` (from both sides, as the
+roles changed), 2 pairs from `dgmgrl@stb1.rac` (an empty user, then `/`, 1 s later — not from my scripts,
+which connect as `C##DGADMIN` and would show that user). Fits the lead above: Data Guard's own connections at role
+changes and restarts. Still open.
+
+## 2026-10-30 — one more source of empty-user ORA-01017
+
+After a cold start the standby's audit trail had, besides the known `oracle@stb1.rac (TNS V1-V3)` records,
+2 empty-user ORA-01017 from **`OraJavaAgentDriver` on stb1** at the database start (00:48) — the Java agent
+of Grid's CVU, which on the primary logs in as DBSNMP with the credential from the cluster wallet `CVUDB`.
+The standby's cluster has no `CVUDB` wallet (`crsctl query wallet -type CVUDB` → CLSW-9), so its agent
+tries without a user. That explains those 2, not the `oracle@stb1` ones (different program) — 1b stays open.
+

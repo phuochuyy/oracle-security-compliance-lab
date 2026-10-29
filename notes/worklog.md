@@ -136,3 +136,22 @@
 - 1b, new lead (from the automation lab's health check): the empty-user ORA-01017 come in the same seconds as
   bursts of standby→primary connections in prm1's listener log (4 at the standby start, 22 at 22:19). Bisected
   my health SQL on the standby first — 0 new failures — so it was not my query.
+
+## 2026-10-29 — re-run
+
+- `03_redaction.sh` was not re-runnable: the role and the policy already existed (ORA-01921, ORA-28069),
+  the test still passed. Now creates them only if missing.
+- I saw the GoldenGate admin password on my own terminal from `tests/gg.sh` (adminclient echoes the
+  CONNECT line). I had masked it in `06_goldengate.sh` of this repo but not in the HA/DR scripts — and
+  `timeline.sh` never removed its command file: readable by every local user on three VMs. Masked and
+  removed everywhere; checked all 5 repos and their history — not in Git.
+- My TDE notes claimed a trail purge that does not exist (finding 11). I wrote what I expected, not what I
+  had checked.
+- Password rotation (finding 10): 16 accounts shared the exposed value. Dependencies I would have missed
+  without the inventory: the DBFS wallets on all 6 nodes (wallet password never recorded → rebuilt), the
+  CVU cluster wallet for DBSNMP, XAG's copy of the GG admin password, the path credentials on the *other*
+  site. My REST script assumed one user store per site — Service Manager and Admin Server have one each
+  (HTTP 403 on the second port). The vault re-encryption failed once and left the decrypted copy on disk
+  for a minute until I noticed and shredded it.
+- Trail purge (finding 11): the purge task does not purge local trails here (`OGG-30480`), reason not
+  found; purged those once by hand with the task's own rule.

@@ -64,3 +64,32 @@ the new profile, Data Guard `SUCCESS`. Log: [`results/02-profiles-privs.log`](re
 rows, and `WHERE pan = '<full number>'` → 1 row. The predicate uses the real value, so a user can confirm
 or guess numbers. Redaction is display masking for applications and reports; who may query `CARDS` at all
 is access control (roles, VPD), and every query on it is audited (`SEC_CARDS_ACCESS`).
+
+## Privilege Analysis (2026-10-30)
+
+[`04_privilege_analysis.sh`](04_privilege_analysis.sh) `start | work | stop`: a database-wide capture in SECPDB
+(`DBMS_PRIVILEGE_CAPTURE`, all users except SYS), the three reports REPORT_RO exists for, then the results
+([`results/04-privilege-analysis.log`](results/04-privilege-analysis.log)):
+
+| REPORT_RO | Privileges |
+|-----------|------------|
+| used | `CREATE SESSION`; `SELECT` on `ACCOUNTS`, `BRANCHES`, `CUSTOMERS`, `TRANSACTIONS` (through `BANK_READ`) |
+| granted, **not used** | `SELECT` on `BANK.CARDS` — the table with the card numbers |
+
+So the reporting role carries the one grant PCI-DSS 7 cares most about without needing it (the PAN is
+redacted for it, but the right to read the table is still there). Recommendation: `BANK_READ` without
+`CARDS`, a separate role for whoever needs card data. Limits: one run of the reports; a real capture covers
+a whole business cycle, month end included.
+
+**Applied the same day, as code:** `REPORT_RO` and `BANK_READ` are defined in the automation lab's `users.yml`.
+I had written here that a manual `REVOKE` "would be put back" — wrong: the role only *added* missing grants, so
+removing the line from `users.yml` changed nothing either. The automation lab's role now also revokes object
+grants that are not in the file; run 1 `revoke SELECT on "BANK"."CARDS" from bank_read`, run 2 no change.
+Afterwards ([log](results/04-privilege-analysis-after-revoke.log)): Privilege Analysis — no unused privilege
+for REPORT_RO; assessment still 0 FAIL, C04 "who can read BANK.CARDS" = nobody but the owner.
+
+First run: `ORA-01017` for REPORT_RO — my script piped the password into `ssh` *and* gave it a heredoc,
+so the heredoc became stdin and `read` took the first SQL line as the password (2 of 5 allowed failures used,
+the counter reset at the next good logon). Now the `connect` line and the SQL go as one stream, which also
+keeps the password off the VM's command line.
+
