@@ -1,0 +1,9 @@
+Session altered.
+AT_TIME  STATUS 			    ERROR#
+-------- ------------------------------ ----------
+03:45:49 FAILED 			      1950
+03:46:27 SUCCEEDED				 0
+ARCHIVE_RUNS_ROWS
+-----------------
+		1
+off-host copy md5 53c75f4c8696 / server 53c75f4c8696
