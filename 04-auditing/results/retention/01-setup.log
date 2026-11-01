@@ -1,0 +1,27 @@
+Session altered.
+Tablespace created.
+PL/SQL procedure successfully completed.
+Directory created.
+User created.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+Table created.
+Procedure created.
+No errors.
+Grant succeeded.
+PL/SQL procedure successfully completed.
+OWNER
+--------------------------------------------------------------------------------------------------------------------------------
+JOB_NAME															 ENABL
+-------------------------------------------------------------------------------------------------------------------------------- -----
+REPEAT_INTERVAL
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+AUDIT_MGR
+AUDIT_ARCHIVE_DAILY														 TRUE
+FREQ=DAILY;BYHOUR=1;BYMINUTE=0
+AUDSYS
+PURGE_UNIFIED_DAILY														 TRUE
+FREQ=HOURLY;INTERVAL=24
+2 rows selected.
