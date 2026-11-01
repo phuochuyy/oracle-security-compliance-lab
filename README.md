@@ -16,7 +16,7 @@
 | 2 | [Card numbers readable in datafiles, archived redo and backups on both sites](01-baseline/plaintext/) | [TDE](02-tde/): online AES256 encryption, 6 s per tablespace, under load | 3–4 hits per file → **0**; 0 application errors during the rewrite (PCI-DSS 3.5) |
 | 3 | Same card data in a test PDB, never encrypted ([residual check](01-baseline/plaintext/residual_plaintext.sh)) | `BANK_DATA` encrypted too (6 s) | `verify_drillpdb.sh` PASS; re-grepped on the re-run: **0 hits** on both sites |
 | 4 | [GoldenGate trails held card numbers in clear after TDE](02-tde/README.md) — on both sites | `ENCRYPTTRAIL AES256`, shared GG master key | 5 hits per trail → **0**, replication both ways working (PCI-DSS 3, 4) |
-| 5 | [A master key change stops redo apply on the standby for the whole CDB](02-tde/README.md) (`ORA-28374`) | copy keystore right after `SET KEY`; tested restore from the off-host copy | recovered in 37 s / 19 s; switchover 57–63 s each way with TDE |
+| 5 | [A master key change stops redo apply on the standby for the whole CDB](02-tde/README.md) (`ORA-28374`) | copy keystore right after `SET KEY`; tested restore from the off-host copy | recovered in 37 s / 19 s; switchover 57–69 s each way with TDE |
 | 6 | [No network encryption — not even redo transport between sites](03-hardening/README.md) | `sqlnet.ora`: AES256 + SHA256 required, logon version 12a | 0 → all new sessions, GoldenGate 8/8, redo transport 5/5 encrypted (PCI-DSS 4.2) |
 | 7 | [Every account on the DEFAULT profile; data owner could log in; PUBLIC could use UTL_TCP/HTTP/FILE](03-hardening/README.md) | service + admin profiles, schema-only `BANK`, revokes | revokes broke 14 Oracle objects → direct grants, 0 invalid |
 | 8 | [No audit of card data access, grants, code DDL, successful logons](04-auditing/README.md) | 5 policies | test shows each action once; found two of my own policy mistakes on the way |
@@ -82,6 +82,13 @@ the effect of each control — including what it does to Data Guard and GoldenGa
 | Auditing | Unified Auditing: card table, grants, code DDL, logons, SYS | test scenario, volume tuning | 10.2 | done (**retention/purge not set up**) |
 | Assessment | CIS-style script — DBSAT needs a support contract | 27 FAIL → 0 | 11.3 | done |
 
+## Licensing
+
+TDE and Data Redaction are part of **Oracle Advanced Security**, an extra-cost option on Enterprise Edition
+on-premises (included in some Oracle Cloud offerings). Native network encryption / TLS, Unified Auditing and
+Privilege Analysis are included in Enterprise Edition. Checked against the *Oracle Database 23ai Licensing
+Information User Manual*; this lab uses the options for learning — check the licenses before using them at work.
+
 ## Layout
 
 ```
@@ -101,14 +108,7 @@ GG_B (orcl3 on prm3). Passwords in the git-ignored `lab.env` (`lab.env.example`)
 
 - [x] `01-baseline/` findings before hardening (failed logons, plaintext card data) — DBSAT replaced, see 05
 - [x] `02-tde/` keystore setup, tablespace encryption, rotation, DG + GG impact notes
-- [x] `03-hardening/` parameters, network encryption, profiles, privileges, redaction (Privilege Analysis: open)
+- [x] `03-hardening/` parameters, network encryption, profiles, privileges, redaction, Privilege Analysis
 - [x] `04-auditing/` policies + sample audit records for each scenario
 - [x] `05-assessment/` CIS-style assessment before/after (DBSAT unavailable)
 - [x] [PCI-DSS mapping](05-assessment/pci-dss-mapping.md) with evidence links
-
-## CV line (fill only with real results)
-
-`Hardened an Oracle 23ai RAC + Active Data Guard + GoldenGate Active-Active setup for PCI-DSS: TDE online
-under load (0 errors), keystore drills (standby apply stopped by a key change, recovered in 37 s), GoldenGate
-trails found in clear text and encrypted, network encryption incl. redo transport, Unified Auditing,
-redaction; security assessment 27 FAIL → 0; 3,000+ failed SYS logons from the FSFO observers removed.`
