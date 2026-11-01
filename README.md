@@ -4,8 +4,8 @@
 > network encryption, profiles, least privilege, Unified Auditing, Data Redaction; assessment
 > **27 FAIL → 0** (5 documented ACCEPTs). DBSAT needs a support contract, so the assessment is a
 > CIS-style script ([why](05-assessment/README.md)). Open: one finding (1b); audit
-> retention is [designed and sized](https://github.com/phuochuyy/oracle-performance-tuning-lab/tree/main/03-cases/10-audit-overhead)
-> (archive → last-archive timestamp → purge job, ~0.35 ms CPU and 0.68 KB per record) but not switched on.
+> retention [runs in the performance PDB](04-auditing/README.md#retention--02_retentionsh) (archive to CSV →
+> counts match → last-archive timestamp → purge job; 13,849 records archived on the first run), SECPDB still to do.
 
 ## Findings
 

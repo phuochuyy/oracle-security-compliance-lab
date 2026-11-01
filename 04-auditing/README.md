@@ -62,3 +62,37 @@ agreed with the team first, not created on my own in this lab.
 Same records, each action once ([`results/02-test-rerun-20261029.log`](results/02-test-rerun-20261029.log)). The
 LOGON/LOGOFF lines are now under `SEC_LOGON_SUCCESS` — the example above is from before the logon tuning,
 when successes went to `ORA_LOGIN_LOGOUT`.
+
+## Retention — [`02_retention.sh`](02_retention.sh)
+
+PCI-DSS 10.5.1: keep audit records 12 months, the last 3 at hand. Before this, nothing ever left the trail: no
+archive timestamp, no purge job, the trail in `SYSAUX`, oldest record from January. Piloted in PDB `PERF` on orcl3,
+where the [cost of auditing](https://github.com/phuochuyy/oracle-performance-tuning-lab/tree/main/03-cases/10-audit-overhead)
+was measured (~0.35 ms CPU and 0.68 KB per record).
+
+**Rule: nothing is purged that was not archived first.**
+
+| Piece | What |
+|-------|------|
+| `AUDIT_TBS` | own tablespace, TDE-encrypted (audit rows carry SQL text), set as the unified trail location (new daily partitions) |
+| `AUDIT_MGR.AUDIT_ARCHIVE` | writes the records older than 90 days since the last archive to a CSV, re-counts them in the trail, and **only if the counts match** moves the last-archive timestamp |
+| privileges | `AUDIT_MGR` has no password, nobody logs in as it; `AUDIT_ADMIN`/`AUDIT_VIEWER` are granted **to the procedure** (code-based access control), so only this code can use them |
+| `AUDIT_ARCHIVE_DAILY` | scheduler job, 01:00 Asia/Ho_Chi_Minh |
+| `PURGE_UNIFIED_DAILY` | `DBMS_AUDIT_MGMT` purge job, every 24 h, `use_last_arch_timestamp => true` — it can only delete what was marked archived |
+
+First run ([`results/retention/`](results/retention/)): **13,849 records** older than 90 days (from the January
+image build) → `unified_19700101_20260803.csv`, 5.2 MB, 13,849 lines = 13,849 in the trail → last-archive
+timestamp 2026-08-03 00:00 UTC; second run a no-op (SUCCEEDED, nothing written). The CSV is copied off the server
+(same md5). Status after: 13,849 *archived (purgeable)*, 179,610 *not archived*; the purge job removes the archived
+ones on its first run.
+
+Problems on the way:
+- The first job run archived and marked, then failed on its own log row: `ORA-01950` — `AUDIT_MGR` had no default
+  tablespace, so its log table was in `SYSTEM`. Fixed (default `AUDIT_TBS`, quota); the row of that run was added by
+  hand. The mark is the last real step, so the failure left nothing half-done.
+- The scheduler's default time zone is `PST8PDT`: "01:00" was 16:00 local time. The job now has a start date in
+  `Asia/Ho_Chi_Minh`.
+- Tested with `run_job(use_current_session => false)` on purpose: in the current session it would have run as SYS
+  and hidden missing privileges.
+- Not yet on SECPDB (orcl, RAC + standby): the same script, with the archive directory on a path both nodes share or
+  the job pinned to one instance.

@@ -1,0 +1,14 @@
+Session altered.
+STATUS				   ERROR# RUN_DURATION
+------------------------------ ---------- ---------------------------------------------------------------------------
+ADDITIONAL_INFO
+----------------------------------------------------------------------------------------------------
+FAILED				     1950 +000 00:00:01
+ORA-01950: The user AUDIT_MGR has insufficient quota on tablespace SYSTEM.
+ORA-06512: at "AUDIT_MGR.AUDIT_ARCHIVE", line 39
+ORA-06512: at line 1
+no rows selected
+AUDIT_TRAIL		  LAST_ARCHIVE_TS
+------------------------- ---------------------------------------------------------------------------
+UNIFIED AUDIT TRAIL	  03-AUG-26 12.00.00.000000 AM +00:00
+unified_19700101_20260803.csv: 5.2M, 13849 records
