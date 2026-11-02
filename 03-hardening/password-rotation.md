@@ -22,7 +22,7 @@ PDBADMIN (PERF, RCAT). GoldenGate: `oggadmin` in 4 user stores (Service Manager 
 
 | Account | Depends on it | Done |
 |---------|---------------|------|
-| SYS (orcl) | password file in ASM → standby orcl_stb (redo transport authenticates as SYS: `redo_transport_user` empty) | `ALTER USER` on the primary; the standby's password file was updated **through redo** — SYS on orcl_stb accepted the new password, rejected the old one |
+| SYS (orcl) | password file in ASM on the primary; on the standby orcl_stb **one local file per instance** (none registered in CRS — found later, see below); redo transport authenticates as SYS (`redo_transport_user` empty) | `ALTER USER` on the primary; the standby's password file was updated **through redo** — but only on the running instance (stb1); stb2 was off and kept the old file |
 | SYS (orcl3) | password file `orapwORCL3` on stb3 — **stb3 was off** | copy kept on the host; `labctl` installs it when stb3 next starts (one-time `files/pending/`) |
 | DBSNMP (orcl) | Grid's CVU (`ora.cvu`, program `OraJavaAgentDriver`) via the cluster wallet `CVUDB` | `crsctl modify wallet -type CVUDB -name orcl -user DBSNMP -passwd` — refused as root (CLSW-17) and grid (CLSW-12), no error as **oracle** — to confirm at CVU's next DBSNMP logon |
 | GGADMIN | GG credential store aliases `OGG_A` / `OGG_B` | `ALTER CREDENTIALSTORE REPLACE USER ...`, `DBLOGIN USERIDALIAS` OK |
@@ -69,3 +69,13 @@ error and, it seems, changed nothing. Run again as oracle on 10-30 00:52 — `rc
 next database start must show a successful DBSNMP logon. The account was not locked (4 of 10 failures:
 the counter resets on a successful logon). Not the Cluster Health Advisor: `ora.chad` is disabled on prm1.
 
+## Missed, found 2026-11-02 — stb2's password file
+
+orcl_stb had no password file in CRS, so stb1 and stb2 each used `$ORACLE_HOME/dbs/orapw<SID>`. Redo
+updated the file of the running instance only; stb2 was off and kept the old one. At its next start: 8 SYS
+ORA-01017 from stb2 to the primary, and the primary's redo transport to stb2 rejected. Fixed by putting the
+standby's password file in ASM and registering it (`srvctl modify database -db orcl_stb -pwfile ...`) — one
+file per database on both sites now, so the next rotation reaches every instance. Details and evidence:
+[finding 1b, 2026-11-02](../01-baseline/failed-logons/README.md#2026-11-02--1b-traced-to-oracles-internal-connections-a-real-stale-password-file-on-stb2).
+Lesson: "the standby got it through redo" was checked on one instance; for RAC, check where **each
+instance** reads its password file (`gv$passwordfile_info`).

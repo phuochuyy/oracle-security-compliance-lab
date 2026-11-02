@@ -80,7 +80,7 @@ mode-600 file — **0 SYS ORA-01031** since, across two scenario switches (`dg-a
 standby drill. (The empty-user ORA-01017 of 1b still came with every standby restart: 10 on orcl3 from stb3
 during that drill, whose conversions restart the standby.)
 
-## Still open — ORA-01017 with an empty username from the standby
+## 1b — ORA-01017 with an empty username from the standby (source found 2026-11-02, see the end)
 
 Two records every time the standby instance ORCL3_STB starts, ~1 s after `Starting ORACLE instance`, to
 service `ORCL3.rac`, listener `PROGRAM=oracle`. Redo transport, apply and the broker all work. Ruled out so far:
@@ -88,11 +88,11 @@ service `ORCL3.rac`, listener `PROGRAM=oracle`. Redo transport, apply and the br
 | Hypothesis | Test | Result |
 |------------|------|--------|
 | standby ARCn (FAL) with a stale password file | `ss -tnp` during a restart showed `ora_arc2` connecting at the same time; copied the primary's password file to the standby (old one kept) | still 2 failures → not the password file; ARCn timing was a coincidence |
-| Data Guard broker | standby broker log | broker bootstrap starts *after* the failures |
+| Data Guard broker | standby broker log | broker bootstrap starts *after* the failures — **wrong on Region A**, see 2026-11-02: the broker's `NSV0` is one of the sources |
 | a wallet / external authentication | `sqlnet.ora` on stb3 | none exists |
 | a script on stb3 | `oracle-db.sh`, `ogg-ha-controller.sh` | both connect locally (`/ as sysdba`), not over the network |
 | client-side SQL*Net trace | `TRACE_LEVEL_CLIENT=16` during a restart | only the local sqlplus sessions were traced |
-| kernel audit of `connect()` | `auditctl -S connect -F uid=oracle` | no events recorded — to investigate |
+| kernel audit of `connect()` | `auditctl -S connect -F uid=oracle` | no events recorded — **my mistake**: the events were there, `ausearch -ts` returned nothing (2026-11-02) |
 
 Region A shows the same pattern: `oracle@stb1.rac` 478 and `oracle@stb2.rac` 412 records, and 2 within the
 minute I restarted orcl_stb (TDE drill) — so it is not specific to Region B's setup.
@@ -130,5 +130,56 @@ After a cold start the standby's audit trail had, besides the known `oracle@stb1
 2 empty-user ORA-01017 from **`OraJavaAgentDriver` on stb1** at the database start (00:48) — the Java agent
 of Grid's CVU, which on the primary logs in as DBSNMP with the credential from the cluster wallet `CVUDB`.
 The standby's cluster has no `CVUDB` wallet (`crsctl query wallet -type CVUDB` → CLSW-9), so its agent
-tries without a user. That explains those 2, not the `oracle@stb1` ones (different program) — 1b stays open.
+tries without a user. That explains those 2, not the `oracle@stb1` ones (different program) — 1b stayed open (until 2026-11-02, below).
+
+## 2026-11-02 — 1b traced to Oracle's internal connections; a real stale password file on stb2
+
+Evidence: [`20261102/`](20261102/). Region A started with prm1 + stb1 + stb2 (no observer).
+
+**First, a real ORA-01017 that was not 1b.** Besides the empty-user records, the primary had **8 SYS
+ORA-01017 from stb2** at 00:56–00:59 (stb2 had been started once to receive files), and the standby had SYS
+rejected from prm1 on instance 2 (1 at 00:58, 2 at 10:22). Cause: `orcl_stb` had **no password file
+registered in CRS** (`Password file:` empty), so each instance used its own `$ORACLE_HOME/dbs/orapw<SID>`.
+Redo updated stb1's file at the SYS rotation of 10-29 (17:08); stb2 was off, its file stayed the one of
+08-25 ([before](20261102/pwfile-before.txt)). My rotation runbook said "password file in ASM → standby" —
+true for the primary only. Fix: stb1's file copied into ASM (`asmcmd pwcopy` as grid — its
+`--dbuniquename` form failed: grid may not modify the oracle-owned resource), registered with
+`srvctl modify database -db orcl_stb -pwfile +DATA/ORCL_STB/PASSWORD/pwdorcl_stb`, stb2's local file
+renamed `.bak_20261102`, stb2 restarted. After: both instances on the ASM file
+(`gv$passwordfile_info`), **0 SYS ORA-01017** over two restarts of stb2, transport VALID / NO GAP, lag 0
+([after](20261102/logons-and-pwfile-after.txt)). stb1's local file is still there (unused); renamed at its
+next restart.
+
+**Then 1b itself.** Every start of stb2 still produced one empty-user ORA-01017 on the primary (10:28:06,
+10:32:22). With the kernel audit of `connect()` on stb2 during the second restart
+([`stb2_auditd_connect_to_primary.txt`](20261102/stb2_auditd_connect_to_primary.txt)), the **only** process
+on stb2 that connected to the primary's listeners was **`ora_nsv0`** — the broker's network process (created
+10:32:19). Its trace ([`stb2_nsv0_36532.trc`](20261102/stb2_nsv0_36532.trc)):
+
+```
+*** 2026-11-02T10:32:22.585751+07:00
+KGFCHECK kgfnStmtExecute01c: (ret == OCI_SUCCESS): FAILED at kgfn.c:3936
+*** 2026-11-02T10:32:22.845064+07:00
+rfiupicl(): Connect identifier used is: orcl
+Connected to instance 1 [DRCX (pid=20140 dbun=orcl inst=orcl1 host=prm1.rac)]
+```
+
+The same `kgfnStmtExecute01c FAILED` line is in the traces of 4 MMON slaves on stb2 (`M001`–`M004`, action
+"RAC PDB Flush Slave Action", next to `kgfpOpenPwFile` / `kgfpFileAttr` on the password file —
+[`stb2_m002_36921.trc`](20261102/stb2_m002_36921.trc)) — matching the 4 empty-user records at
+10:32:47–48 — and of `M000` on stb1 (2 records at 10:32:52–53). So the empty-user logons are the first
+attempt of internal connections made through Oracle's `kgfn` layer; the next attempt succeeds (NSV0
+connected 0.26 s later; the standby's internal logons show up as `PUBLIC`/`SYSOPER`, return code 0).
+
+**What I can and cannot say:** the source processes are identified, the failures carry no username (no
+account can be locked) and the work they belong to succeeds. *Why* `kgfn` tries without a username first
+is inside Oracle's code — I found no note for it (closest: MOS 2115559.1, ORA-1017 from the broker at a
+RAC switchover). **Status: explained, accepted.** A failed-logon alert should exclude exactly this pattern
+(empty username, program `oracle@<own standby/primary host> (TNS V1-V3)`), never all ORA-01017.
+
+**Two corrections to my earlier counts:** the standby's `UNIFIED_AUDIT_TRAIL` also shows the primary's
+records (they arrive by redo, same `OS_PROCESS`), so counting "2 on prm1, 2 on stb1" double-counts if
+those are the same records — the earlier per-site numbers were not re-checked for this. And the
+"no events recorded" of the kernel audit (table above) was `ausearch -ts` returning nothing; the events
+were in `/var/log/audit/audit.log`.
 

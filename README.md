@@ -3,8 +3,9 @@
 > Status: **done for the database layer** — TDE on RAC + Active Data Guard + GoldenGate Active-Active,
 > network encryption, profiles, least privilege, Unified Auditing, Data Redaction; assessment
 > **27 FAIL → 0** (5 documented ACCEPTs). DBSAT needs a support contract, so the assessment is a
-> CIS-style script ([why](05-assessment/README.md)). Open: one finding (1b), audit
-> retention.
+> CIS-style script ([why](05-assessment/README.md)). Finding 1b explained (Oracle-internal, accepted); audit
+> retention [runs in the performance PDB](04-auditing/README.md#retention--02_retentionsh) (archive to CSV →
+> counts match → last-archive timestamp → purge job; 13,849 records archived on the first run), SECPDB still to do.
 
 ## Findings
 
@@ -12,17 +13,18 @@
 |---|---------|-----|--------|
 | 1 | [1,325 failed SYS logons (ORA-01031) from the observer, every ~12 s](01-baseline/failed-logons/) — found from `Failed Logon Delay` in AWR | observer as `C##DGADMIN` with **SYSDG only**, new wallet | 0 failed logons; FSFO tested with the new observer (PCI-DSS 7, 10) |
 | 1a | same on Region A: 1,689 SYS ORA-01031 from obs-r1 | same fix (`C##DGADMIN` on orcl, own passwords) | 15 per 3 min → **0** |
-| 1b | 2 ORA-01017 (empty user) per standby start, both regions | — | **open**, hypotheses tested and ruled out are listed |
+| 1b | [ORA-01017 with an empty user at every standby start, both regions](01-baseline/failed-logons/README.md#2026-11-02--1b-traced-to-oracles-internal-connections-a-real-stale-password-file-on-stb2) | — (inside Oracle) | **explained, accepted**: kernel audit + traces → first attempt of the standby's internal `kgfn` connections (broker `NSV0`, MMON slaves); the next attempt succeeds, no user to lock. On the way: stb2's **stale password file** (8 SYS ORA-01017 → 0, now one file in ASM) |
 | 2 | [Card numbers readable in datafiles, archived redo and backups on both sites](01-baseline/plaintext/) | [TDE](02-tde/): online AES256 encryption, 6 s per tablespace, under load | 3–4 hits per file → **0**; 0 application errors during the rewrite (PCI-DSS 3.5) |
 | 3 | Same card data in a test PDB, never encrypted ([residual check](01-baseline/plaintext/residual_plaintext.sh)) | `BANK_DATA` encrypted too (6 s) | `verify_drillpdb.sh` PASS; re-grepped on the re-run: **0 hits** on both sites |
 | 4 | [GoldenGate trails held card numbers in clear after TDE](02-tde/README.md) — on both sites | `ENCRYPTTRAIL AES256`, shared GG master key | 5 hits per trail → **0**, replication both ways working (PCI-DSS 3, 4) |
-| 5 | [A master key change stops redo apply on the standby for the whole CDB](02-tde/README.md) (`ORA-28374`) | copy keystore right after `SET KEY`; tested restore from the off-host copy | recovered in 37 s / 19 s; switchover 57–63 s each way with TDE |
+| 5 | [A master key change stops redo apply on the standby for the whole CDB](02-tde/README.md) (`ORA-28374`) | copy keystore right after `SET KEY`; tested restore from the off-host copy | recovered in 37 s / 19 s; switchover 57–69 s each way with TDE |
 | 6 | [No network encryption — not even redo transport between sites](03-hardening/README.md) | `sqlnet.ora`: AES256 + SHA256 required, logon version 12a | 0 → all new sessions, GoldenGate 8/8, redo transport 5/5 encrypted (PCI-DSS 4.2) |
 | 7 | [Every account on the DEFAULT profile; data owner could log in; PUBLIC could use UTL_TCP/HTTP/FILE](03-hardening/README.md) | service + admin profiles, schema-only `BANK`, revokes | revokes broke 14 Oracle objects → direct grants, 0 invalid |
 | 8 | [No audit of card data access, grants, code DDL, successful logons](04-auditing/README.md) | 5 policies | test shows each action once; found two of my own policy mistakes on the way |
 | 9 | [PAN shown in full to every reader](03-hardening/README.md) | Data Redaction (last 4) | analyst sees `************0018`; WHERE-clause inference documented |
 | 10 | [The GoldenGate admin password in clear on the VMs](#re-run-2026-10-29) — adminclient echoes its `CONNECT ... PASSWORD` line; one lab script left that command file **world-readable in `/tmp` on 3 VMs** | output masked, command files `umask 077` and always removed; **password rotated** on 16 accounts that shared it ([runbook](03-hardening/password-rotation.md)) | 0 in output, 0 files left; never in Git (all 5 repos and history); old password refused everywhere |
 | 11 | [Trail files written before `ENCRYPTTRAIL` still hold clear PANs 3 days later](#re-run-2026-10-29) — no trail purge is set up | purge task on both deployments (every 6 h, only files all readers passed, keep 24 h); local trails blocked by `OGG-30480` → one-off purge by the same rule | 66 local + 68 received files removed; after 24 h a second local purge by the same rule (17 + 7 files): **0 hits on all 4 trails** (2026-10-30), replication checked after — **closed**; the local-trail purge stays manual (`OGG-30480`) |
+| 12 | [The performance test PDB on the other database held 384,000 card-like numbers in clear](https://github.com/phuochuyy/oracle-performance-tuning-lab/tree/main/03-cases/09-tde-overhead) — orcl3 had no TDE at all | keystore on orcl3, `BANK_DATA` of PERF encrypted offline in place (3.3 GB, 12 s; online would have needed a second copy) | 4 hits → **0**; measured cost: commit-heavy transfers −18 %, scans from disk −7 to −8 %, cached reads unchanged (PCI-DSS 3.5) |
 
 ## Re-run 2026-10-29
 
@@ -82,6 +84,13 @@ the effect of each control — including what it does to Data Guard and GoldenGa
 | Auditing | Unified Auditing: card table, grants, code DDL, logons, SYS | test scenario, volume tuning | 10.2 | done (**retention/purge not set up**) |
 | Assessment | CIS-style script — DBSAT needs a support contract | 27 FAIL → 0 | 11.3 | done |
 
+## Licensing
+
+TDE and Data Redaction are part of **Oracle Advanced Security**, an extra-cost option on Enterprise Edition
+on-premises (included in some Oracle Cloud offerings). Native network encryption / TLS, Unified Auditing and
+Privilege Analysis are included in Enterprise Edition. Checked against the *Oracle Database 23ai Licensing
+Information User Manual*; this lab uses the options for learning — check the licenses before using them at work.
+
 ## Layout
 
 ```
@@ -101,14 +110,7 @@ GG_B (orcl3 on prm3). Passwords in the git-ignored `lab.env` (`lab.env.example`)
 
 - [x] `01-baseline/` findings before hardening (failed logons, plaintext card data) — DBSAT replaced, see 05
 - [x] `02-tde/` keystore setup, tablespace encryption, rotation, DG + GG impact notes
-- [x] `03-hardening/` parameters, network encryption, profiles, privileges, redaction (Privilege Analysis: open)
+- [x] `03-hardening/` parameters, network encryption, profiles, privileges, redaction, Privilege Analysis
 - [x] `04-auditing/` policies + sample audit records for each scenario
 - [x] `05-assessment/` CIS-style assessment before/after (DBSAT unavailable)
 - [x] [PCI-DSS mapping](05-assessment/pci-dss-mapping.md) with evidence links
-
-## CV line (fill only with real results)
-
-`Hardened an Oracle 23ai RAC + Active Data Guard + GoldenGate Active-Active setup for PCI-DSS: TDE online
-under load (0 errors), keystore drills (standby apply stopped by a key change, recovered in 37 s), GoldenGate
-trails found in clear text and encrypted, network encryption incl. redo transport, Unified Auditing,
-redaction; security assessment 27 FAIL → 0; 3,000+ failed SYS logons from the FSFO observers removed.`

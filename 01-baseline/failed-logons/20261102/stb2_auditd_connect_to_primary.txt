@@ -1,0 +1,12 @@
+type=SOCKADDR msg=audit(11/02/2026 10:32:21.287:11859) : saddr={ saddr_fam=inet laddr=192.168.104.14 lport=1521 } 
+type=SYSCALL msg=audit(11/02/2026 10:32:21.287:11859) : arch=x86_64 syscall=connect success=no exit=EINPROGRESS ppid=1 pid=36532 uid=oracle comm=ora_nsv0_orcl_s exe=/u01/app/oracle/product/23.26.0/dbhome_1/bin/oracle key=oraconn 
+type=SOCKADDR msg=audit(11/02/2026 10:32:21.288:11860) : saddr={ saddr_fam=inet laddr=192.168.104.12 lport=1521 } 
+type=SYSCALL msg=audit(11/02/2026 10:32:21.288:11860) : arch=x86_64 syscall=connect success=no exit=EINPROGRESS ppid=1 pid=36532 uid=oracle comm=ora_nsv0_orcl_s exe=/u01/app/oracle/product/23.26.0/dbhome_1/bin/oracle key=oraconn 
+type=SOCKADDR msg=audit(11/02/2026 10:32:22.462:11875) : saddr={ saddr_fam=inet laddr=192.168.104.16 lport=1521 } 
+type=SYSCALL msg=audit(11/02/2026 10:32:22.462:11875) : arch=x86_64 syscall=connect success=no exit=EINPROGRESS ppid=1 pid=36532 uid=oracle comm=ora_nsv0_orcl_s exe=/u01/app/oracle/product/23.26.0/dbhome_1/bin/oracle key=oraconn 
+type=SOCKADDR msg=audit(11/02/2026 10:32:22.463:11876) : saddr={ saddr_fam=inet laddr=192.168.104.12 lport=1521 } 
+type=SYSCALL msg=audit(11/02/2026 10:32:22.463:11876) : arch=x86_64 syscall=connect success=no exit=EINPROGRESS ppid=1 pid=36532 uid=oracle comm=ora_nsv0_orcl_s exe=/u01/app/oracle/product/23.26.0/dbhome_1/bin/oracle key=oraconn 
+type=SOCKADDR msg=audit(11/02/2026 10:32:22.595:11892) : saddr={ saddr_fam=inet laddr=192.168.104.15 lport=1521 } 
+type=SYSCALL msg=audit(11/02/2026 10:32:22.595:11892) : arch=x86_64 syscall=connect success=no exit=EINPROGRESS ppid=1 pid=36532 uid=oracle comm=ora_nsv0_orcl_s exe=/u01/app/oracle/product/23.26.0/dbhome_1/bin/oracle key=oraconn 
+type=SOCKADDR msg=audit(11/02/2026 10:32:22.595:11893) : saddr={ saddr_fam=inet laddr=192.168.104.12 lport=1521 } 
+type=SYSCALL msg=audit(11/02/2026 10:32:22.595:11893) : arch=x86_64 syscall=connect success=no exit=EINPROGRESS ppid=1 pid=36532 uid=oracle comm=ora_nsv0_orcl_s exe=/u01/app/oracle/product/23.26.0/dbhome_1/bin/oracle key=oraconn 

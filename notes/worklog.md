@@ -155,3 +155,18 @@
   for a minute until I noticed and shredded it.
 - Trail purge (finding 11): the purge task does not purge local trails here (`OGG-30480`), reason not
   found; purged those once by hand with the task's own rule.
+
+## 2026-11-02 — stb2 password file, finding 1b (branch `findings/stb2-pwfile-1b`)
+
+- Open item from the night before: 8 SYS ORA-01017 when stb2 was started once. Started prm1 + stb1 + stb2 (no
+  prm3: its backup timers would catch up a 2.3 GB level 0 on a host with 2.6 GB free). Cause in one command:
+  `srvctl config database -db orcl_stb` → `Password file:` empty → per-instance local files; stb2's from 08-25.
+  My rotation runbook had claimed the standby got the new SYS password through redo — I had checked on stb1 only.
+- `asmcmd pwcopy --dbuniquename` as grid failed (CRS-0245, the database resource belongs to oracle) and copied
+  nothing; plain `pwcopy` as grid + `srvctl modify -pwfile` as oracle worked.
+- 1b: the kernel audit I had "ruled out" on stb3 did work — `ausearch -ts` printed nothing, the raw
+  `audit.log` had the events. With that: `ora_nsv0` (broker) is the only stb2 process connecting to the
+  primary at start; its trace and 4 MMON slaves' traces show `kgfnStmtExecute01c FAILED` at the time of each
+  empty-user record, then a successful connection. Explained, not fixable from configuration; accepted.
+- Also noticed: the standby's unified audit trail shows the primary's records (via redo) — counting both
+  sites double-counts.

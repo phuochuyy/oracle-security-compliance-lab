@@ -1,0 +1,41 @@
+Trace file /u01/app/oracle/diag/rdbms/orcl_stb/orcl_stb2/trace/orcl_stb2_nsv0_36532.trc
+Oracle AI Database 26ai Enterprise Edition Release 23.26.1.0.0 - Production
+Version 23.26.1.0.0
+Build label:    RDBMS_23.26.1.0.0DBRU_LINUX.X64_260116.1
+ORACLE_HOME:    /u01/app/oracle/product/23.26.0/dbhome_1
+System name:	Linux
+Node name:	stb2.rac
+Release:	6.12.0-205.92.4.2.el9uek.x86_64
+Version:	#2 SMP PREEMPT_DYNAMIC Thu Aug  6 19:01:54 PDT 2026
+Machine:	x86_64
+VM name:	KVM CPUID feature flags: 0x01007efb
+CLID:	P
+Instance name: orcl_stb2
+Instance number: 2
+Database name: orcl 
+Database unique name: orcl_stb 
+Database id: 1769932804
+Database role: PHYSICAL STANDBY
+Redo thread mounted by this instance: 2
+Oracle binary inode: 	55219283
+Oracle process number: 115
+Unix process pid:       36532
+             NID:       4026531836
+             created:   2026-11-02T10:32:19.28160-7052+07:00
+             image:     oracle@stb2.rac (NSV0)
+
+
+*** 2026-11-02T10:32:22.585751+07:00 (CDB$ROOT(1))
+*** SESSION ID:(295.16855) 2026-11-02T10:32:22.585757+07:00
+*** CLIENT ID:() 2026-11-02T10:32:22.585761+07:00
+*** SERVICE NAME:() 2026-11-02T10:32:22.585765+07:00
+*** MODULE NAME:(sys$abs_interrupt) 2026-11-02T10:32:22.585769+07:00
+*** ACTION NAME:(Network Process Interrupt Function) 2026-11-02T10:32:22.585773+07:00
+*** CLIENT DRIVER:(SERVER) 2026-11-02T10:32:22.585777+07:00
+*** CONTAINER ID:(1) 2026-11-02T10:32:22.585780+07:00
+ 
+KGFCHECK kgfnStmtExecute01c: (ret == OCI_SUCCESS): FAILED at kgfn.c:3936
+
+*** 2026-11-02T10:32:22.845064+07:00 (CDB$ROOT(1))
+2026-11-02 10:32:22.845030 :rfipc.c@2959:rfiupicl(): Connect identifier used is: orcl
+Connected to instance 1 [DRCX (pid=20140 dbun=orcl inst=orcl1 host=prm1.rac)]
