@@ -1,0 +1,34 @@
+### 2026-11-02 10:22 — Region A started with prm1 + stb1 + stb2 (no prm3, no observer), before any change
+
+$ srvctl config database -db orcl_stb | grep -iE "password|spfile|instance"
+Spfile: +DATA/ORCL_STB/PARAMETERFILE/spfileorcl_stb.ora
+Password file: 
+Database instances: orcl_stb1,orcl_stb2
+
+$ srvctl config database -db orcl | grep -i password        # primary, for comparison
+Password file: +DATA/ORCL/PASSWORD/pwdorcl.256.1242152003
+
+$ ls -la $ORACLE_HOME/dbs/orapw*; md5sum $ORACLE_HOME/dbs/orapw*
+stb1: -rw-r-----   1 oracle oinstall     2560 2026-10-29_17:08:25 orapworcl_stb1
+      3d57dcf7d988d20310527579901efa0d  orapworcl_stb1
+stb2: -rw-r-----   1 oracle oinstall     2048 2026-08-25_11:16:04 orapworcl_stb2
+      8041c7c9cda41ec86b0dfd95e51a6bb1  orapworcl_stb2
+
+SQL> select inst_id, file_name, format, is_asm from gv$passwordfile_info;
+   INST_ID FILE_NAME                                                              FORMAT IS_AS
+---------- ---------------------------------------------------------------------- ------ -----
+         1 /u01/app/oracle/product/23.26.0/dbhome_1/dbs/orapworcl_stb1            12     FALSE
+         2 /u01/app/oracle/product/23.26.0/dbhome_1/dbs/orapworcl_stb2            12     FALSE
+
+$ asmcmd pwget --dbuniquename orcl_stb      # as grid
+Password file location has not been set for DB instance
+
+### Fix (between 10:23 and 10:27)
+grid@stb1$ asmcmd pwcopy --dbuniquename orcl_stb .../orapworcl_stb1 +DATA/ORCL_STB/PASSWORD/pwdorcl_stb
+  -> ASMCMD-9453 / CRS-0245: grid may not modify ora.orcl_stb.db (owned by oracle); nothing copied
+grid@stb1$ asmcmd pwcopy .../orapworcl_stb1 +DATA/ORCL_STB/PASSWORD/pwdorcl_stb          rc=0
+oracle@stb1$ srvctl modify database -db orcl_stb -pwfile +DATA/ORCL_STB/PASSWORD/pwdorcl_stb  rc=0
+oracle@stb2$ srvctl stop instance -db orcl_stb -node stb2 -stopoption immediate             started 10:27:43
+oracle@stb2$ mv orapworcl_stb2 orapworcl_stb2.bak_20261102
+oracle@stb2$ srvctl start instance -db orcl_stb -node stb2                                  returned 10:28:10
+(second restart of stb2, kernel audit of connect() on: stop 10:32:00–10:32:12, start returned 10:32:27)

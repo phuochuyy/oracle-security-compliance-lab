@@ -1,0 +1,69 @@
+Trace file /u01/app/oracle/diag/rdbms/orcl_stb/orcl_stb2/trace/orcl_stb2_m002_36921.trc
+Oracle AI Database 26ai Enterprise Edition Release 23.26.1.0.0 - Production
+Version 23.26.1.0.0
+Build label:    RDBMS_23.26.1.0.0DBRU_LINUX.X64_260116.1
+ORACLE_HOME:    /u01/app/oracle/product/23.26.0/dbhome_1
+System name:	Linux
+Node name:	stb2.rac
+Release:	6.12.0-205.92.4.2.el9uek.x86_64
+Version:	#2 SMP PREEMPT_DYNAMIC Thu Aug  6 19:01:54 PDT 2026
+Machine:	x86_64
+VM name:	KVM CPUID feature flags: 0x01007efb
+CLID:	P
+Instance name: orcl_stb2
+Instance number: 2
+Database name: orcl 
+Database unique name: orcl_stb 
+Database id: 1769932804
+Database role: PHYSICAL STANDBY
+Redo thread mounted by this instance: 2
+Oracle binary inode: 	55219283
+Oracle process number: 133
+Unix process pid:       36921
+             NID:       4026531836
+             created:   2026-11-02T10:32:37.-6912-27514+07:00
+             image:     oracle@stb2.rac (M002)
+
+
+*** 2026-11-02T10:32:38.398908+07:00 (SECPDB(6))
+*** SESSION ID:(305.12297) 2026-11-02T10:32:38.398919+07:00
+*** CLIENT ID:() 2026-11-02T10:32:38.398926+07:00
+*** SERVICE NAME:(SYS$BACKGROUND) 2026-11-02T10:32:38.398932+07:00
+*** MODULE NAME:(MMON_SLAVE) 2026-11-02T10:32:38.398940+07:00
+*** ACTION NAME:(RAC PDB Flush Slave Action) 2026-11-02T10:32:38.398947+07:00
+*** CLIENT DRIVER:(SERVER) 2026-11-02T10:32:38.398953+07:00
+*** CONTAINER ID:(6) 2026-11-02T10:32:38.398961+07:00
+ 
+kewcccprar: MMON slave 
+
+*** 2026-11-02T10:32:46.524558+07:00 (SECPDB(6))
+kgfpInitEnv2: hdl=0x7f5e3376a210 env=0x7f5e3376a228 flags=0x1000000
+kgfpInitComplete2: hdl=0x7f5e3376a210 flags_kgfphdl=0x4
+kgfpOpenPwFile: start (hdl=0x7f5e3376a210 name=+DATA/ORCL_STB/PASSWORD/pwdorcl_stb)
+kgfpOpenPwFile: end (hdl=0x7f5e3376a210)
+kgfpCloseHdl: hdl=0x7f5e3376a210
+kgfpRubout hdl=0x7f5e3376a210
+
+*** 2026-11-02T10:32:47.776182+07:00 (SECPDB(6))
+kgfpInitEnv2: hdl=0x7ffdd6852520 env=0x7ffdd6852538 flags=0x0
+kgfpInitComplete2: hdl=0x7ffdd6852520 flags_kgfphdl=0x4
+kgfpFileAttr: start
+KGFCHECK kgfnStmtExecute01c: (ret == OCI_SUCCESS): FAILED at kgfn.c:3936
+kgfpFileAttr: end (hdl=0x7ffdd6852520)
+kgfpRubout hdl=0x7ffdd6852520
+kgfpInitEnv2: hdl=0x7f5e33b4f658 env=0x7f5e33b4f670 flags=0x1000000
+kgfpInitComplete2: hdl=0x7f5e33b4f658 flags_kgfphdl=0x4
+kgfpOpenPwFile: start (hdl=0x7f5e33b4f658 name=+DATA/ORCL_STB/PASSWORD/pwdorcl_stb)
+kgfpOpenPwFile: end (hdl=0x7f5e33b4f658)
+kgfpCloseHdl: hdl=0x7f5e33b4f658
+kgfpRubout hdl=0x7f5e33b4f658
+
+*** 2026-11-02T10:32:51.687009+07:00 (SECPDB(6))
+kgfpInitEnv2: hdl=0x7f5e3376a210 env=0x7f5e3376a228 flags=0x1000000
+
+*** 2026-11-02T10:32:51.773217+07:00 (SECPDB(6))
+kgfpInitComplete2: hdl=0x7f5e3376a210 flags_kgfphdl=0x4
+kgfpOpenPwFile: start (hdl=0x7f5e3376a210 name=+DATA/ORCL_STB/PASSWORD/pwdorcl_stb)
+kgfpOpenPwFile: end (hdl=0x7f5e3376a210)
+kgfpCloseHdl: hdl=0x7f5e3376a210
+kgfpRubout hdl=0x7f5e3376a210

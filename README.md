@@ -3,7 +3,7 @@
 > Status: **done for the database layer** — TDE on RAC + Active Data Guard + GoldenGate Active-Active,
 > network encryption, profiles, least privilege, Unified Auditing, Data Redaction; assessment
 > **27 FAIL → 0** (5 documented ACCEPTs). DBSAT needs a support contract, so the assessment is a
-> CIS-style script ([why](05-assessment/README.md)). Open: one finding (1b); audit
+> CIS-style script ([why](05-assessment/README.md)). Finding 1b explained (Oracle-internal, accepted); audit
 > retention [runs in the performance PDB](04-auditing/README.md#retention--02_retentionsh) (archive to CSV →
 > counts match → last-archive timestamp → purge job; 13,849 records archived on the first run), SECPDB still to do.
 
@@ -13,7 +13,7 @@
 |---|---------|-----|--------|
 | 1 | [1,325 failed SYS logons (ORA-01031) from the observer, every ~12 s](01-baseline/failed-logons/) — found from `Failed Logon Delay` in AWR | observer as `C##DGADMIN` with **SYSDG only**, new wallet | 0 failed logons; FSFO tested with the new observer (PCI-DSS 7, 10) |
 | 1a | same on Region A: 1,689 SYS ORA-01031 from obs-r1 | same fix (`C##DGADMIN` on orcl, own passwords) | 15 per 3 min → **0** |
-| 1b | 2 ORA-01017 (empty user) per standby start, both regions | — | **open**, hypotheses tested and ruled out are listed |
+| 1b | [ORA-01017 with an empty user at every standby start, both regions](01-baseline/failed-logons/README.md#2026-11-02--1b-traced-to-oracles-internal-connections-a-real-stale-password-file-on-stb2) | — (inside Oracle) | **explained, accepted**: kernel audit + traces → first attempt of the standby's internal `kgfn` connections (broker `NSV0`, MMON slaves); the next attempt succeeds, no user to lock. On the way: stb2's **stale password file** (8 SYS ORA-01017 → 0, now one file in ASM) |
 | 2 | [Card numbers readable in datafiles, archived redo and backups on both sites](01-baseline/plaintext/) | [TDE](02-tde/): online AES256 encryption, 6 s per tablespace, under load | 3–4 hits per file → **0**; 0 application errors during the rewrite (PCI-DSS 3.5) |
 | 3 | Same card data in a test PDB, never encrypted ([residual check](01-baseline/plaintext/residual_plaintext.sh)) | `BANK_DATA` encrypted too (6 s) | `verify_drillpdb.sh` PASS; re-grepped on the re-run: **0 hits** on both sites |
 | 4 | [GoldenGate trails held card numbers in clear after TDE](02-tde/README.md) — on both sites | `ENCRYPTTRAIL AES256`, shared GG master key | 5 hits per trail → **0**, replication both ways working (PCI-DSS 3, 4) |
