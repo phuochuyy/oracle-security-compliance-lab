@@ -28,7 +28,7 @@ not affected (apply lag 0 after the keys were created, before the standby had th
 - **`cwallet.sso` is the keys without a password.** And every `BACKUP KEYSTORE` writes another
   `cwallet_<time>_<tag>.sso` next to the `.p12`. The off-host copy holds only `.p12` files; the standby gets
   `cwallet.sso` VM-to-VM through a pipe; the extra `cwallet_*.sso` are removed.
-- **Checking a keystore copy is not trivial in 23ai.** `orapki`/`mkstore` fail with `Got tag 3 instead of 16`
+- **Checking a keystore copy is not trivial in 26ai.** `orapki`/`mkstore` fail with `Got tag 3 instead of 16`
   (the file is not PKCS#12 — first bytes `43 22`, not `30`), and `MERGE KEYSTORE` from a file copy fails
   (`ORA-46638`, trace: `could not load the target with error 29106`). What the script checks: same md5 in ASM
   on both sites and off-host, and the password opens the live keystore. The real test of the off-host copy

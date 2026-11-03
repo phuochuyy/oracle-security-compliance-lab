@@ -9,7 +9,7 @@ synonyms, code and trigger DDL, successful logons/logoffs, SYS statements, acces
 | `SEC_CHANGES` (local, SECPDB) | **local users** of SECPDB | the same actions | 10.2.1.5, 10.2.1.7 |
 | `ORA_LOGIN_LOGOUT` (predefined) | all users, root and SECPDB | **failed** logons (default setting, kept) | 10.2.1.4 |
 | `C##SEC_LOGON_SUCCESS` (common) + `SEC_LOGON_SUCCESS` (SECPDB) | all users, `WHEN` not (identity `C##DGADMIN` **and** host `obs-r1.rac`) | successful logons and logoffs | 10.2.1 |
-| `ORA_ALL_TOPLEVEL_ACTIONS` (predefined) `BY SYS` | root | every top-level statement of SYS — the 23ai replacement for `AUDIT_SYS_OPERATIONS` | 10.2.1.2 |
+| `ORA_ALL_TOPLEVEL_ACTIONS` (predefined) `BY SYS` | root | every top-level statement of SYS — the 26ai replacement for `AUDIT_SYS_OPERATIONS` | 10.2.1.2 |
 | `SEC_CARDS_ACCESS` (SECPDB) | all users | `SELECT/INSERT/UPDATE/DELETE ON bank.cards` | 10.2.1.1 |
 | `ORA_SECURECONFIG` (predefined, already on) | all | user/role/profile/system changes, audit policy changes | 10.2.1.5, 10.2.1.6 |
 
@@ -85,6 +85,18 @@ image build) → `unified_19700101_20260803.csv`, 5.2 MB, 13,849 lines = 13,849 
 timestamp 2026-08-03 00:00 UTC; second run a no-op (SUCCEEDED, nothing written). The CSV is copied off the server
 (same md5). Status after: 13,849 *archived (purgeable)*, 179,610 *not archived*; the purge job removes the archived
 ones on its first run.
+
+Test records removed: the 175,235 records from the audit cost test would otherwise have stayed for 90 days. One run
+of the same archive procedure as a one-time job of `AUDIT_MGR`, cut-off 2026-11-02 00:00 UTC →
+`unified_20260804_20261102.csv`, 179,610 records = 179,610 in the trail → purge with the last-archive timestamp →
+**4 records left** ([`07-status-after-purge-20261103.txt`](results/retention/07-status-after-purge-20261103.txt)); the
+CSV files on the server and off the server have the same md5 ([`08-archive-md5-20261103.txt`](results/retention/08-archive-md5-20261103.txt)).
+Calling the procedure directly as SYS fails with `ORA-06598` (INHERIT PRIVILEGES) — as designed: the roles belong to
+the procedure, not to whoever calls it.
+
+**Deviation from the rule:** the cut-off also took 179,610 − 175,235 = 4,375 real records younger than 90 days. They
+are archived (nothing lost) but no longer "at hand" in the database. Accepted for this lab PDB; on a real system
+this needs the auditor's agreement first, or a purge limited to the test user's records.
 
 Problems on the way:
 - The first job run archived and marked, then failed on its own log row: `ORA-01950` — `AUDIT_MGR` had no default

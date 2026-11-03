@@ -12,7 +12,7 @@
 | # | Finding | Fix | Result |
 |---|---------|-----|--------|
 | 1 | [1,325 failed SYS logons (ORA-01031) from the observer, every ~12 s](01-baseline/failed-logons/) — found from `Failed Logon Delay` in AWR | observer as `C##DGADMIN` with **SYSDG only**, new wallet | 0 failed logons; FSFO tested with the new observer (PCI-DSS 7, 10) |
-| 1a | same on Region A: 1,689 SYS ORA-01031 from obs-r1 | same fix (`C##DGADMIN` on orcl, own passwords) | 15 per 3 min → **0** |
+| 1a | same on Region A: 1,689 SYS ORA-01031 from obs-r1 | same fix (`C##DGADMIN` on orcl, own passwords) | 15 per 3 min → **0** (both regions: 1,325 + 1,689 = 3,014) |
 | 1b | [ORA-01017 with an empty user at every standby start, both regions](01-baseline/failed-logons/README.md#2026-11-02--1b-traced-to-oracles-internal-connections-a-real-stale-password-file-on-stb2) | — (inside Oracle) | **explained, accepted**: kernel audit + traces → first attempt of the standby's internal `kgfn` connections (broker `NSV0`, MMON slaves); the next attempt succeeds, no user to lock. On the way: stb2's **stale password file** (8 SYS ORA-01017 → 0, now one file in ASM) |
 | 2 | [Card numbers readable in datafiles, archived redo and backups on both sites](01-baseline/plaintext/) | [TDE](02-tde/): online AES256 encryption, 6 s per tablespace, under load | 3–4 hits per file → **0**; 0 application errors during the rewrite (PCI-DSS 3.5) |
 | 3 | Same card data in a test PDB, never encrypted ([residual check](01-baseline/plaintext/residual_plaintext.sh)) | `BANK_DATA` encrypted too (6 s) | `verify_drillpdb.sh` PASS; re-grepped on the re-run: **0 hits** on both sites |
