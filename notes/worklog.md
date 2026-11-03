@@ -170,3 +170,11 @@
   empty-user record, then a successful connection. Explained, not fixable from configuration; accepted.
 - Also noticed: the standby's unified audit trail shows the primary's records (via redo) — counting both
   sites double-counts.
+
+## 2026-11-03 — audit test records purged in PERF
+
+- Calling `AUDIT_MGR.AUDIT_ARCHIVE` directly as SYS: `ORA-06598` (INHERIT PRIVILEGES). Correct — the roles are granted
+  to the procedure; ran it as a one-time job of its owner instead.
+- My cut-off (2026-11-02) also archived and purged 4,375 real records younger than 90 days. Nothing lost (CSV, md5
+  matches off-host) but it breaks "3 months at hand". Should have limited the purge to the test user's records, or
+  asked first. Written up in the retention section.

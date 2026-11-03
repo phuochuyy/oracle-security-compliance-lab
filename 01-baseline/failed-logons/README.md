@@ -2,7 +2,7 @@
 
 **How it was found:** not by a security tool. While tuning orcl3 in the
 [performance lab](https://github.com/phuochuyy/oracle-performance-tuning-lab), AWR listed the wait
-`Failed Logon Delay`. The unified audit trail (`ORA_LOGON_FAILURES` is on by default in 23ai) showed where
+`Failed Logon Delay`. The unified audit trail (`ORA_LOGON_FAILURES` is on by default in 26ai) showed where
 the failed logons came from ([`audit_failed_logons.sql`](audit_failed_logons.sql), [`before.txt`](before.txt)):
 
 | Return code | User | From | Program | Records | Period |

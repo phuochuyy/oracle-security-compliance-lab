@@ -36,7 +36,7 @@ RAC primary, plus file checks on `sqlnet.ora` / `listener.ora`. One line per che
 | 6 network | 4 | no `sqlnet.ora` in the database home: no encryption/checksum required, logon version default; listener without admin restrictions |
 | PCI | 2 | nobody audits access to `BANK.CARDS`; PAN shown in full to every reader |
 
-Already good thanks to earlier work or 23ai defaults: no default passwords, no 10G hashes, no `ANY`
+Already good thanks to earlier work or 26ai defaults: no default passwords, no 10G hashes, no `ANY`
 privileges or DBA grants to non-Oracle users, pure unified auditing, card data in encrypted tablespaces.
 
 ## After hardening — [`results/after.txt`](results/after.txt)

@@ -1,0 +1,12 @@
+# prm3 /u01/app/oracle/audit_archive/perf vs off-host copy, 2026-11-03
+prm3      53c75f4c8696bdd6f6594068fa25d0d8  unified_19700101_20260803.csv
+prm3      280ce30a6a843029948766197817b59a  unified_20260803_20260804.csv
+prm3      e6728c75a707ece500dcfbec5c8c09d4  unified_20260804_20261102.csv
+off-host  53c75f4c8696bdd6f6594068fa25d0d8  unified_19700101_20260803.csv
+off-host  280ce30a6a843029948766197817b59a  unified_20260803_20260804.csv
+off-host  e6728c75a707ece500dcfbec5c8c09d4  unified_20260804_20261102.csv
+# lines (header + records)
+   13850 unified_19700101_20260803.csv
+       1 unified_20260803_20260804.csv
+  179611 unified_20260804_20261102.csv
+  193462 total
