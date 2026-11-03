@@ -27,8 +27,15 @@ Only the server side was changed: 26ai clients default to `ACCEPTED`, so they ne
 the server requires it. Sessions opened before the change keep running unencrypted until they reconnect —
 the "after" numbers needed restarts of GoldenGate, the observer and the standby.
 
-**Still to do:** prm2 and stb2 (not running in this lab scenario) need the same `sqlnet.ora` and listener
-line before they start, otherwise connections through those nodes are unencrypted.
+**prm2 and stb2** were off when this was applied, and stayed unencrypted. Now the lab's boot script installs
+the same `sqlnet.ora` and listener line on every Region A RAC node each time it starts one
+([`vm-nne.sh`](https://github.com/phuochuyy/oracle-ha-dr-failover-lab/blob/main/lab/files/vm-nne.sh), called
+from `labctl` `sync_node`; no change when the file already matches). prm2: installed at boot, a new connection
+through prm2's listener landed on instance `orcl2` with AES256 + SHA256
+([`results/01-nne-prm2-20261103.txt`](results/01-nne-prm2-20261103.txt)). stb2: installed at its next boot.
+
+Also fixed in `01_params_network.sh verify`: it passed the PDBADMIN password on the sqlplus command line
+(readable with `ps` on prm1). Now `sqlplus /nolog` and `CONNECT` on stdin; `verify [node] [service]`.
 
 ## 2. Profiles, schema-only owner, PUBLIC grants — [`02_profiles_privs.sh`](02_profiles_privs.sh)
 

@@ -5,8 +5,8 @@
 #           ADMIN_RESTRICTIONS. Existing files are kept as *.bak_<date>.
 #   verify  encryption of TCP sessions from V$SESSION_CONNECT_INFO: a new test connection, and every
 #           current TCP session grouped by program (sessions opened before the change stay unencrypted)
-# prm2/stb2 are not running in this lab scenario: the same files have to go there before they start.
-# usage (from the host): ./01_params_network.sh apply | verify
+# usage (from the host): ./01_params_network.sh apply | verify [node] [service]
+#   (prm2/stb2: files installed at every boot by labctl sync_node -> lab/files/vm-nne.sh in the HA/DR repo)
 set -eu
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 . "$REPO/lab.env"
@@ -41,10 +41,13 @@ lsnrctl reload LISTENER | grep -E 'completed|TNS-'; grep ADMIN_RESTRICTIONS \$f"
   done ;;
 
 verify)
-  echo "== new TCP connection (PDBADMIN via the listener to service secpdb_app)"
-  printf 'set heading off feedback off\nselect network_service_banner from v$session_connect_info where sid = sys_context(%s, %s);\nexit\n' "'userenv'" "'sid'" \
-    | ssh -o BatchMode=yes oracle@prm1 "$ENV; sqlplus -s -L 'pdbadmin/\"$SECPDB_ADMIN_PASSWORD\"@//prm1.rac:1521/secpdb_app.rac'" | grep -vE "^$" || true
-  for h in prm1 stb1; do
+  # verify [node] [service]: one new TCP connection through that node's listener; password on stdin (CONNECT), not argv
+  vh=${2:-prm1} svc=${3:-secpdb_app}
+  echo "== new TCP connection (PDBADMIN via the $vh listener to service $svc)"
+  { printf 'connect pdbadmin/"%s"@//%s.rac:1521/%s.rac\n' "$SECPDB_ADMIN_PASSWORD" "$vh" "$svc"
+    printf 'set heading off feedback off\nselect sys_context(%s, %s) from dual;\nselect network_service_banner from v$session_connect_info where sid = sys_context(%s, %s);\nexit\n' "'userenv'" "'instance_name'" "'userenv'" "'sid'"
+  } | ssh -o BatchMode=yes oracle@$vh "$ENV; sqlplus -s -L /nolog" | grep -vE "^$|^Connected" || true
+  for h in ${VERIFY_HOSTS:-prm1 stb1}; do
     echo "== $h: TCP sessions by program — encrypted (AES256) / checksummed (SHA256) / total"
     sql $h <<'SQL'
 set lines 200 pages 100

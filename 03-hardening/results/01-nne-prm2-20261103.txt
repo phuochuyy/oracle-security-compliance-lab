@@ -1,0 +1,21 @@
+# 2026-11-03 22:20 — prm2 after labctl sync_node installed sqlnet.ora (lab/files/vm-nne.sh in the HA/DR repo)
+# labctl: [22:17:27] prm1: NNE sqlnet.ora ok, listener ok
+# labctl: [22:18:02] prm2: NNE sqlnet.ora installed, listener restricted (not running yet, read at start)
+# VERIFY_HOSTS="prm1 prm2" ./01_params_network.sh verify prm2 secpdb
+== new TCP connection (PDBADMIN via the prm2 listener to service secpdb)
+orcl2
+TCP/IP NT Protocol Adapter for Linux: Version 23.26.1.0.0 - Production
+Encryption service for Linux: Version 23.26.1.0.0 - Production
+AES256 Encryption service adapter for Linux: Version 23.26.1.0.0 - Production
+Crypto-checksumming service for Linux: Version 23.26.1.0.0 - Production
+SHA256 Crypto-checksumming service adapter for Linux: Version 23.26.1.0.0 - Prod
+uction
+== prm1: TCP sessions by program — encrypted (AES256) / checksummed (SHA256) / total
+PROGRAM 				     AES256	SHA256	    TOTAL
+---------------------------------------- ---------- ---------- ----------
+dbfs_client@prm1.rac				  6	     6		6
+replicat@prm1.rac				  4	     4		4
+extract@prm1.rac				  4	     4		4
+3 rows selected.
+== prm2: TCP sessions by program — encrypted (AES256) / checksummed (SHA256) / total
+no rows selected
