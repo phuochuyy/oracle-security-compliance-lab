@@ -58,7 +58,7 @@ XAG stores the GoldenGate admin password **per cluster**. I updated it on the pr
 standby's cluster (stb1/stb2) kept the old one. Nothing showed it until a failover to stb1: XAG's health
 check returned `3`, the start timed out after 300 s and GoldenGate stayed down (the database was fine,
 0 transactions lost). `agctl modify goldengate GG_A --adminuser oggadmin` on stb1, then the next failover
-recovered by itself in 1 min 49 s ([HA/DR run 3](https://github.com/phuochuyy/oracle-ha-dr-failover-lab#run-3--after-the-password-rotation-2026-10-29-evening)).
+recovered by itself in 1 min 49 s ([HA/DR run 3](https://github.com/phuochuyy/oracle-ha-dr-failover-lab/blob/main/docs/details.md#run-3--after-the-password-rotation-2026-10-29-evening)).
 Lesson: a credential inventory has to cover every cluster, and a rotation is only finished after a role change.
 
 ## Follow-up 2026-10-30 — DBSNMP still used with the old password
