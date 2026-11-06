@@ -9,7 +9,6 @@
 # A real capture runs for a full business cycle (month end included); this one covers one run of the reports.
 # usage (from the host): ./04_privilege_analysis.sh start | work | stop
 set -eu
-H=$(cd "$(dirname "$0")/.." && pwd)
 ENV=". ~/.bash_profile >/dev/null 2>&1"
 sql() { ssh -o BatchMode=yes oracle@prm1 "$ENV; sqlplus -s / as sysdba"; }
 
