@@ -12,7 +12,6 @@ Only requirements the database layer can show. Card numbers are synthetic (BANKD
 | 8.3 | strong authentication | profiles: lockout after 5, 90-day expiry for people, reuse limits, `ORA12C_STRONG_VERIFY_FUNCTION`, only 12c verifiers (`12a`) | [`after.txt`](results/after.txt) U10, N03; `ORA-28003` in [`02-test-first-attempt.log`](../04-auditing/results/02-test-first-attempt.log) |
 | 10.2.1.x | audit logs for card data access, admin actions, failed logons, privilege and object changes | unified audit policies | [`02-test.log`](../04-auditing/results/02-test.log) |
 | 11.3 / 6.3 | find and fix vulnerabilities and insecure settings | repeatable assessment script (CIS-style), before/after | [`before.txt`](results/before.txt) → [`after.txt`](results/after.txt) |
-
 | 10.5.1 | audit logs kept 12 months, the last 3 at hand | archive to CSV, then purge only what was archived; PERF, SECPDB and root; encrypted audit tablespace, off-host copy | [`04-auditing`](../04-auditing/README.md#retention--02_retentionsh) |
 
 **Not covered here:** forwarding audit logs to a central system (10.3.3), patching (6.3.3), key custodians and split knowledge
