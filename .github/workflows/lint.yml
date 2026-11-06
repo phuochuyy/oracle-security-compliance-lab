@@ -1,0 +1,28 @@
+name: lint
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install shellcheck-py yamllint ruff
+      - name: shellcheck
+        # SC1090, SC1091: lab.env and profiles are sourced at run time. SC2034: unused loop counters.
+        # SC2087: here-documents expanded on the client on purpose, so passwords travel over stdin.
+        run: |
+          files=$(git ls-files '*.sh')
+          [ -z "$files" ] || shellcheck -S warning -e SC1090,SC1091,SC2034,SC2087 $files
+      - name: ruff
+        run: |
+          files=$(git ls-files '*.py')
+          [ -z "$files" ] || ruff check --isolated --select E9,F $files
+      - name: yamllint
+        run: |
+          files=$(git ls-files '*.yml' '*.yaml' | grep -v '^.github/' || true)
+          [ -z "$files" ] || yamllint -d '{extends: relaxed, rules: {line-length: disable}}' $files

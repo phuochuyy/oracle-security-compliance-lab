@@ -45,7 +45,7 @@ SQL
 
 escrow() {   # off-host copy of the password-protected keystore (losing it = losing every encrypted tablespace
              # and backup). Only *.p12: cwallet.sso opens the keys WITHOUT a password, it never leaves the VMs.
-  mkdir -p -m 700 "$ESCROW"
+  mkdir -p "$ESCROW" && chmod 700 "$ESCROW"
   ssh -o BatchMode=yes grid@$PRM "$ENV; rm -rf /tmp/ks; mkdir -m 700 /tmp/ks
     for f in \$(asmcmd ls +DATA/ORCL/tde | grep '\.p12\$'); do asmcmd cp +DATA/ORCL/tde/\$f /tmp/ks/ >/dev/null; done"
   ssh -o BatchMode=yes root@$PRM "cd /tmp/ks && tar cf - ." | tar xf - -C "$ESCROW"
