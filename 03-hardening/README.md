@@ -100,3 +100,24 @@ so the heredoc became stdin and `read` took the first SQL line as the password (
 the counter reset at the next good logon). Now the `connect` line and the SQL go as one stream, which also
 keeps the password off the VM's command line.
 
+## Region B
+
+Everything above was done on Region A. Region B holds the recovery catalog, the GoldenGate peer and two PDBs with
+card-like data, and the assessment had never looked at it. [`05_region_b.sh`](05_region_b.sh) applies the same baseline in the
+same order; log: [`results/05-region-b-20261107.log`](results/05-region-b-20261107.log).
+
+| What differs from Region A | Why |
+|----------------------------|-----|
+| `BANK` keeps a password and gets a service profile | workloads and drills log in as it; on Region A the owner is schema-only |
+| `GG_SVC_PROFILE` and `PERF_SVC_PROFILE`, 40 sessions | GoldenGate holds 8 sessions at rest; parallel query slaves count against the limit. Kept visible as ACCEPT |
+| Direct grants on `UTL_FILE`, `DBMS_ADVISOR`, `UTL_HTTP` to SQLT, `AUDIT_MGR`, `RCO` | found with `DBA_DEPENDENCIES` before the revoke |
+| Observer exception for `obs-r2` | same audit policy, other host |
+
+Result: 54 FAIL → 0 ([before](../05-assessment/results/r6-orcl3-before-20261107.txt),
+[after](../05-assessment/results/r6-orcl3-after-20261107.txt)). The 24 ACCEPT lines each carry their reason in the file.
+`GGREPL` tablespaces stay unencrypted: `check_plaintext` looks for PAN and that PDB has none, so this is not the same as
+Region A, where `ORCLPDB2.APP_DATA` is encrypted.
+
+**Not done yet at this point:** the standby stb3 (parameters are per site, `sqlnet.ora` arrives through `labctl` at its next start);
+sessions opened before the change, such as `dbfs_client`, Extract and Replicat, stay unencrypted until they reconnect.
+

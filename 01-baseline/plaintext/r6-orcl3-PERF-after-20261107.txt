@@ -1,0 +1,5 @@
+PAN of card 1: 9000********0018 (full value only used for the grep)
+TDE: BANK_DATA=YES
+prm3   BANK_DATA datafile (primary)               hits=0
+prm3   archived log with a new test card          hits=0
+prm3   RMAN backup piece (uncompressed)           hits=0

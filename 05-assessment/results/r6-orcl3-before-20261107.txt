@@ -1,0 +1,144 @@
+# assessment 'r6-orcl3-before-20261107' — 2026-11-07 01:51:53 — orcl3 on prm3: CDB$ROOT PERF GGREPL DRILLPDB RCAT
+# id|section|container|status|check|detail
+P01|2 params|CDB$ROOT|FAIL|SYS top-level actions audited (AUDIT_SYS_OPERATIONS or unified policy)|AUDIT_SYS_OPERATIONS=FALSE, unified: none
+P02|2 params|CDB$ROOT|FAIL|GLOBAL_NAMES = TRUE|FALSE
+P03|2 params|CDB$ROOT|PASS|OS_ROLES = FALSE|FALSE
+P04|2 params|CDB$ROOT|ACCEPT|REMOTE_LOGIN_PASSWORDFILE = NONE|EXCLUSIVE - accepted: Data Guard redo transport and SYSDG/SYSBACKUP logins need the password file
+P05|2 params|CDB$ROOT|PASS|REMOTE_OS_ROLES = FALSE|FALSE
+P06|2 params|CDB$ROOT|PASS|SEC_MAX_FAILED_LOGIN_ATTEMPTS <= 3|3
+P07|2 params|CDB$ROOT|PASS|SEC_PROTOCOL_ERROR_FURTHER_ACTION = (DROP,3)|(DROP,3)
+P08|2 params|CDB$ROOT|FAIL|SEC_PROTOCOL_ERROR_TRACE_ACTION = LOG|TRACE
+P09|2 params|CDB$ROOT|PASS|SEC_RETURN_SERVER_RELEASE_BANNER = FALSE|FALSE
+P10|2 params|CDB$ROOT|PASS|SQL92_SECURITY = TRUE|TRUE
+P11|2 params|CDB$ROOT|PASS|RESOURCE_LIMIT = TRUE|TRUE
+U01|3 users|CDB$ROOT|PASS|no OPEN account with a default password|none
+U02|3 users|CDB$ROOT|PASS|no 10G password hashes|none
+U03|3 users|CDB$ROOT|PASS|no PUBLIC database links|none
+U10|3 users|CDB$ROOT|FAIL|profile DEFAULT meets the password/resource limits|FAILED_LOGIN_ATTEMPTS=10 PASSWORD_LIFE_TIME=180 PASSWORD_GRACE_TIME=7 PASSWORD_VERIFY_FUNCTION=NULL SESSIONS_PER_USER=UNLIMITED INACTIVE_ACCOUNT_TIME=365	- users: C##DBZUSER,C##DGADMIN,C##MON
+R01|4 privs|CDB$ROOT|FAIL|no PUBLIC EXECUTE on network packages|DBMS_LDAP,HTTPURITYPE,UTL_HTTP,UTL_INADDR,UTL_SMTP,UTL_TCP
+R02|4 privs|CDB$ROOT|FAIL|no PUBLIC EXECUTE on file packages|DBMS_ADVISOR,UTL_FILE
+R03|4 privs|CDB$ROOT|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|CDB$ROOT|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|CDB$ROOT|FAIL|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION
+R06|4 privs|CDB$ROOT|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|CDB$ROOT|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|CDB$ROOT|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|CDB$ROOT|PASS|no access to sensitive SYS tables|none
+R10|4 privs|CDB$ROOT|INFO|password file users (admin privileges)|C##DGADMIN:SYSDG, SYS:SYSDBA SYSOPER
+A01|5 audit|CDB$ROOT|PASS|pure unified auditing|TRUE
+A02|5 audit|CDB$ROOT|PASS|user and role management audited|all audited
+A03|5 audit|CDB$ROOT|FAIL|grants and revokes audited|missing: GRANT,REVOKE
+A04|5 audit|CDB$ROOT|PASS|profile changes audited|all audited
+A05|5 audit|CDB$ROOT|FAIL|database links and synonyms audited|missing: CREATE SYNONYM,DROP SYNONYM
+A06|5 audit|CDB$ROOT|PASS|system changes audited|all audited
+A07|5 audit|CDB$ROOT|FAIL|code and trigger DDL audited|missing: ALTER PROCEDURE,ALTER TRIGGER,CREATE FUNCTION,CREATE PACKAGE,CREATE PROCEDURE,CREATE TRIGGER,DROP FUNCTION,DROP PACKAGE,DROP PROCEDURE,DROP TRIGGER
+A08|5 audit|CDB$ROOT|FAIL|logon and logoff audited|missing: LOGOFF,LOGON
+A09|5 audit|CDB$ROOT|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|none
+U01|3 users|PERF|PASS|no OPEN account with a default password|none
+U02|3 users|PERF|PASS|no 10G password hashes|none
+U03|3 users|PERF|PASS|no PUBLIC database links|none
+U10|3 users|PERF|FAIL|profile DEFAULT meets the password/resource limits|FAILED_LOGIN_ATTEMPTS=10 PASSWORD_LIFE_TIME=180 PASSWORD_GRACE_TIME=7 PASSWORD_VERIFY_FUNCTION=NULL SESSIONS_PER_USER=UNLIMITED INACTIVE_ACCOUNT_TIME=365  - users: AUDIT_MGR,BANK,C##DBZUSER,C##DGADMIN,C##MON,PDBADMIN,SQLTXPLAIN
+R01|4 privs|PERF|FAIL|no PUBLIC EXECUTE on network packages|DBMS_LDAP,HTTPURITYPE,UTL_HTTP,UTL_INADDR,UTL_SMTP,UTL_TCP
+R02|4 privs|PERF|FAIL|no PUBLIC EXECUTE on file packages|DBMS_ADVISOR,UTL_FILE
+R03|4 privs|PERF|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|PERF|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|PERF|FAIL|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION, SQLTXADMIN:ANALYZE ANY, SQLTXADMIN:ANALYZE ANY DICTIONARY, SQLTXADMIN:SELECT ANY DICTIONARY
+R06|4 privs|PERF|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|PERF|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|PERF|FAIL|no powerful system privileges to non-Oracle grantees|SQLTXADMIN:SELECT ANY DICTIONARY
+R09|4 privs|PERF|PASS|no access to sensitive SYS tables|none
+A01|5 audit|PERF|PASS|pure unified auditing|TRUE
+A02|5 audit|PERF|PASS|user and role management audited|all audited
+A03|5 audit|PERF|FAIL|grants and revokes audited|missing: GRANT,REVOKE
+A04|5 audit|PERF|PASS|profile changes audited|all audited
+A05|5 audit|PERF|FAIL|database links and synonyms audited|missing: CREATE SYNONYM,DROP SYNONYM
+A06|5 audit|PERF|PASS|system changes audited|all audited
+A07|5 audit|PERF|FAIL|code and trigger DDL audited|missing: ALTER PROCEDURE,ALTER TRIGGER,CREATE FUNCTION,CREATE PACKAGE,CREATE PROCEDURE,CREATE TRIGGER,DROP FUNCTION,DROP PACKAGE,DROP PROCEDURE,DROP TRIGGER
+A08|5 audit|PERF|FAIL|logon and logoff audited|missing: LOGOFF,LOGON
+A09|5 audit|PERF|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|none
+C01|PCI 3.5|PERF|PASS|card data stored in encrypted tablespaces only|all encrypted
+C02|PCI 10.2|PERF|FAIL|SELECT/INSERT/UPDATE/DELETE on BANK.CARDS audited|not audited on CARDS: DELETE,INSERT,SELECT,UPDATE
+C03|PCI 3.4|PERF|FAIL|PAN masked for non-privileged readers (redaction)|no redaction policy on CARDS.PAN
+C04|PCI 7|PERF|INFO|who has object privileges on BANK.CARDS|nobody but the owner
+U01|3 users|GGREPL|PASS|no OPEN account with a default password|none
+U02|3 users|GGREPL|PASS|no 10G password hashes|none
+U03|3 users|GGREPL|PASS|no PUBLIC database links|none
+U10|3 users|GGREPL|FAIL|profile DEFAULT meets the password/resource limits|FAILED_LOGIN_ATTEMPTS=10 PASSWORD_LIFE_TIME=180 PASSWORD_GRACE_TIME=7 PASSWORD_VERIFY_FUNCTION=NULL SESSIONS_PER_USER=UNLIMITED INACTIVE_ACCOUNT_TIME=365  - users: APP,C##DBZUSER,C##DGADMIN,C##MON,CDC_WRITER,DBFS_USER,GGADMIN,PDBADMIN
+R01|4 privs|GGREPL|FAIL|no PUBLIC EXECUTE on network packages|DBMS_LDAP,HTTPURITYPE,UTL_HTTP,UTL_INADDR,UTL_SMTP,UTL_TCP
+R02|4 privs|GGREPL|FAIL|no PUBLIC EXECUTE on file packages|DBMS_ADVISOR,UTL_FILE
+R03|4 privs|GGREPL|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|GGREPL|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|GGREPL|FAIL|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION, GGADMIN:DEQUEUE ANY QUEUE, GGADMIN:SELECT ANY DICTIONARY
+R06|4 privs|GGREPL|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|GGREPL|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|GGREPL|FAIL|no powerful system privileges to non-Oracle grantees|GGADMIN:SELECT ANY DICTIONARY
+R09|4 privs|GGREPL|PASS|no access to sensitive SYS tables|none
+A01|5 audit|GGREPL|PASS|pure unified auditing|TRUE
+A02|5 audit|GGREPL|PASS|user and role management audited|all audited
+A03|5 audit|GGREPL|FAIL|grants and revokes audited|missing: GRANT,REVOKE
+A04|5 audit|GGREPL|PASS|profile changes audited|all audited
+A05|5 audit|GGREPL|FAIL|database links and synonyms audited|missing: CREATE SYNONYM,DROP SYNONYM
+A06|5 audit|GGREPL|PASS|system changes audited|all audited
+A07|5 audit|GGREPL|FAIL|code and trigger DDL audited|missing: ALTER PROCEDURE,ALTER TRIGGER,CREATE FUNCTION,CREATE PACKAGE,CREATE PROCEDURE,CREATE TRIGGER,DROP FUNCTION,DROP PACKAGE,DROP PROCEDURE,DROP TRIGGER
+A08|5 audit|GGREPL|FAIL|logon and logoff audited|missing: LOGOFF,LOGON
+A09|5 audit|GGREPL|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|none
+U01|3 users|DRILLPDB|PASS|no OPEN account with a default password|none
+U02|3 users|DRILLPDB|PASS|no 10G password hashes|none
+U03|3 users|DRILLPDB|PASS|no PUBLIC database links|none
+U10|3 users|DRILLPDB|FAIL|profile DEFAULT meets the password/resource limits|FAILED_LOGIN_ATTEMPTS=10 PASSWORD_LIFE_TIME=180 PASSWORD_GRACE_TIME=7 PASSWORD_VERIFY_FUNCTION=NULL SESSIONS_PER_USER=UNLIMITED INACTIVE_ACCOUNT_TIME=365	- users: BANK,C##DBZUSER,C##DGADMIN,C##MON,PDBADMIN
+R01|4 privs|DRILLPDB|FAIL|no PUBLIC EXECUTE on network packages|DBMS_LDAP,HTTPURITYPE,UTL_HTTP,UTL_INADDR,UTL_SMTP,UTL_TCP
+R02|4 privs|DRILLPDB|FAIL|no PUBLIC EXECUTE on file packages|DBMS_ADVISOR,UTL_FILE
+R03|4 privs|DRILLPDB|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|DRILLPDB|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|DRILLPDB|FAIL|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION
+R06|4 privs|DRILLPDB|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|DRILLPDB|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|DRILLPDB|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|DRILLPDB|PASS|no access to sensitive SYS tables|none
+A01|5 audit|DRILLPDB|PASS|pure unified auditing|TRUE
+A02|5 audit|DRILLPDB|PASS|user and role management audited|all audited
+A03|5 audit|DRILLPDB|FAIL|grants and revokes audited|missing: GRANT,REVOKE
+A04|5 audit|DRILLPDB|PASS|profile changes audited|all audited
+A05|5 audit|DRILLPDB|FAIL|database links and synonyms audited|missing: CREATE SYNONYM,DROP SYNONYM
+A06|5 audit|DRILLPDB|PASS|system changes audited|all audited
+A07|5 audit|DRILLPDB|FAIL|code and trigger DDL audited|missing: ALTER PROCEDURE,ALTER TRIGGER,CREATE FUNCTION,CREATE PACKAGE,CREATE PROCEDURE,CREATE TRIGGER,DROP FUNCTION,DROP PACKAGE,DROP PROCEDURE,DROP TRIGGER
+A08|5 audit|DRILLPDB|FAIL|logon and logoff audited|missing: LOGOFF,LOGON
+A09|5 audit|DRILLPDB|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|none
+C01|PCI 3.5|DRILLPDB|FAIL|card data stored in encrypted tablespaces only|not encrypted: BANK_DATA
+C02|PCI 10.2|DRILLPDB|FAIL|SELECT/INSERT/UPDATE/DELETE on BANK.CARDS audited|not audited on CARDS: DELETE,INSERT,SELECT,UPDATE
+C03|PCI 3.4|DRILLPDB|FAIL|PAN masked for non-privileged readers (redaction)|no redaction policy on CARDS.PAN
+C04|PCI 7|DRILLPDB|INFO|who has object privileges on BANK.CARDS|nobody but the owner
+U01|3 users|RCAT|PASS|no OPEN account with a default password|none
+U02|3 users|RCAT|PASS|no 10G password hashes|none
+U03|3 users|RCAT|PASS|no PUBLIC database links|none
+U10|3 users|RCAT|FAIL|profile DEFAULT meets the password/resource limits|FAILED_LOGIN_ATTEMPTS=10 PASSWORD_LIFE_TIME=180 PASSWORD_GRACE_TIME=7 PASSWORD_VERIFY_FUNCTION=NULL SESSIONS_PER_USER=UNLIMITED INACTIVE_ACCOUNT_TIME=365  - users: C##DBZUSER,C##DGADMIN,C##MON,PDBADMIN,RCO
+R01|4 privs|RCAT|FAIL|no PUBLIC EXECUTE on network packages|DBMS_LDAP,HTTPURITYPE,UTL_HTTP,UTL_INADDR,UTL_SMTP,UTL_TCP
+R02|4 privs|RCAT|FAIL|no PUBLIC EXECUTE on file packages|DBMS_ADVISOR,UTL_FILE
+R03|4 privs|RCAT|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|RCAT|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|RCAT|FAIL|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION
+R06|4 privs|RCAT|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|RCAT|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|RCAT|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|RCAT|PASS|no access to sensitive SYS tables|none
+A01|5 audit|RCAT|PASS|pure unified auditing|TRUE
+A02|5 audit|RCAT|PASS|user and role management audited|all audited
+A03|5 audit|RCAT|FAIL|grants and revokes audited|missing: GRANT,REVOKE
+A04|5 audit|RCAT|PASS|profile changes audited|all audited
+A05|5 audit|RCAT|FAIL|database links and synonyms audited|missing: CREATE SYNONYM,DROP SYNONYM
+A06|5 audit|RCAT|PASS|system changes audited|all audited
+A07|5 audit|RCAT|FAIL|code and trigger DDL audited|missing: ALTER PROCEDURE,ALTER TRIGGER,CREATE FUNCTION,CREATE PACKAGE,CREATE PROCEDURE,CREATE TRIGGER,DROP FUNCTION,DROP PACKAGE,DROP PROCEDURE,DROP TRIGGER
+A08|5 audit|RCAT|FAIL|logon and logoff audited|missing: LOGOFF,LOGON
+A09|5 audit|RCAT|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|none
+N01|6 network|prm3|FAIL|server requires network encryption|not set in sqlnet.ora (exists)
+N02|6 network|prm3|FAIL|server requires integrity checksums|not set in sqlnet.ora (exists)
+N03|6 network|prm3|FAIL|allowed logon version >= 12a|not set in sqlnet.ora (exists)
+N04|6 network|prm3|FAIL|listener admin restrictions on|not set in listener.ora (exists)
+#
+# summary: ACCEPT 6  FAIL 54  INFO 8  PASS 66  
+#   2 params: ACCEPT 1  FAIL 3  PASS 7  
+#   3 users: FAIL 5  PASS 15  
+#   4 privs: ACCEPT 5  FAIL 17  INFO 1  PASS 23  
+#   5 audit: FAIL 20  INFO 5  PASS 20  
+#   6 network: FAIL 4  
+#   PCI: FAIL 5  INFO 2  PASS 1  

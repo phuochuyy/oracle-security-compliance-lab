@@ -67,3 +67,10 @@ equivalent, and two audit checks became **stricter** after my audit test showed 
 How the 27 were fixed: [parameters + network](../03-hardening/README.md),
 [profiles + privileges](../03-hardening/README.md),
 [auditing](../04-auditing/), [redaction](../03-hardening/README.md).
+
+## Region B
+
+`ASSESS_DB=orcl3 ./assess.sh <label>` runs the same checks on `CDB$ROOT`, `PERF`, `GGREPL`, `DRILLPDB` and `RCAT`, so the totals are
+larger than on Region A and the two are not comparable. A check block that fails now stops the run: before, a failing block
+lost the whole container and the summary still said 0 FAIL.
+

@@ -186,3 +186,16 @@
   verified with a new connection on `orcl2` (AES256 + SHA256); stb2 at its next boot.
 - `01_params_network.sh verify` had `sqlplus 'pdbadmin/"<pw>"@...'` inside the ssh command — found while grepping all
   repos for the drill 1 mistake. Same fix (stdin). The same grep found three scripts in the performance lab.
+
+## Region B hardening
+
+- The assessment printed "0 FAIL" for months while it only looked at one of the two databases. Measuring the second one gave
+  54 FAIL and card-like data in clear in DRILLPDB.
+- A review of my first script caught three things before it ran: `sql | grep` returned grep's exit code, so `whenever sqlerror`
+  stopped nothing; a failed direct grant still went on to the revoke (the mistake that invalidated 14 objects on Region A);
+  and a `PERF` limit of 10 sessions would have broken case 7, because parallel query slaves count.
+- `check_plaintext.sh` had to switch RMAN encryption off for its own backup piece. With RMAN encryption on, 0 hits in a piece would
+  have said nothing about TDE.
+- First run stopped at `REVOKE ... UTL_MAIL`: the package does not exist here (`ORA-04042`). Region A's script ignored every error of
+  that step, including ones that mattered. Now only that code is tolerated.
+
