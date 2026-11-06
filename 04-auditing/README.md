@@ -106,5 +106,18 @@ Problems on the way:
   `Asia/Ho_Chi_Minh`.
 - Tested with `run_job(use_current_session => false)` on purpose: in the current session it would have run as SYS
   and hidden missing privileges.
-- Not yet on SECPDB (orcl, RAC + standby): the same script, with the archive directory on a path both nodes share or
-  the job pinned to one instance.
+- On the RAC too, SECPDB and the root (below).
+
+### On the RAC: SECPDB and the root
+
+`UTL_FILE` writes on the node that runs the job, which differs on a RAC with Data Guard. The directory is created on every running node (`ARCH_NODES`); on SECPDB a job class binds the job to the role-based service `secpdb_app`, so it runs on the current primary. The root needs a common user, `C##AUDIT_MGR`, whose default tablespace exists only in the root.
+
+| Container | Archived, older than 90 days | Stays in the trail | Off-host copy |
+|-----------|------------------------------|--------------------|---------------|
+| SECPDB | 13,849 | 1,564 | md5 match |
+| `CDB$ROOT` | 13,980 | 87,119 | md5 match |
+
+Logs: [SECPDB](results/retention/r6-secpdb-20261107.log), [root](results/retention/r6-root-20261107.log). The purge jobs remove the archived records at their next run.
+
+**Limits:** after a role change the job writes on the new primary's node, so CSV files spread over nodes and the off-host step must collect from each. prm2 and stb2 were off when the directories were made: `ARCH_NODES` must be run for them too. Other PDBs of the RAC (`ORCLPDB1`, `ORCLPDB2`, `DRILLPDB`) have no retention yet.
+

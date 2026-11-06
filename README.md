@@ -15,6 +15,7 @@ TDE and Data Redaction are part of Oracle Advanced Security, an extra-cost optio
 
 ## Where to look
 
+- [Strategy](docs/strategy.md)
 - [Findings and results](docs/details.md)
 - [TDE](02-tde/README.md)
 - [Hardening](03-hardening/README.md)

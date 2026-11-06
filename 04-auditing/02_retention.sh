@@ -9,32 +9,45 @@
 #   archive-now  run the archive job once (as its owner, not as SYS) and show the result
 #   purge-now    one manual purge with use_last_arch_timestamp — same rule as the job
 #   status       records by age, last-archive timestamp, jobs, archive files
-# usage (from the host): ./02_retention.sh <db host> <PDB> setup | archive-now | purge-now | status
+#   offhost      copy the CSV files to the host and compare md5 (the copy on the VM dies with the VM)
+# usage (from the host): ./02_retention.sh <db host> <PDB> setup | archive-now | purge-now | status | offhost
+#   RAC: UTL_FILE writes on the node running the job. ARCH_NODES lists the nodes that get the directory (those that are up);
+#   ARCH_SERVICE binds the job to a role-based service, so it runs on the current primary only.
+#   CDB$ROOT needs a common user: C##AUDIT_MGR instead of AUDIT_MGR.
 set -eu
-H=${1:?db host} PDB=${2:?PDB} MODE=${3:?setup|archive-now|purge-now|status}
-DIR=/u01/app/oracle/audit_archive/$(echo "$PDB" | tr A-Z a-z)
+H=${1:?db host} PDB=${2:?PDB} MODE=${3:?setup|archive-now|purge-now|status|offhost}
+P=$(echo "$PDB" | tr A-Z a-z | tr -d '$')
+DIR=/u01/app/oracle/audit_archive/$P
+U=audit_mgr; case $P in cdbroot) U='c##audit_mgr' ;; esac
+ARCH_NODES=${ARCH_NODES:-$H}
 sql() { { echo "whenever sqlerror exit failure"; echo "set lines 200 pages 100 feedback on serveroutput on"; echo "alter session set container=$PDB;"; cat; echo "exit"; } \
           | ssh -o BatchMode=yes oracle@$H '. ~/.bash_profile >/dev/null 2>&1; sqlplus -s / as sysdba' 2>&1 | grep -v '^$'; }
 
 case $MODE in
 setup)
-  ssh -o BatchMode=yes oracle@$H "mkdir -p $DIR && chmod 700 $DIR"
+  for n in $ARCH_NODES; do ssh -o BatchMode=yes oracle@$n "mkdir -p $DIR && chmod 700 $DIR"; done
   sql <<SQL
 create tablespace audit_tbs datafile size 64m autoextend on next 64m maxsize 4g
   encryption using 'AES256' encrypt;
 exec dbms_audit_mgmt.set_audit_trail_location(dbms_audit_mgmt.audit_trail_unified, 'AUDIT_TBS')
 
 create or replace directory audit_arch as '$DIR';
-create user audit_mgr no authentication default tablespace audit_tbs quota 16m on audit_tbs;
-grant create procedure, create job to audit_mgr;
-grant audit_admin, audit_viewer to audit_mgr;
-grant read, write on directory audit_arch to audit_mgr;
-grant select on sys.dba_audit_mgmt_last_arch_ts to audit_mgr;
+$(if [ "$P" = cdbroot ]; then cat <<ROOT
+-- a common user is created in every container, where AUDIT_TBS does not exist: default tablespace set here only
+create user $U no authentication container = all;
+alter user $U default tablespace audit_tbs quota 16m on audit_tbs container = current;
+ROOT
+else echo "create user $U no authentication default tablespace audit_tbs quota 16m on audit_tbs;"; fi)
+grant create procedure, create job to $U;
+grant audit_admin, audit_viewer to $U;
+grant read, write on directory audit_arch to $U;
+grant select on sys.dba_audit_mgmt_last_arch_ts to $U;
+grant execute on sys.utl_file to $U;
 
-create table audit_mgr.archive_runs (run_ts timestamp default systimestamp, from_utc timestamp, to_utc timestamp,
+create table $U.archive_runs (run_ts timestamp default systimestamp, from_utc timestamp, to_utc timestamp,
                                      rows_out number, file_name varchar2(200));
 
-create or replace procedure audit_mgr.audit_archive(p_keep_days number default 90) authid current_user is
+create or replace procedure $U.audit_archive(p_keep_days number default 90) authid current_user is
   v_from timestamp; v_cut timestamp; n number := 0; n_check number; fname varchar2(200);
   f utl_file.file_type; c sys_refcursor;
   ts varchar2(40); u varchar2(128); act varchar2(64); os varchar2(128); obn varchar2(128); rc number;
@@ -72,19 +85,25 @@ begin
   end if;
   execute immediate 'begin dbms_audit_mgmt.set_last_archive_timestamp(dbms_audit_mgmt.audit_trail_unified, :t); end;'
     using v_cut;
-  insert into audit_mgr.archive_runs (from_utc, to_utc, rows_out, file_name) values (v_from, v_cut, n, fname);
+  insert into $U.archive_runs (from_utc, to_utc, rows_out, file_name) values (v_from, v_cut, n, fname);
   commit;
 end;
 /
-show errors procedure audit_mgr.audit_archive
-grant audit_admin, audit_viewer to procedure audit_mgr.audit_archive;
+show errors procedure $U.audit_archive
+grant audit_admin, audit_viewer to procedure $U.audit_archive;
 
 begin
-  dbms_scheduler.create_job(job_name => 'AUDIT_MGR.AUDIT_ARCHIVE_DAILY', job_type => 'STORED_PROCEDURE',
-    job_action => 'AUDIT_MGR.AUDIT_ARCHIVE', repeat_interval => 'FREQ=DAILY;BYHOUR=1;BYMINUTE=0',
+  dbms_scheduler.create_job(job_name => '$U.AUDIT_ARCHIVE_DAILY', job_type => 'STORED_PROCEDURE',
+    job_action => '$U.AUDIT_ARCHIVE', repeat_interval => 'FREQ=DAILY;BYHOUR=1;BYMINUTE=0',
     -- the scheduler default time zone here is PST8PDT: without a start date '01:00' meant 16:00 local time
     start_date => to_timestamp_tz(to_char(trunc(sysdate) + 1, 'yyyy-mm-dd')||' 01:00 Asia/Ho_Chi_Minh', 'yyyy-mm-dd hh24:mi tzr'),
-    enabled => true, comments => 'unified audit: archive records older than 90 days to CSV, then mark them');
+    enabled => false, comments => 'unified audit: archive records older than 90 days to CSV, then mark them');
+  if '${ARCH_SERVICE:-}' is not null then
+    dbms_scheduler.create_job_class(job_class_name => 'AUDIT_ARCHIVE_CLASS', service => '${ARCH_SERVICE:-}');
+    execute immediate 'grant execute on sys.audit_archive_class to $U';
+    dbms_scheduler.set_attribute('$U.AUDIT_ARCHIVE_DAILY', 'job_class', 'SYS.AUDIT_ARCHIVE_CLASS');
+  end if;
+  dbms_scheduler.enable('$U.AUDIT_ARCHIVE_DAILY');
   dbms_audit_mgmt.create_purge_job(audit_trail_type => dbms_audit_mgmt.audit_trail_unified,
     audit_trail_purge_interval => 24, audit_trail_purge_name => 'PURGE_UNIFIED_DAILY',
     use_last_arch_timestamp => true, container => dbms_audit_mgmt.container_current);
@@ -95,14 +114,20 @@ select owner, job_name, enabled, repeat_interval from dba_scheduler_jobs
 SQL
   ;;
 archive-now)
-  sql <<'SQL'
-exec dbms_scheduler.run_job('AUDIT_MGR.AUDIT_ARCHIVE_DAILY', use_current_session => false)
+  sql <<SQL
+exec dbms_scheduler.run_job('$U.AUDIT_ARCHIVE_DAILY', use_current_session => false)
 col additional_info for a90
 select status, error#, additional_info from dba_scheduler_job_run_details
- where owner = 'AUDIT_MGR' and job_name = 'AUDIT_ARCHIVE_DAILY' order by log_date desc fetch first 1 row only;
-select from_utc, to_utc, rows_out, file_name from audit_mgr.archive_runs order by run_ts;
+ where owner = upper('$U') and job_name = 'AUDIT_ARCHIVE_DAILY' order by log_date desc fetch first 1 row only;
+select from_utc, to_utc, rows_out, file_name from $U.archive_runs order by run_ts;
 SQL
   ssh -o BatchMode=yes oracle@$H "ls -l $DIR; for f in $DIR/*.csv; do echo \"\$(basename \$f): \$((\$(wc -l < \$f) - 1)) records\"; done"
+  ;;
+offhost)
+  d=$HOME/work/lab/audit-archive/${H}_$P; mkdir -p "$d"
+  scp -q -p oracle@$H:"$DIR/*.csv" "$d/"
+  a=$(cd "$d" && md5sum *.csv); b=$(ssh -o BatchMode=yes oracle@$H "cd $DIR && md5sum *.csv")
+  [ "$a" = "$b" ] && echo "off-host copy in $d: $(echo "$a" | wc -l) files, md5 match" || { echo "md5 differs"; exit 1; }
   ;;
 purge-now)
   sql <<'SQL'

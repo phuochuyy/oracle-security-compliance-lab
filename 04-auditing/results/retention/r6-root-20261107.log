@@ -1,0 +1,76 @@
+### setup
+Session altered.
+Tablespace created.
+PL/SQL procedure successfully completed.
+Directory created.
+User created.
+User altered.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+Table created.
+Procedure created.
+No errors.
+Grant succeeded.
+PL/SQL procedure successfully completed.
+rows will be truncated
+rows will be truncated
+OWNER																 JOB_NAME
+-------------------------------------------------------------------------------------------------------------------------------- -----------------------------------------------------------------------
+C##AUDIT_MGR															 AUDIT_ARCHIVE_DAILY
+AUDSYS																 PURGE_UNIFIED_DAILY
+2 rows selected.
+rc=0
+### archive-now
+Session altered.
+PL/SQL procedure successfully completed.
+no rows selected
+no rows selected
+total 0
+bash: line 1: /u01/app/oracle/audit_archive/cdbroot/*.csv: No such file or directory
+*.csv: -1 records
+### after the job
+Session altered.
+PL/SQL procedure successfully completed.
+STATUS				   ERROR# ADDITIONAL_INFO
+------------------------------ ---------- ------------------------------------------------------------------------------------------
+SUCCEEDED				0 (null)
+1 row selected.
+FROM_UTC								    TO_UTC									  ROWS_OUT FILE_NAME
+--------------------------------------------------------------------------- --------------------------------------------------------------------------- ---------- -------------------------------------
+01-JAN-70 12.00.00.000000 AM						    08-AUG-26 12.00.00.000000 AM						     13980 unified_19700101_20260808.csv
+1 row selected.
+total 5364
+-rw-r--r-- 1 oracle asmdba 5488796 Nov  7 05:12 unified_19700101_20260808.csv
+unified_19700101_20260808.csv: 13980 records
+Session altered.
+STATE			RECORDS OLDEST
+-------------------- ---------- ---------------------------------------------------------------------------
+archived (purgeable)	  13980 17-JAN-26 11.23.35.706525 AM
+not archived		  87119 24-AUG-26 11.13.24.678192 AM
+2 rows selected.
+AUDIT_TRAIL		  LAST_ARCHIVE_TS
+------------------------- ---------------------------------------------------------------------------
+UNIFIED AUDIT TRAIL	  08-AUG-26 12.00.00.000000 AM +00:00
+1 row selected.
+JOB_NAME															 JOB_STAT JOB_FREQUENCY
+-------------------------------------------------------------------------------------------------------------------------------- -------- --------------------------------------------------------------
+PURGE_UNIFIED_DAILY														 ENABLED  FREQ=HOURLY;INTERVAL=24
+1 row selected.
+rows will be truncated
+rows will be truncated
+rows will be truncated
+OWNER																 JOB_NAME
+-------------------------------------------------------------------------------------------------------------------------------- -----------------------------------------------------------------------
+C##AUDIT_MGR															 AUDIT_ARCHIVE_DAILY
+AUDSYS																 PURGE_UNIFIED_DAILY
+2 rows selected.
+rows will be truncated
+PARAMETER_NAME
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DB AUDIT TABLESPACE
+1 row selected.
+off-host copy in /home/huy/work/lab/audit-archive/prm1_cdbroot: 1 files, md5 match
+rc=0
