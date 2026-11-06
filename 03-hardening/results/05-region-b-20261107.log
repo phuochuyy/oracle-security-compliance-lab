@@ -1,0 +1,468 @@
+##### tde 02:27:46
+Session altered.
+NAME
+--------------------------------------------------------------------------------
+/u02/oradata/ORCL3/ORCL3/5ED75E92D4C4500AE0630A6AA8C0EA9D/datafile/o1_mf_bank_da
+t_og1tb4oh_.dbf
+Tablespace altered.
+TABLESPACE_NAME 	       ENC
+------------------------------ ---
+BANK_DATA		       YES
+NAME
+--------------------------------------------------------------------------------
+/u02/oradata/ORCL3/ORCL3/5ED75E92D4C4500AE0630A6AA8C0EA9D/datafile/o1_mf_bank_da
+t_ogwbklr5_.dbf
+rc=0
+##### params 02:27:51
+System altered.
+System altered.
+NAME
+--------------------------------------------------------------------------------
+VALUE
+--------------------------------------------------------------------------------
+global_names
+TRUE
+sec_protocol_error_trace_action
+LOG
+rc=0
+##### profiles 02:27:52
+Profile created.
+User altered.
+User altered.
+User altered.
+Session altered.
+Profile created.
+Profile created.
+User altered.
+Profile created.
+User altered.
+User altered.
+User altered.
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+AUDIT_MGR
+DEFAULT
+OPEN
+BANK
+PERF_SVC_PROFILE
+OPEN
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+C##DBZUSER
+C##SVC_PROFILE
+OPEN
+C##DGADMIN
+C##SVC_PROFILE
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+OPEN
+C##MON
+C##SVC_PROFILE
+OPEN
+PDBADMIN
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+SEC_ADMIN_PROFILE
+OPEN
+SQLTXADMIN
+SEC_SVC_PROFILE
+EXPIRED & LOCKED
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+SQLTXPLAIN
+SEC_SVC_PROFILE
+OPEN
+8 rows selected.
+Session altered.
+Profile created.
+Profile created.
+User altered.
+Profile created.
+User altered.
+User altered.
+User altered.
+User altered.
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+APP
+SEC_SVC_PROFILE
+OPEN
+C##DBZUSER
+C##SVC_PROFILE
+OPEN
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+C##DGADMIN
+C##SVC_PROFILE
+OPEN
+C##MON
+C##SVC_PROFILE
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+OPEN
+CDC_WRITER
+SEC_SVC_PROFILE
+OPEN
+DBFS_USER
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+SEC_SVC_PROFILE
+OPEN
+GGADMIN
+GG_SVC_PROFILE
+OPEN
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+PDBADMIN
+SEC_ADMIN_PROFILE
+OPEN
+8 rows selected.
+Session altered.
+Profile created.
+Profile created.
+User altered.
+User altered.
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+BANK
+SEC_SVC_PROFILE
+OPEN
+C##DBZUSER
+C##SVC_PROFILE
+OPEN
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+C##DGADMIN
+C##SVC_PROFILE
+OPEN
+C##MON
+C##SVC_PROFILE
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+OPEN
+PDBADMIN
+SEC_ADMIN_PROFILE
+OPEN
+Session altered.
+Profile created.
+Profile created.
+User altered.
+User altered.
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+C##DBZUSER
+C##SVC_PROFILE
+OPEN
+C##DGADMIN
+C##SVC_PROFILE
+OPEN
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+C##MON
+C##SVC_PROFILE
+OPEN
+PDBADMIN
+SEC_ADMIN_PROFILE
+USERNAME
+--------------------------------------------------------------------------------
+PROFILE
+--------------------------------------------------------------------------------
+ACCOUNT_STATUS
+--------------------------------
+OPEN
+RCO
+SEC_SVC_PROFILE
+OPEN
+rc=0
+##### privs 02:27:55
+CDB$ROOT invalid objects: 0
+PERF invalid objects: 0
+GGREPL invalid objects: 0
+DRILLPDB invalid objects: 0
+RCAT invalid objects: 0
+STOP: unexpected error above
+rc=1
+##### privs 02:28:19
+CDB$ROOT invalid objects: 10
+PERF invalid objects: 0
+GGREPL invalid objects: 0
+DRILLPDB invalid objects: 0
+RCAT invalid objects: 0
+CDB$ROOT invalid objects: 0
+Session altered.
+PERF invalid objects: 0
+Session altered.
+GGREPL invalid objects: 0
+Session altered.
+DRILLPDB invalid objects: 0
+Session altered.
+RCAT invalid objects: 0
+Session altered.
+rc=0
+##### audit 02:31:27
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+Audit succeeded.
+Session altered.
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+C##SEC_CHANGES
+ALL USERS
+YES YES
+C##SEC_LOGON_SUCCESS
+ALL USERS
+YES NO
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+ORA_SECURECONFIG
+ALL USERS
+YES YES
+SEC_CARDS_ACCESS
+ALL USERS
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+YES YES
+SEC_CHANGES
+ALL USERS
+YES YES
+SEC_LOGON_SUCCESS
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+ALL USERS
+YES NO
+6 rows selected.
+Session altered.
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+C##SEC_CHANGES
+ALL USERS
+YES YES
+C##SEC_LOGON_SUCCESS
+ALL USERS
+YES NO
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+ORA_SECURECONFIG
+ALL USERS
+YES YES
+SEC_CHANGES
+ALL USERS
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+YES YES
+SEC_LOGON_SUCCESS
+ALL USERS
+YES NO
+Session altered.
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+C##SEC_CHANGES
+ALL USERS
+YES YES
+C##SEC_LOGON_SUCCESS
+ALL USERS
+YES NO
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+ORA_SECURECONFIG
+ALL USERS
+YES YES
+SEC_CARDS_ACCESS
+ALL USERS
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+YES YES
+SEC_CHANGES
+ALL USERS
+YES YES
+SEC_LOGON_SUCCESS
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+ALL USERS
+YES NO
+6 rows selected.
+Session altered.
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+C##SEC_CHANGES
+ALL USERS
+YES YES
+C##SEC_LOGON_SUCCESS
+ALL USERS
+YES NO
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+ORA_SECURECONFIG
+ALL USERS
+YES YES
+SEC_CHANGES
+ALL USERS
+POLICY_NAME
+--------------------------------------------------------------------------------
+ENTITY_NAME
+--------------------------------------------------------------------------------
+SUC FAI
+--- ---
+YES YES
+SEC_LOGON_SUCCESS
+ALL USERS
+YES NO
+rc=0
+##### redaction 02:31:29
+Session altered.
+PL/SQL procedure successfully completed.
+OBJECT_NAME
+--------------------------------------------------------------------------------
+COLUMN_NAME
+--------------------------------------------------------------------------------
+FUNCTION_TYPE
+---------------------------
+CARDS
+PAN
+PARTIAL REDACTION
+Session altered.
+PL/SQL procedure successfully completed.
+OBJECT_NAME
+--------------------------------------------------------------------------------
+COLUMN_NAME
+--------------------------------------------------------------------------------
+FUNCTION_TYPE
+---------------------------
+CARDS
+PAN
+PARTIAL REDACTION
+rc=0

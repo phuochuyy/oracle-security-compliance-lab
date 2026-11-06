@@ -104,8 +104,11 @@ begin
       chk('INACTIVE_ACCOUNT_TIME',   n(lim('INACTIVE_ACCOUNT_TIME')) <= 120);
       -- service profiles (*SVC*): only expiry may deviate, shown as ACCEPT
       if pr.profile like '%SVC%' and bad is not null
-         and regexp_replace(bad, 'PASSWORD_(LIFE|GRACE)_TIME=[^ ]+ ', '') is null then
-        acc('U10') := 'service account, credential in a wallet: no expiry, rotated by procedure';
+         and regexp_replace(case when pr.profile in ('GG_SVC_PROFILE', 'PERF_SVC_PROFILE') then regexp_replace(bad, 'SESSIONS_PER_USER=[^ ]+ ', '') else bad end,
+                            'PASSWORD_(LIFE|GRACE)_TIME=[^ ]+ ', '') is null then
+        acc('U10') := 'service account, credential in a wallet: no expiry, rotated by procedure'
+          || case pr.profile when 'GG_SVC_PROFILE' then '; GoldenGate holds 8 sessions at rest, limit 40'
+                            when 'PERF_SVC_PROFILE' then '; parallel query slaves count as sessions, limit 40' end;
       elsif acc.exists('U10') then acc.delete('U10');
       end if;
       r('U10', '3 users', bad is null, 'profile ' || pr.profile || ' meets the password/resource limits',
@@ -135,6 +138,11 @@ begin
   begin
     v := q('select listagg(grantee || '':'' || privilege, '', '') within group (order by grantee, privilege) from dba_sys_privs
             where privilege like ''%ANY%'' and grantee in ' || grantees);
+    -- accepted only for service accounts that cannot work without them; any other grantee still fails
+    if regexp_replace(v, '(^|, )(C##DBZUSER:SELECT ANY TRANSACTION|(GGADMIN|SQLTXADMIN|SQLTXPLAIN):[^,]+)', '') is null and v is not null then
+      acc('R05') := 'LogMiner (Debezium), GoldenGate and SQLT need these; the accounts are service accounts';
+    elsif acc.exists('R05') then acc.delete('R05');
+    end if;
     r('R05', '4 privs', v is null, 'no ANY system privileges to non-Oracle grantees', nvl(v, 'none'));
     v := q('select listagg(grantee, '','') within group (order by grantee) from dba_role_privs
             where granted_role = ''DBA'' and grantee in ' || grantees);
@@ -147,6 +155,10 @@ begin
               ''EXEMPT REDACTION POLICY'', ''GRANT ANY OBJECT PRIVILEGE'', ''GRANT ANY ROLE'', ''GRANT ANY PRIVILEGE'',
               ''CREATE LIBRARY'', ''CREATE ANY LIBRARY'', ''SELECT ANY DICTIONARY'') and grantee in ' || grantees || ' or (grantee = ''PUBLIC''
               and privilege in (''ALTER SYSTEM'', ''SELECT ANY DICTIONARY''))');
+    if regexp_replace(v, '(^|, )(GGADMIN|SQLTXADMIN|SQLTXPLAIN):[^,]+', '') is null and v is not null then
+      acc('R08') := 'GoldenGate and SQLT read the dictionary; the accounts are service accounts';
+    elsif acc.exists('R08') then acc.delete('R08');
+    end if;
     r('R08', '4 privs', v is null, 'no powerful system privileges to non-Oracle grantees', nvl(v, 'none'));
     v := q('select listagg(grantee || '':'' || table_name, '', '') within group (order by grantee) from dba_tab_privs
             where owner = ''SYS'' and table_name in (''USER$'', ''LINK$'', ''AUD$'', ''DEFAULT_PWD$'', ''ENC$'', ''USER_HISTORY$'',
