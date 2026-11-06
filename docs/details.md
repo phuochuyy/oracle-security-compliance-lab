@@ -11,7 +11,7 @@ prm2 added: [`01-nne-prm2-20261103.txt`](../03-hardening/results/01-nne-prm2-202
 > **27 FAIL → 0** (5 documented ACCEPTs). DBSAT needs a support contract, so the assessment is a
 > CIS-style script ([why](../05-assessment/README.md)). Finding 1b explained (Oracle-internal, accepted); audit
 > retention [runs in the performance PDB](../04-auditing/README.md#retention--02_retentionsh) (archive to CSV →
-> counts match → last-archive timestamp → purge job; 13,849 records archived on the first run), SECPDB still to do.
+> counts match → last-archive timestamp → purge job; 13,849 records archived on the first run), then on the RAC's SECPDB and root.
 
 ## Findings
 
