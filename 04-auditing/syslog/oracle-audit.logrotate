@@ -1,0 +1,11 @@
+/var/log/oracle-audit.log {
+    daily
+    rotate 7
+    maxsize 100M
+    compress
+    missingok
+    notifempty
+    postrotate
+        /usr/bin/systemctl kill -s HUP rsyslog.service >/dev/null 2>&1 || true
+    endscript
+}

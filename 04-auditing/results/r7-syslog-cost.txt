@@ -1,0 +1,19 @@
+# First test (reduced version not kept): 3 runs of 10,000 audited statements with syslog on, 30,000 records in the audit trail.
+# Syslog received 19,634: one session 10,002, one 9,632, one 0. No message about it anywhere. Then rate limits off in imjournal and journald:
+audit records per run: 10000 for 10000 statements
+round 1: syslog off 695 cs, syslog on 425 cs
+round 2: syslog off 627 cs, syslog on 683 cs
+round 3: syslog off 391 cs, syslog on 432 cs
+# what the receiver got per session (each 'on' round runs two sessions: 10,000 statements each)
+  10002 SESID:"107326"
+  10002 SESID:"115796"
+  10002 SESID:"65902"
+  10002 SESID:"68340"
+  10002 SESID:"86949"
+  10002 SESID:"87208"
+
+# receiver down: records wait in the VM's disk queue
+while down, receiver has 0 new lines
+after restart, 10 s: receiver has 102 new lines (100 audited statements)
+
+# 16-digit numbers in the off-host copy (card numbers would show here): 0

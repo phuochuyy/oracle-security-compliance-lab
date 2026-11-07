@@ -1,0 +1,7 @@
+# Unified Audit records (UNIFIED_AUDIT_SYSTEMLOG = LOCAL0.INFO): keep a local file, forward to the receiver.
+# The queue holds records on disk while the receiver is down and sends them later, instead of losing them.
+local0.* action(type="omfile" file="/var/log/oracle-audit.log")
+local0.* action(type="omfwd" target="@RECEIVER@" port="5514" protocol="tcp"
+                queue.type="LinkedList" queue.filename="oracle_audit_fwd" queue.maxdiskspace="50m"
+                queue.saveonshutdown="on" action.resumeRetryCount="-1")
+& stop
