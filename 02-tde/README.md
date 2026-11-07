@@ -136,3 +136,12 @@ marker PANs counted in the newest trail files of both deployments. Log: [`result
   `DBFS_TS` of ORCLPDB2 → encrypt `DBFS_TS` too (1 GB; host disk is short in this lab).
 - ~~Both deployments use the same weak `oggadmin` password, written in the lab control script (PCI-DSS 8).~~
   Done 2026-10-29: rotated, read from a mode-600 file, masked in every output ([runbook](../03-hardening/password-rotation.md)).
+
+## Key rotation and the check that the sites agree — [`08_rotate_key.sh`](08_rotate_key.sh), [`07_key_check.sh`](07_key_check.sh)
+
+A keystore does not travel with redo. In Region B, with real-time apply, a `SET KEY` without copying the keystore stopped redo apply **in the same second** (`ORA-28374`, [log](results/08-key-check-regionB.txt)). So a check cannot warn in time; it can only say why apply stopped. The order of the procedure is what prevents it:
+
+1. Check the sites agree, 2. apply off through the broker (FSFO can stay on), 3. `SET KEY ... WITH BACKUP`, 4. keystore to the standby and off the host, same bytes, 5. the standby closes its auto-login keystore so the next access reads the new file, 6. check again, apply on, lag 0.
+
+Run with FSFO on: no `ORA-28374`, apply stopped for 24 s by choice and caught up. `07_key_check.sh` compares key IDs per container: it printed `CRIT con_id 5: 1 of 2 keys ... missing` during the deliberate failure, and exit code 0 after the copy. It runs from the host because it needs both sites, and no key material leaves the databases: a key ID identifies a key, it does not reveal it. Rotation in Region A uses the same order with the ASM keystore ([`01_keystore.sh escrow`](01_keystore.sh)); it was not repeated there.
+

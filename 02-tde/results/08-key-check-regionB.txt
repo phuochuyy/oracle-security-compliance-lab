@@ -1,0 +1,46 @@
+# SET KEY in DRILLPDB at 19:28:44, keystore NOT copied, FSFO disabled for this test
+# standby alert log: 19:28:44 ORA-28374 typed master key not found in wallet, recovery interrupted: the same second
+19:33:39
+OK   con_id 1: 1 keys on prm3, all on stb3
+OK   con_id 3: 1 keys on prm3, all on stb3
+OK   con_id 4: 1 keys on prm3, all on stb3
+CRIT con_id 5: 1 of 2 keys on prm3 are missing on stb3: copy the keystore now, then check apply
+OK   con_id 6: 1 keys on prm3, all on stb3
+rc=1
+# keystore copied, standby keystore closed and reopened on next access
+OK   con_id 1: 1 keys on prm3, all on stb3
+OK   con_id 3: 1 keys on prm3, all on stb3
+OK   con_id 4: 1 keys on prm3, all on stb3
+OK   con_id 5: 2 keys on prm3, all on stb3
+OK   con_id 6: 1 keys on prm3, all on stb3
+rc=0
+OPEN AUTOLOGIN
+ Transport Lag: 0 seconds (computed 1 second ago)
+ Apply Lag: 5 minutes 16 seconds (computed 1 second ago)
+ ORA-16766: Redo Apply is stopped.
+ ORA-16853: apply lag has exceeded specified threshold
+Database Status:
+ERROR
+
+# 08_rotate_key.sh, FSFO enabled
+OK   con_id 1: 1 keys on prm3, all on stb3
+OK   con_id 3: 1 keys on prm3, all on stb3
+OK   con_id 4: 1 keys on prm3, all on stb3
+OK   con_id 5: 2 keys on prm3, all on stb3
+OK   con_id 6: 1 keys on prm3, all on stb3
+19:34:47 apply off on ORCL3_STB
+19:34:50 SET KEY in DRILLPDB, tag rotate_r7
+rotate_r7
+19:34:50 keystore to stb3 and off the host
+19:34:52 same bytes on both sites
+OK   con_id 1: 1 keys on prm3, all on stb3
+OK   con_id 3: 1 keys on prm3, all on stb3
+OK   con_id 4: 1 keys on prm3, all on stb3
+OK   con_id 5: 3 keys on prm3, all on stb3
+OK   con_id 6: 1 keys on prm3, all on stb3
+19:35:14 apply on
+ Intended State: APPLY-ON
+ Apply Lag: 0 seconds (computed 1 second ago)
+MRP0 APPLYING_LOG
+19:35:32 done
+rc=0
