@@ -121,3 +121,24 @@ Logs: [SECPDB](results/retention/r6-secpdb-20261107.log), [root](results/retenti
 
 **Limits:** after a role change the job writes on the new primary's node, so CSV files spread over nodes and the off-host step must collect from each. prm2 and stb2 were off when the directories were made: `ARCH_NODES` must be run for them too. Other PDBs of the RAC (`ORCLPDB1`, `ORCLPDB2`, `DRILLPDB`) have no retention yet.
 
+## Off-host copy in near real time — [`03_syslog.sh`](03_syslog.sh), [`syslog/`](syslog/)
+
+The daily CSV archive leaves a window of up to a day in which someone with SYS can purge a record before it is copied. `UNIFIED_AUDIT_SYSTEMLOG = LOCAL0.INFO` sends a summary of each record to syslog as it is written, and rsyslog forwards it to a receiver on the KVM host, which stands in for a central log server (PCI-DSS 10.3.3).
+
+What the record holds, from the [receiver](syslog/audit_receiver.py): `DBUSER`, `CURUSER`, `ACTION`, `RETCODE`, `SCHEMA`, `OBJNAME`, `PDB_GUID`. No SQL text, so no card number can travel this way: 0 sixteen-digit numbers in the copy. The full record stays in `AUDSYS` and the CSV archive; this copy is the proof that something happened, and when. Evidence: [`results/r7-syslog-cost.txt`](results/r7-syslog-cost.txt).
+
+| Test | Result |
+|------|--------|
+| 30,000 audited statements, default configuration | **19,634 received, with no error anywhere** |
+| 60,000 audited statements, rate limits off in `imjournal` and `journald` | every session complete: 10,002 lines each, 10,000 statements plus logon and logoff |
+| Receiver stopped, 100 audited statements, receiver started | 0 lines while it was down, all 102 within 10 s after: the VM's disk queue held them |
+| Cost, 10,000 statements, 3 rounds, off / on (centiseconds) | 695 / 425, 627 / 683, 391 / 432: no difference above the noise |
+
+**The first line is the finding.** The local syslog path has rate limits on by default, and they lost a third of the records in a burst, silently. I found it only because I counted lines against sessions. I removed both limits and the loss stopped; I did not separate which of the two did it. The whole path should be tested with a burst before it is trusted as an audit copy.
+
+**Why the cost row cannot say more:** the same setting varies by more than the difference between settings, on a host with other VMs running. An audit record already costs about 0.35 ms ([case 10](https://github.com/phuochuyy/oracle-performance-tuning-lab/tree/main/03-cases/10-audit-overhead)); sending it to syslog adds nothing I can measure here.
+
+**Setting it:** the parameter can only change in the spfile. It takes effect when the instance restarts, or when a PDB is closed and opened.
+
+**Limits:** no TLS on the forward, and the same person administers the database and the receiver in this lab, which is exactly what a real setup must avoid. Set in Region B; Region A follows in the same way.
+
