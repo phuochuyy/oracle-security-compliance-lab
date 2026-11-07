@@ -74,3 +74,9 @@ How the 27 were fixed: [parameters + network](../03-hardening/README.md),
 larger than on Region A and the two are not comparable. A check block that fails now stops the run: before, a failing block
 lost the whole container and the summary still said 0 FAIL.
 
+## Weekly drift check — [`drift_check.sh`](drift_check.sh)
+
+The assessment used to run when someone remembered. A weekly timer on the KVM host ([`systemd/`](systemd/)) now compares it check by check with the last accepted baseline, plus master key IDs across the sites, and reports only what changed. [Test](results/r7-drift-check.txt): `SEC_PROTOCOL_ERROR_TRACE_ACTION` changed on `orcl3`, one check reported as `PASS` to `FAIL`, exit code 1; changed back, 0.
+
+A region whose primary is off prints "not checked" rather than passing silently. A real team would send this to a security mailbox or ticket queue; here it goes to the journal under `lab-drift` and to a history file.
+
