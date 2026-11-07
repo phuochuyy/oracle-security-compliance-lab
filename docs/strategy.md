@@ -12,6 +12,7 @@ Card data unreadable outside the database, every access to it recorded, each acc
 |-------|---------|--------------------|
 | Data at rest | TDE on tablespaces with card data, on primary, standby and GoldenGate trails; encrypted backups | [Search the raw files for a known card number](../01-baseline/plaintext/check_plaintext.sh) |
 | Data in transit | Native network encryption required, including redo transport | [New connections and session list](../03-hardening/01_params_network.sh) |
+| Network access | Listener allow list in Region B | [Refused from an unlisted machine, the required ones still connect](../03-hardening/08_valid_nodes.sh) |
 | Access | Profiles, schema-only owner, PUBLIC grants revoked, separate Data Guard administrator, Privilege Analysis | [Assessment](../05-assessment/assess.sh) |
 | Display | Data Redaction of card numbers | Test users. A `WHERE` clause still sees the real value, which the next layer limits |
 | Rows | Virtual Private Database: an analyst reaches only their own region's cards | [Test users of two regions and one without an assignment](../03-hardening/06_vpd.sh) |

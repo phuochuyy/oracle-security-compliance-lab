@@ -1,0 +1,6 @@
+
+# Only known machines may reach this listener: Region B itself, the RAC nodes and their VIPs and SCANs, the observers.
+# IP addresses on purpose: one name that does not resolve would stop the listener from starting.
+# Read when the listener starts. Installed with the rest of this file by labctl (files/validnode-b.ora).
+TCP.VALIDNODE_CHECKING = YES
+TCP.INVITED_NODES = (127.0.0.1, 192.168.106.10, 192.168.107.10, 192.168.105.17, 192.168.104.17, 192.168.104.10, 192.168.104.11, 192.168.104.12, 192.168.104.13, 192.168.104.14, 192.168.104.15, 192.168.104.16, 192.168.104.18, 192.168.105.10, 192.168.105.11, 192.168.105.12, 192.168.105.13, 192.168.105.14, 192.168.105.15, 192.168.105.16, 192.168.105.18)

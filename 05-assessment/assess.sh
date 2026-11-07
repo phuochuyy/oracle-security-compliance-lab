@@ -42,6 +42,7 @@ res+=$'\n'$(net N01 "server requires network encryption" $DBH/network/admin/sqln
 res+=$'\n'$(net N02 "server requires integrity checksums" $DBH/network/admin/sqlnet.ora "SQLNET.CRYPTO_CHECKSUM_SERVER *= *REQUIRED")
 res+=$'\n'$(net N03 "allowed logon version >= 12a" $DBH/network/admin/sqlnet.ora "SQLNET.ALLOWED_LOGON_VERSION_SERVER *= *(12a|1[3-9]|2[0-9])")
 res+=$'\n'$(net N04 "listener admin restrictions on" $LSN "ADMIN_RESTRICTIONS_LISTENER *= *ON")
+[ "$ASSESS_DB" = orcl3 ] && res+=$'\n'$(net N05 "listener allows only listed machines" $DBH/network/admin/sqlnet.ora "TCP.VALIDNODE_CHECKING *= *YES")
 
 {
   echo "# assessment '$label' — $(date '+%F %T') — $ASSESS_DB on $H: $CONTAINERS"

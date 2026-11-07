@@ -1,0 +1,37 @@
+# before
+prm1 -> prm3: OK (0 msec)
+obs-r2 -> prm3: OK (0 msec)
+prm3 -> prm3: OK (0 msec)
+stb3 -> prm3: OK (0 msec)
+KVM host -> prm3: ORA-01017: invalid credential or not authorized; logon denied
+prm1 -> stb3: OK (0 msec)
+obs-r2 -> stb3: OK (0 msec)
+prm3 -> stb3: OK (0 msec)
+stb3 -> stb3: OK (0 msec)
+KVM host -> stb3: ORA-01017: invalid credential or not authorized; logon denied
+
+# apply, standby first
+The command completed successfully
+The command completed successfully
+# after
+prm1 -> prm3: OK (10 msec)
+obs-r2 -> prm3: OK (0 msec)
+prm3 -> prm3: OK (0 msec)
+stb3 -> prm3: OK (0 msec)
+KVM host -> prm3: DPY-4011: the database or network closed the connection
+prm1 -> stb3: OK (0 msec)
+obs-r2 -> stb3: OK (0 msec)
+prm3 -> stb3: OK (10 msec)
+stb3 -> stb3: OK (0 msec)
+KVM host -> stb3: DPY-4011: the database or network closed the connection
+# Data Guard after the restart
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+SUCCESS   (status updated 58 seconds ago)
+  Active Target:      ORCL3_STB
+  Potential Targets:  "ORCL3_STB"
+15
+A->B insert arrived: 6 s
+A->B delete arrived: 5 s
+B->A insert arrived: 11 s
+B->A delete arrived: 4 s
+prm1 to catalog: 	 1

@@ -117,6 +117,19 @@ The audit trail now names the person's account and the privilege used: `RMAN_AUD
 
 **Limit:** the OS user `oracle` is in every OS group, so anyone logged in as `oracle` can still connect `/ as sysdba`. Real separation also needs one OS account per duty, in `backupdba` and `kmdba` only; this lab has one OS account. Archived log housekeeping still runs by OS authentication.
 
+## 6. Listener allow list in Region B — [`08_valid_nodes.sh`](08_valid_nodes.sh)
+
+A machine that is not on the list is refused before it can try a password. Log: [`results/08-valid-nodes-regionB.txt`](results/08-valid-nodes-regionB.txt).
+
+| From | Before | After |
+|------|--------|-------|
+| KVM host, not on the list, wrong password | `ORA-01017`: reached the database | `DPY-4011`: connection closed by the listener |
+| prm1, the observer, prm3, stb3, in both directions | reach the listener | reach the listener |
+
+After the listener restart, standby first: broker `SUCCESS`, FSFO Zero Data Loss with the observer, one row each way through GoldenGate, prm1 to the recovery catalog.
+
+**It is a list of addresses, so it has to be maintained:** a new client, or a node that changes address, is refused until it is added and the listener restarted. Names are not used, because one name that does not resolve would stop the listener from starting. The list is part of what `labctl` installs at boot, otherwise the next boot would remove it. Region A is not done: its SCAN and node listeners run from the Grid home, and a change there needs its own test.
+
 ## Privilege Analysis (2026-10-30)
 
 [`04_privilege_analysis.sh`](04_privilege_analysis.sh) `start | work | stop`: a database-wide capture in SECPDB
