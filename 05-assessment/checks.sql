@@ -236,6 +236,11 @@ begin
       v := q('select listagg(grantee || '':'' || privilege, '','') within group (order by grantee) from dba_tab_privs
               where owner = ''BANK'' and table_name = ''CARDS'' and grantee <> ''BANK''');
       info('C04', 'PCI 7', 'who has object privileges on BANK.CARDS', nvl(v, 'nobody but the owner'));
+      v := q('select enable from dba_policies where object_owner = ''BANK'' and object_name = ''CARDS'' and policy_name = ''CARDS_BY_REGION''');
+      r('C05', 'PCI 7.2', v = 'YES', 'row-level policy on BANK.CARDS enabled (VPD)', nvl(v, 'no policy'));
+      v := q('select listagg(distinct grantee, '','') within group (order by grantee) from dba_sys_privs
+              where privilege in (''EXEMPT ACCESS POLICY'', ''EXEMPT REDACTION POLICY'') and grantee in ' || grantees);
+      r('C06', 'PCI 7.2', v is null, 'no account of ours bypasses VPD or redaction', nvl(v, 'none'));
     end;
   end if;
 end;

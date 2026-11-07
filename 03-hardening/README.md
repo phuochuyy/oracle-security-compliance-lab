@@ -72,6 +72,38 @@ rows, and `WHERE pan = '<full number>'` → 1 row. The predicate uses the real v
 or guess numbers. Redaction is display masking for applications and reports; who may query `CARDS` at all
 is access control (roles, VPD), and every query on it is audited (`SEC_CARDS_ACCESS`).
 
+## 4. Row-level control on `CARDS` — [`06_vpd.sh`](06_vpd.sh)
+
+Redaction hides what is displayed; it does not stop a query from testing a value. VPD closes that across regions: an analyst reaches only the cards of their assigned region, for reads and changes, and someone with no assignment reaches none. Logs: [SECPDB](results/06-vpd-secpdb.log), [PERF](results/06-vpd-perf.log), [DRILLPDB](results/06-vpd-drillpdb.log).
+
+| Who | Cards visible (SECPDB / PERF) | Test of a card from another region in `WHERE` | Change to another region's card |
+|-----|-------------------------------|---------------------------------------|---------------------------------|
+| Any analyst, before | 24,000 / 384,000 | finds it | possible |
+| `ANALYST_NORTH` | 4,831 / 76,930 | 0 rows | 0 rows updated |
+| `ANALYST_SOUTH` | 9,650 / 154,004 | 0 rows | moving its own card to another region: `ORA-28115` |
+| `ANALYST_NONE`, no assignment | 0 / 0 | 0 rows | |
+| `BANK`, the application account | every card, exempt in the policy function | | |
+| `SYS` | every card: **VPD does not apply to it** | | |
+
+**What it costs**, logical reads per statement after a first execution, on the larger PDB:
+
+| Statement | Before | With the policy | With the policy and an index on `ACCOUNT_ID` |
+|-----------|--------|-----------------|---------------------------------------------|
+| One card by id | 10 | 21 | 21 |
+| Cards of one account | 2,858 | 2,857 | 23 |
+| Count of visible cards | 763 | 11,574 | 9,601 |
+
+A single-row lookup doubles but stays small. The real cost is a query across all cards, which has to work out the region of every account. The index was missing anyway: `CARDS.ACCOUNT_ID` is a foreign key with none, the same pattern as the slow Flashback Table in the backup lab.
+
+Design points, each from a test:
+
+- **A predicate runs with the rights of the user who issues the statement.** My first version named `ACCOUNTS` and `CUSTOMERS` directly: `ORA-28113` for every analyst, and the fix I wanted to avoid was granting them those tables. The predicate now reads a view owned by `SEC_ADMIN`, which returns only the accounts of the caller's own region, so an analyst gains no new table and no map of the other regions.
+- **`SEC_ADMIN` is schema-only:** no password, no system privilege. Changes to `STAFF_REGION` and every `DBMS_RLS` call are audited by `SEC_VPD_ADMIN`.
+- **Test values are hashed.** Statements on `CARDS` are audited with their text, so a test that typed a card number would write it into the audit trail and its CSV archive.
+- **Who bypasses it:** `SYS`, and holders of `EXEMPT ACCESS POLICY`: here only Oracle-maintained accounts and roles (`GSMADMIN_INTERNAL`, `GSMUSER_ROLE`, `OGG_CAPTURE`). Assessment check C06 fails if one of ours is added.
+
+**Limits.** Inside their own region an analyst can still test a value in `WHERE`: audit is what covers that. `BANK` is exempt, so a leaked application password sees everything. A VPD policy does not stop `SYS`.
+
 ## Privilege Analysis (2026-10-30)
 
 [`04_privilege_analysis.sh`](04_privilege_analysis.sh) `start | work | stop`: a database-wide capture in SECPDB
