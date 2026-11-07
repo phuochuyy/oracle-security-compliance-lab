@@ -1,0 +1,2 @@
+prm1: database role: PRIMARY cards visible: 4831
+stb1: database role: PHYSICAL STANDBY cards visible: 4831

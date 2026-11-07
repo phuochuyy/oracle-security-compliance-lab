@@ -102,11 +102,13 @@ Design points, each from a test:
 - **Test values are hashed.** Statements on `CARDS` are audited with their text, so a test that typed a card number would write it into the audit trail and its CSV archive.
 - **Who bypasses it:** `SYS`, and holders of `EXEMPT ACCESS POLICY`: here only Oracle-maintained accounts and roles (`GSMADMIN_INTERNAL`, `GSMUSER_ROLE`, `OGG_CAPTURE`). Assessment check C06 fails if one of ours is added.
 
+**On the standby too:** the same analyst sees the same 4,831 cards when connected to `SECPDB` on the Active Data Guard standby; the policy, the view and the assignment come with redo ([log](results/06-vpd-adg.txt)).
+
 **Limits.** Inside their own region an analyst can still test a value in `WHERE`: audit is what covers that. `BANK` is exempt, so a leaked application password sees everything. A VPD policy does not stop `SYS`.
 
 ## 5. Separate administrative privileges — [`07_admin_roles.sh`](07_admin_roles.sh)
 
-SYS does everything and audit can only say "SYS did it". Backups and keys now have their own accounts; Data Guard already had `C##DGADMIN`. Log: [Region B](results/07-admin-roles-regionB.txt).
+SYS does everything and audit can only say "SYS did it". Backups and keys now have their own accounts; Data Guard already had `C##DGADMIN`. Logs: [Region B](results/07-admin-roles-regionB.txt), [Region A](results/07-admin-roles-regionA.txt), where the RAC's offloaded backups also run as `C##BKADMIN`.
 
 | Account | Privilege | Does | Reading `BANK.CARDS` |
 |---------|-----------|------|---------------------|

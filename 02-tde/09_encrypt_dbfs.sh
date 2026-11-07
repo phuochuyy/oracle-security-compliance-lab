@@ -7,7 +7,7 @@
 # both sites, and redo of about what is used. usage (from the host): ./09_encrypt_dbfs.sh encrypt prm3 GGREPL DBFS_TS
 set -eu -o pipefail
 mode=${1:?check or encrypt} H=${2:?host}
-sq() { ssh -o BatchMode=yes "oracle@$H" '. ~/.bash_profile >/dev/null 2>&1; export ORACLE_SID=$(pgrep -a -f ora_pmon_ | sed "s/.*ora_pmon_//" | head -n 1); sqlplus -s / as sysdba' 2>&1 | { grep -vE '^$|^Session altered' || true; } | cut -c1-120; }
+sq() { ssh -o BatchMode=yes "oracle@$H" '. ~/.bash_profile >/dev/null 2>&1; export ORACLE_SID=$(pgrep -a -f "[o]ra_pmon_" | sed "s/.*ora_pmon_//" | head -n 1); sqlplus -s / as sysdba' 2>&1 | { grep -vE '^$|^Session altered' || true; } | cut -c1-120; }
 case $mode in
 encrypt)
   PDB=${3:?PDB} T=${4:-DBFS_TS}

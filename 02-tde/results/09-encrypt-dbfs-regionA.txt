@@ -1,0 +1,25 @@
+# before, copy of the datafile out of ASM on prm1, searched
+S5A_MARKER_052955: 1 matching lines
+serviceListeningPort: 478 matching lines
+
+# encrypt online, GoldenGate running on prm1
+Tablespace altered.
+TABLESPACE_NAM ENC FILE_NAME
+-------------- --- ----------------------------------------------------------------------
+DBFS_TS        YES +DATA/ORCL/5E6ABB49EA6E976DE0630A68A8C0F5A7/DATAFILE/dbfs_ts.448.12487
+elapsed 17 s
+
+# after, primary (+DATA/ORCL/5E6ABB49EA6E976DE0630A68A8C0F5A7/DATAFILE/dbfs_ts.448.1248759021)
+S5A_MARKER_052955: 0 matching lines
+S5A_AFTER_053049: 0 matching lines
+serviceListeningPort: 0 matching lines
+copied bytes 1073750016
+# after, standby stb1 (+DATA/ORCL_STB/5E6ABB49EA6E976DE0630A68A8C0F5A7/DATAFILE/dbfs_ts.378.1248759021)
+S5A_MARKER_052955: 0 matching lines
+S5A_AFTER_053049: 0 matching lines
+serviceListeningPort: 0 matching lines
+copied bytes 1073750016
+A->B insert arrived: 8 s
+A->B delete arrived: 7 s
+B->A insert arrived: 11 s
+B->A delete arrived: 5 s
