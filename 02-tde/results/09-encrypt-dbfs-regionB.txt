@@ -1,0 +1,30 @@
+# before: a marker file written to DBFS, and text from GoldenGate's configuration
+S5_MARKER_030934: 1 matching lines in dbfs_ts01.dbf
+serviceListeningPort: 450 matching lines in dbfs_ts01.dbf
+/mnt/dbfs/ogg/GG_B/var/lib/wallet/cwallet.sso
+/mnt/dbfs/ogg/GG_B/etc/ssl/truststore.oraclelab_ca/cwallet.sso
+
+# encrypt online, GoldenGate running
+Tablespace altered.
+TABLESPACE_NAM ENC FILE_NAME
+-------------- --- ----------------------------------------------------------------------
+DBFS_TS        YES /u02/oradata/ORCL3/ggrepl/dbfs_ts01_enc.dbf
+elapsed 13 s
+Tablespace altered.
+TABLESPACE_NAM ENC FILE_NAME
+-------------- --- ----------------------------------------------------------------------
+APP_DATA       YES /u02/oradata/ORCL3/ggrepl/app_data01_enc.dbf
+elapsed 5 s
+
+# after, primary and standby, plus a new marker written after the conversion
+S5_MARKER_030934: 0 matching lines in dbfs_ts01_enc.dbf
+S5_AFTER_031045: 0 matching lines in dbfs_ts01_enc.dbf
+serviceListeningPort: 0 matching lines in dbfs_ts01_enc.dbf
+S5_MARKER_030934: 0 matching lines in o1_mf_dbfs_ts_ogz1f7sc_.dbf
+S5_AFTER_031045: 0 matching lines in o1_mf_dbfs_ts_ogz1f7sc_.dbf
+serviceListeningPort: 0 matching lines in o1_mf_dbfs_ts_ogz1f7sc_.dbf
+app_data01_enc.dbf dbfs_ts01_enc.dbf 
+A->B insert arrived: 18 s
+A->B delete arrived: 6 s
+B->A insert arrived: 65 s
+B->A delete arrived: 5 s
