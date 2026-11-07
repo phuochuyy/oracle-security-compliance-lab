@@ -212,6 +212,12 @@ begin
                join audit_unified_enabled_policies e on e.policy_name = p.policy_name
               where nvl(p.audit_condition, ''NONE'') <> ''NONE'' and p.policy_name not like ''ORA%'')'), 'none'));
 
+  --------------------------------------------------------------- GoldenGate's deployment, trail wallet included, lives on DBFS
+  if q('select count(*) from dba_tablespaces where tablespace_name = ''DBFS_TS''') = '1' then
+    r('C07', 'PCI 3.5', q('select encrypted from dba_tablespaces where tablespace_name = ''DBFS_TS''') = 'YES',
+      'tablespace behind DBFS encrypted (GoldenGate wallet)', q('select encrypted from dba_tablespaces where tablespace_name = ''DBFS_TS'''));
+  end if;
+
   --------------------------------------------------------------- PCI-DSS: the card data (BANK schema)
   if q('select count(*) from dba_users where username = ''BANK''') = '1' then
     declare v varchar2(4000);
