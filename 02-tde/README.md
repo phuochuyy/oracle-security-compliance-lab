@@ -155,5 +155,5 @@ GoldenGate's deployment lives on DBFS, including the auto-login wallet with the 
 | Text of GoldenGate's configuration | 450 lines | 0 | 0 |
 | Marker written after the conversion | | 0 | 0 |
 
-Online, with GoldenGate running: `DBFS_TS` 13 s, `APP_DATA` 5 s, one row each way through GoldenGate afterwards. The standby followed through redo. A file outside OMF needs `FILE_NAME_CONVERT`, otherwise the conversion has nowhere to write the new copy; the standby named its copy by OMF. It works because the master key was already on both sites. **Region A is not done yet:** it needs its standby running to show the same thing.
+Online, with GoldenGate running: `DBFS_TS` 13 s, `APP_DATA` 5 s, one row each way through GoldenGate afterwards. The standby followed through redo. A file outside OMF needs `FILE_NAME_CONVERT`, otherwise the conversion has nowhere to write the new copy; the standby named its copy by OMF. It works because the master key was already on both sites. Region A, ORCLPDB2 on the RAC: 17 s online, same result on primary and standby, searched in a copy of each ASM file ([`results/09-encrypt-dbfs-regionA.txt`](results/09-encrypt-dbfs-regionA.txt)): the marker 1 hit before, 0 after; GoldenGate's configuration text 478 lines before, 0 after.
 

@@ -140,5 +140,5 @@ What the record holds, from the [receiver](syslog/audit_receiver.py): `DBUSER`, 
 
 **Setting it:** the parameter can only change in the spfile. It takes effect when the instance restarts, or when a PDB is closed and opened.
 
-**Limits:** no TLS on the forward, and the same person administers the database and the receiver in this lab, which is exactly what a real setup must avoid. Set in Region B; Region A follows in the same way.
+**Limits:** no TLS on the forward, and the same person administers the database and the receiver in this lab, which is exactly what a real setup must avoid. Set in both regions (Region A: `SECPDB`, `ORCLPDB2` and the root, effective at the next restart of each).
 
