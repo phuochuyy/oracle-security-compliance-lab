@@ -20,7 +20,7 @@ Card data unreadable outside the database, every access to it recorded, each acc
 
 ## Running it
 
-- **Baseline and drift:** the assessment script runs on both regions after every change and must stay at 0 FAIL. On a real system it would be scheduled, with results sent to the security team.
+- **Baseline and drift:** the assessment script runs on both regions after every change and must stay at 0 FAIL. A [weekly check](../05-assessment/drift_check.sh) compares it with the accepted baseline and reports what changed; on a real system the report would go to the security team.
 - **Exceptions register:** a deviation is an `ACCEPT` line in the assessment with its reason, not a hidden check.
 - **Key management:** after every master key change the keystore goes to the standby first, or its redo apply stops. An off-host keystore copy exists; a restore needs it.
 - **Accounts:** people expire, service accounts rotate by a [written procedure](../03-hardening/password-rotation.md) listing every place a credential lives, including nodes that are off.

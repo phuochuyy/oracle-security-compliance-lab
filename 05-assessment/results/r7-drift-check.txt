@@ -1,0 +1,22 @@
+# no change
+orcl: no drift, 67 checks, 0 FAIL
+orcl: standby is off, key IDs not compared
+orcl3: no drift, 149 checks, 0 FAIL
+orcl3: master keys match on prm3 and stb3
+rc=0
+
+# SEC_PROTOCOL_ERROR_TRACE_ACTION changed from LOG to NONE on orcl3
+orcl: no drift, 67 checks, 0 FAIL
+orcl: standby is off, key IDs not compared
+orcl3: baseline drift, 2 lines
+was: P08|CDB$ROOT|PASS|SEC_PROTOCOL_ERROR_TRACE_ACTION = LOG
+now: P08|CDB$ROOT|FAIL|SEC_PROTOCOL_ERROR_TRACE_ACTION = LOG
+orcl3: master keys match on prm3 and stb3
+rc=1
+
+# changed back
+orcl: no drift, 67 checks, 0 FAIL
+orcl: standby is off, key IDs not compared
+orcl3: no drift, 149 checks, 0 FAIL
+orcl3: master keys match on prm3 and stb3
+rc=0

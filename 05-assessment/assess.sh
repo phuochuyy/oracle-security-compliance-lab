@@ -7,7 +7,7 @@
 #        ASSESS_DB=orcl3 ./assess.sh <label>                  Region B primary on prm3: CDB$ROOT + its PDBs
 set -eu
 label=${1:?label}
-dir=$(cd "$(dirname "$0")" && pwd); out=$dir/results/$label.txt; mkdir -p "$dir/results"
+dir=$(cd "$(dirname "$0")" && pwd); res_dir=${ASSESS_RESULTS:-$dir/results}; out=$res_dir/$label.txt; mkdir -p "$res_dir"
 ASSESS_DB=${ASSESS_DB:-orcl}
 case $ASSESS_DB in
   orcl)  H=${ASSESS_HOST:-prm1}; CONTAINERS='CDB$ROOT SECPDB' ;;
