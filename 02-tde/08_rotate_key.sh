@@ -3,12 +3,14 @@
 #   1. check the sites agree     2. apply off on the standby     3. SET KEY WITH BACKUP on the primary
 #   4. keystore to the standby and off the host, same bytes     5. standby re-reads it     6. apply on, lag 0, check again
 # Without step 2 there is a window in which apply can reach the new key first (ORA-28374; 03_standby_keys.sh rotate).
+# The key is set by C##KEYADMIN with SYSKM (03-hardening/07_admin_roles.sh), not SYS: that account can manage keys, not read data.
 # Keystore password from TDE_KEYSTORE_PASSWORD_ORCL3 in the performance repository's lab.env, on stdin only.
 # usage (from the host): ./08_rotate_key.sh <primary host> <standby host> <PDB> <tag>     e.g. prm3 stb3 DRILLPDB rotate_2026q4
 set -eu -o pipefail
 P=${1:?primary host} S=${2:?standby host} PDB=${3:?PDB} TAG=${4:?tag}
 d=$(cd "$(dirname "$0")" && pwd)
 . "$d/../../oracle-performance-tuning-lab/lab.env"; : "${TDE_KEYSTORE_PASSWORD_ORCL3:?}"
+. "$d/../lab.env"; : "${KEYADMIN_PASSWORD_B:?run 03-hardening/07_admin_roles.sh first}"
 ESCROW=${ESCROW:-$HOME/work/lab/keystore-backup/orcl3}
 ENV='. ~/.bash_profile >/dev/null 2>&1'
 WALLET=/u01/app/oracle/admin/orcl3/wallet/tde
@@ -25,9 +27,9 @@ dg "show database '$stb'" | grep -q 'Intended State: *APPLY-OFF' || { say "broke
 trap 'say "stopped midway: apply is still off on $stb. Finish by hand: copy the keystore, then APPLY-ON"' ERR
 
 say "SET KEY in $PDB, tag $TAG"
-out=$(sq "$P" <<SQL
+out=$(ssh -o BatchMode=yes "oracle@$P" "$ENV; sqlplus -s -L /nolog" 2>&1 <<SQL
 whenever sqlerror exit failure
-alter session set container = $PDB;
+connect c##keyadmin/"$KEYADMIN_PASSWORD_B"@//localhost:1521/${PDB,,}.rac as syskm
 administer key management set key using tag '$TAG' force keystore identified by "$TDE_KEYSTORE_PASSWORD_ORCL3" with backup using '$TAG';
 select tag, to_char(creation_time, 'YYYY-MM-DD HH24:MI') created from v\$encryption_keys where tag = '$TAG';
 exit
