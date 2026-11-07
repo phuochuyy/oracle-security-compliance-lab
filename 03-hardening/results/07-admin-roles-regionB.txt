@@ -1,0 +1,32 @@
+USERNAME	   SYSDB SYSBA SYSDG SYSKM ACCOUNT_STATUS
+------------------ ----- ----- ----- ----- ------------------------------
+C##BKADMIN	   FALSE TRUE  FALSE FALSE OPEN
+C##DGADMIN	   FALSE FALSE TRUE  FALSE OPEN
+C##KEYADMIN	   FALSE FALSE FALSE TRUE  OPEN
+
+# key rotation as C##KEYADMIN with SYSKM
+19:50:25 apply off on ORCL3_STB
+19:50:26 SET KEY in DRILLPDB, tag rotate_r7_syskm
+rotate_r7_syskm
+19:50:26 keystore to stb3 and off the host
+19:50:28 same bytes on both sites
+19:50:29 apply on
+ Intended State: APPLY-ON
+ Apply Lag: 0 seconds (computed 1 second ago)
+MRP0 APPLYING_LOG
+19:50:46 done
+rc=0
+
+# SYSKM cannot read application data
+ORA-00942: table or view "BANK"."CARDS" does not exist
+
+# audit trail: who set the key
+
+    CON_ID DBUSERNAME	  SYSTEM_PRI ACTION_NAME			     C
+---------- -------------- ---------- ------------------------------ ----------
+	 4 C##KEYADMIN	  SYSKM      SELECT				     1
+	 5 C##KEYADMIN	  SYSKM, ADM ADMINISTER KEY MANAGEMENT		     1
+			  INISTER KE
+			  Y MANAGEME
+			  NT
+

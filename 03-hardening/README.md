@@ -104,6 +104,19 @@ Design points, each from a test:
 
 **Limits.** Inside their own region an analyst can still test a value in `WHERE`: audit is what covers that. `BANK` is exempt, so a leaked application password sees everything. A VPD policy does not stop `SYS`.
 
+## 5. Separate administrative privileges — [`07_admin_roles.sh`](07_admin_roles.sh)
+
+SYS does everything and audit can only say "SYS did it". Backups and keys now have their own accounts; Data Guard already had `C##DGADMIN`. Log: [Region B](results/07-admin-roles-regionB.txt).
+
+| Account | Privilege | Does | Reading `BANK.CARDS` |
+|---------|-----------|------|---------------------|
+| `C##BKADMIN` | `SYSBACKUP` | RMAN level 0, validate, through a wallet ([log](https://github.com/phuochuyy/oracle-backup-recovery-drills/blob/main/01-strategy/results/r7-sysbackup.txt)) | `ORA-41900` missing READ privilege |
+| `C##KEYADMIN` | `SYSKM` | Master key rotation | `ORA-00942` |
+
+The audit trail now names the person's account and the privilege used: `RMAN_AUDIT ... C##BKADMIN ... Backup`, `C##KEYADMIN ... SYSKM ... ADMINISTER KEY MANAGEMENT`. The grants reach the standby's password file through redo with no copy.
+
+**Limit:** the OS user `oracle` is in every OS group, so anyone logged in as `oracle` can still connect `/ as sysdba`. Real separation also needs one OS account per duty, in `backupdba` and `kmdba` only; this lab has one OS account. Archived log housekeeping still runs by OS authentication.
+
 ## Privilege Analysis (2026-10-30)
 
 [`04_privilege_analysis.sh`](04_privilege_analysis.sh) `start | work | stop`: a database-wide capture in SECPDB
