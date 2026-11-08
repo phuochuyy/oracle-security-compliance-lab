@@ -1,0 +1,11 @@
+USERNAME       COMMAND	    OBJECT		     VIOLATION_TYPE	     COUNT
+-------------- ------------ ------------------------ ---------------------- ------
+SYS	       CREATE TABLE SEC_ADMIN.STAFF_REGION   DDL Auth Violation 	 1
+SYS	       GRANT	    BANK.ACCOUNTS	     Realm Violation		 1
+SYS	       GRANT	    BANK.CUSTOMERS	     Realm Violation		 1
+BANK	       CONNECT	    BANK.		     Command Rule Violation	 1
+SYS	       CREATE FUNCT SEC_ADMIN.CARDS_PREDICAT DDL Auth Violation 	 1
+	       ION	    E
+SYS	       SELECT	    BANK.CARDS		     Realm Violation		 1
+SYS	       SELECT	    BANK.CUSTOMERS	     Realm Violation		 1
+SYS	       CREATE VIEW  SEC_ADMIN.MY_ACCOUNTS    DDL Auth Violation 	 1

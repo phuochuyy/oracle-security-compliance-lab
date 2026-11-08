@@ -95,7 +95,7 @@ the effect of each control — including what it does to Data Guard and GoldenGa
 
 TDE and Data Redaction are part of **Oracle Advanced Security**, an extra-cost option on Enterprise Edition
 on-premises (included in some Oracle Cloud offerings). Native network encryption / TLS, Unified Auditing and
-Privilege Analysis are included in Enterprise Edition. Checked against the *Oracle Database 23ai Licensing
+Privilege Analysis are included in Enterprise Edition. **Database Vault** is a separate extra-cost option on Enterprise Edition (26ai Licensing Information); VPD is part of Enterprise Edition. Checked against the *Oracle Database 23ai Licensing
 Information User Manual*; this lab uses the options for learning — check the licenses before using them at work.
 
 ## Layout

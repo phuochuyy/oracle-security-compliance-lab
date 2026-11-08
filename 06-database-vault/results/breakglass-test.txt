@@ -1,0 +1,36 @@
+== 0. SYS tries to give DV_OWNER (it cannot)
+ORA-47410: Insufficient realm privileges to GRANT on DV_OWNER.
+== 1. backup owner takes DV_OWNER from the everyday owner
+C##DVOWNER holds DV_OWNER: 0
+== 2. account manager resets the everyday owner's password
+
+# The first run stopped after step 2: the reset printed nothing, grep returned 1 and set -e ended the script before the new password was saved. C##DVOWNER was left without DV_OWNER and with a password nobody had: a real break-glass situation. Second run, from step 0, with the backup accounts:
+== 0. SYS tries to give DV_OWNER (it cannot)
+ORA-47410: Insufficient realm privileges to GRANT on DV_OWNER.
+== 1. backup owner takes DV_OWNER from the everyday owner
+revoke dv_owner from c##dvowner container = all
+*
+ERROR at line 1:
+ORA-01951: Role "DV_OWNER" not granted to "C##DVOWNER".
+Help: https://docs.oracle.com/error-help/db/ora-01951/
+C##DVOWNER holds DV_OWNER: 0
+== 2. account manager resets the everyday owner's password
+password reset for: C##DVOWNER OPEN
+== 3. backup owner gives DV_OWNER back
+grant dv_owner to c##dvowner with admin option container = all
+*
+ERROR at line 1:
+ORA-65048: error encountered when processing the current DDL statement in pluggable database
+ORA-12850: could not allocate parallel execution servers on all specified instances:  needed,  allocated
+Help: https://docs.oracle.com/error-help/db/ora-65048/
+== 4. the everyday owner is back
+select 'C##DVOWNER sees realm: ' || name || ', enforced=' || enabled from dba_dv_realm where name = 'BANK cust
+                                                                          *
+ERROR at line 1:
+ORA-01031: insufficient privileges
+Help: https://docs.oracle.com/error-help/db/ora-01031/
+
+# Step 3 failed once with ORA-65048 / ORA-12850 (no parallel server for the DDL across PDBs, while 8 of 40 were in use); the same grant by the backup owner succeeded on the next try:
+C##DVOWNER holds DV_OWNER: 1
+== 4. the everyday owner is back, with the password saved in lab.env
+C##DVOWNER sees realm: BANK customer data, enforced=Y

@@ -1,0 +1,34 @@
+# switchover of Region B with Database Vault enabled, 09:05:07
+No transactions found.
+Switchover succeeded, new primary is "orcl3_stb"
+switchover 20 s
+## new primary stb3
+PRIMARY READ WRITE
+PERF DV enabled TRUE
+CDB$ROOT DV enabled TRUE
+select 'SYS reads cards: ' || count(*) from bank.cards
+                                                 *
+ORA-01031: insufficient privileges
+GG_B on stb3: EXTB=RUNNING REPB=RUNNING B2A=running 
+A->B insert arrived: 10 s
+A->B delete arrived: 4 s
+B->A insert arrived: 10 s
+B->A delete arrived: 5 s
+## switchback
+No transactions found.
+Switchover succeeded, new primary is "orcl3"
+switchback 25 s
+PRIMARY READ WRITE
+PERF DV enabled TRUE
+CDB$ROOT DV enabled TRUE
+select 'SYS reads cards: ' || count(*) from bank.cards
+                                                 *
+ORA-01031: insufficient privileges
+GG_B on prm3: EXTB=RUNNING REPB=RUNNING B2A=running 
+A->B insert arrived: 12 s
+A->B delete arrived: 6 s
+B->A insert arrived: 5 s
+B->A delete arrived: 5 s
+open mode: READ ONLY WITH APPLY
+SUCCESS   (status updated 40 seconds ago)
+

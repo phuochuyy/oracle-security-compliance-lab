@@ -109,6 +109,9 @@ begin
         acc('U10') := 'service account, credential in a wallet: no expiry, rotated by procedure'
           || case pr.profile when 'GG_SVC_PROFILE' then '; GoldenGate holds 8 sessions at rest, limit 40'
                             when 'PERF_SVC_PROFILE' then '; parallel query slaves count as sessions, limit 40' end;
+      -- Database Vault break-glass accounts: an inactivity lock would close the only way back in if the everyday owner is lost
+      elsif pr.profile = 'C##DV_BREAKGLASS_PROFILE' and regexp_replace(bad, 'INACTIVE_ACCOUNT_TIME=[^ ]+ ', '') is null then
+        acc('U10') := 'Database Vault break-glass accounts: no inactivity lock, used and tested by procedure';
       elsif acc.exists('U10') then acc.delete('U10');
       end if;
       r('U10', '3 users', bad is null, 'profile ' || pr.profile || ' meets the password/resource limits',
@@ -211,6 +214,12 @@ begin
              select distinct p.policy_name || '' when '' || p.audit_condition from audit_unified_policies p
                join audit_unified_enabled_policies e on e.policy_name = p.policy_name
               where nvl(p.audit_condition, ''NONE'') <> ''NONE'' and p.policy_name not like ''ORA%'')'), 'none'));
+
+  --------------------------------------------------------------- Database Vault: once configured in a container it must stay enabled
+  if q('select status from dba_dv_status where name = ''DV_CONFIGURE_STATUS''') = 'TRUE' then
+    r('D01', '4 privs', q('select status from dba_dv_status where name = ''DV_ENABLE_STATUS''') = 'TRUE',
+      'Database Vault enabled where it was configured', 'DV_ENABLE_STATUS=' || q('select status from dba_dv_status where name = ''DV_ENABLE_STATUS'''));
+  end if;
 
   --------------------------------------------------------------- GoldenGate's deployment, trail wallet included, lives on DBFS
   if q('select count(*) from dba_tablespaces where tablespace_name = ''DBFS_TS''') = '1' then
