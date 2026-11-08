@@ -1,0 +1,318 @@
+# enable-root 08:16:06
+No transactions found.
+PL/SQL procedure successfully completed.
+TIMESTAMP
+PL/SQL procedure successfully completed.
+TIMESTAMP
+OBJECTS WITH ERRORS
+		  0
+ERRORS DURING RECOMPILATION
+			  0
+Function created.
+PL/SQL procedure successfully completed.
+Function dropped.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+restart as SYSOPER
+ORACLE instance shut down.
+ORACLE instance started.
+Database mounted.
+Database opened.
+    CON_ID NAME 	       STATUS
+---------- ------------------- --------------
+	 1 DV_CONFIGURE_STATUS TRUE
+	 1 DV_ENABLE_STATUS    TRUE
+	 1 DV_APP_PROTECTION   NOT CONFIGURED
+broker stays disabled until the standby step
+rc=0
+# grant-primary 08:17:15
+Grant succeeded.
+Grant succeeded.
+GRANTEE
+GRANTED_ROLE
+ADM COM
+--- ---
+C##DVACCTMGR
+DV_ACCTMGR
+YES YES
+C##DVACCTMGR_BACKUP
+DV_ACCTMGR
+YES YES
+GRANTEE
+GRANTED_ROLE
+ADM COM
+--- ---
+C##DVOWNER
+DV_OWNER
+YES YES
+C##DVOWNER_BACKUP
+DV_OWNER
+GRANTEE
+GRANTED_ROLE
+ADM COM
+--- ---
+YES YES
+# enable-pdb 08:17:16
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+Pluggable database altered.
+Pluggable database altered.
+CON
+NAME		    STATUS
+------------------- --------------
+CDB$ROOT
+DV_APP_PROTECTION   NOT CONFIGURED
+CDB$ROOT
+DV_CONFIGURE_STATUS TRUE
+CDB$ROOT
+DV_ENABLE_STATUS    TRUE
+CON
+NAME		    STATUS
+------------------- --------------
+PERF
+DV_APP_PROTECTION   NOT CONFIGURED
+PERF
+DV_CONFIGURE_STATUS TRUE
+PERF
+DV_ENABLE_STATUS    TRUE
+rc=0
+# standby 08:17:29
+NAME			       VALUE
+------------------------------ --------------------
+os_roles		       FALSE
+remote_login_passwordfile      EXCLUSIVE
+remote_os_roles 	       FALSE
+sql92_security		       TRUE
+Configuration Status:
+SUCCESS   (status updated 10 seconds ago)
+CON
+NAME		    STATUS
+------------------- --------------
+CDB$ROOT
+DV_APP_PROTECTION   NOT CONFIGURED
+CDB$ROOT
+DV_CONFIGURE_STATUS TRUE
+CDB$ROOT
+DV_ENABLE_STATUS    TRUE
+rc=0
+# auth 08:19:27
+BEGIN dbms_macadm.authorize_audit_admin('C##AUDIT_MGR'); END;
+*
+ERROR at line 1:
+ORA-29504: invalid or missing schema name
+ORA-06512: at "DVSYS.DBMS_MACADM", line 1119
+ORA-06512: at "DVSYS.DBMS_MACADM", line 1342
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-29504/
+STOP: unexpected error above
+# audit 08:19:28
+PL/SQL procedure successfully completed.
+create audit policy dv_bank_realm actions component = dv realm violation on "BANK customer data"
+*
+ERROR at line 1:
+ORA-47241: Realm BANK customer data is not found.
+Help: https://docs.oracle.com/error-help/db/ora-47241/
+audit policy dv_bank_realm
+*
+ERROR at line 1:
+ORA-46357: Unified Audit policy DV_BANK_REALM was not found.
+Help: https://docs.oracle.com/error-help/db/ora-46357/
+Audit succeeded.
+POLICY_NAME
+ENABLED_OPTION
+ORA_DV_SCHEMA_CHANGES
+BY USER
+STOP: unexpected error above
+# realm sim 08:19:29
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+NAME
+E REALM_TYP
+- ---------
+BANK customer data
+S MANDATORY
+# rule sim 08:19:29
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+COMMAND    OBJECT_OWN
+---------- ----------
+RULE_SET_NAME
+E
+CONNECT    BANK
+BANK login
+S
+rc=0
+# audit, again after the realm 08:19:47
+BEGIN dbms_macadm.authorize_audit_admin('SYS'); END;
+*
+ERROR at line 1:
+ORA-47897: AUDIT_ADMIN authorization for Oracle Database Vault to SYS already
+exists.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 1119
+ORA-06512: at "DVSYS.DBMS_MACADM", line 1342
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-47897/
+STOP: unexpected error above
+# auth 08:19:47
+PL/SQL procedure successfully completed.
+GRANTEE
+SYS
+AUDIT_MGR
+rc=0
+# audit 08:19:57
+BEGIN dbms_macadm.authorize_audit_admin('SYS'); END;
+*
+ERROR at line 1:
+ORA-47897: AUDIT_ADMIN authorization for Oracle Database Vault to SYS already
+exists.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 1119
+ORA-06512: at "DVSYS.DBMS_MACADM", line 1342
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-47897/
+STOP: unexpected error above
+rc=1
+# audit 08:20:13
+Audit policy created.
+Audit succeeded.
+Audit succeeded.
+POLICY_NAME
+ENABLED_OPTION
+ORA_DV_SCHEMA_CHANGES
+BY USER
+DV_BANK_REALM
+BY USER
+PL/SQL procedure successfully completed.
+rc=0
+# realm on 08:24:53
+begin
+ORA-47240: Realm BANK customer data is already defined.
+ORA-47280: Realm object TABLE, BANK.CARDS exists already in realm BANK customer
+data.
+ORA-47280: Realm object TABLE, BANK.CUSTOMERS exists already in realm BANK
+customer data.
+ORA-47280: Realm object TABLE, BANK.ACCOUNTS exists already in realm BANK
+customer data.
+ORA-47260: Realm authorization to BANK for realm BANK customer data is already
+defined.
+ORA-47260: Realm authorization to SEC_ADMIN for realm BANK customer data is
+already defined.
+PL/SQL procedure successfully completed.
+NAME
+E REALM_TYP
+- ---------
+BANK customer data
+S MANDATORY
+STOP: unexpected error above
+# rule on 08:24:54
+begin
+ORA-47320: Rule BANK from application hosts is defined.
+begin
+ORA-47100: Command rule CONNECT is already defined for BANK.%.
+COMMAND    OBJECT_OWN
+---------- ----------
+RULE_SET_NAME
+E
+CONNECT    BANK
+BANK login
+S
+STOP: unexpected error above
+NAME			   E REALM_TYP
+-------------------------- - ---------
+BANK customer data	   S MANDATORY
+select object_owner, object_name from dba_dv_realm_object where realm_name = 'BANK customer data'
+       *
+ORA-00904: "OBJECT_OWNER": invalid identifier
+GRANTEE
+AUTH_OPTIONS
+BANK
+Participant
+SEC_ADMIN
+Participant
+CARD_ANALYST
+Participant
+STOP: unexpected error above
+# realm on, again 08:25:05
+PL/SQL procedure successfully completed.
+ORA-47280: Realm object TABLE, BANK.CARDS exists already in realm BANK customer
+data.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 747
+ORA-06512: at line 1
+ORA-47280: Realm object TABLE, BANK.CUSTOMERS exists already in realm BANK
+customer data.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 747
+ORA-06512: at line 1
+ORA-47280: Realm object TABLE, BANK.ACCOUNTS exists already in realm BANK
+customer data.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 747
+ORA-06512: at line 1
+ORA-47260: Realm authorization to BANK for realm BANK customer data is already
+defined.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 653
+ORA-06512: at line 1
+ORA-47260: Realm authorization to SEC_ADMIN for realm BANK customer data is
+already defined.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 653
+ORA-06512: at line 1
+ORA-47260: Realm authorization to CARD_ANALYST for realm BANK customer data is
+already defined.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 653
+ORA-06512: at line 1
+NAME
+E REALM_TYP
+- ---------
+BANK customer data
+Y MANDATORY
+# rule on, again 08:25:05
+ORA-47340: Rule set BANK login is already defined.
+ORA-06512: at line 5
+ORA-06512: at "DVSYS.DBMS_MACADM", line 894
+ORA-06512: at line 7
+PL/SQL procedure successfully completed.
+COMMAND    OBJECT_OWN
+---------- ----------
+RULE_SET_NAME
+E
+CONNECT    BANK
+BANK login
+Y
+STOP: unexpected error above
+# status
+NAME			   E REALM_TYP
+-------------------------- - ---------
+BANK customer data	   Y MANDATORY
+OWNER
+OBJECT_NAME
+BANK
+ACCOUNTS
+BANK
+CARDS
+BANK
+CUSTOMERS
+GRANTEE
+AUTH_OPTIONS
+BANK
+Participant
+SEC_ADMIN
+Participant
+CARD_ANALYST
+Participant
+PL/SQL procedure successfully completed.
+create audit policy dv_bank_realm actions component = dv realm violation on "BANK customer data"
+ORA-46358: Audit policy DV_BANK_REALM already exists.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+Audit succeeded.
+POLICY_NAME
+ENABLED_OPTION
+ORA_DV_SCHEMA_CHANGES
+BY USER
+DV_BANK_REALM
+BY USER
+DV_BANK_LOGIN
+BY USER
+PL/SQL procedure successfully completed.

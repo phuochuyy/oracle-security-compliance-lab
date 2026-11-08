@@ -1,0 +1,172 @@
+# assessment 'r9-dv-final' — 2026-11-08 09:10:03 — orcl3 on prm3: CDB$ROOT PERF GGREPL DRILLPDB RCAT
+# id|section|container|status|check|detail
+P01|2 params|CDB$ROOT|PASS|SYS top-level actions audited (AUDIT_SYS_OPERATIONS or unified policy)|AUDIT_SYS_OPERATIONS=FALSE, unified: ORA_ALL_TOPLEVEL_ACTIONS
+P02|2 params|CDB$ROOT|PASS|GLOBAL_NAMES = TRUE|TRUE
+P03|2 params|CDB$ROOT|PASS|OS_ROLES = FALSE|FALSE
+P04|2 params|CDB$ROOT|ACCEPT|REMOTE_LOGIN_PASSWORDFILE = NONE|EXCLUSIVE - accepted: Data Guard redo transport and SYSDG/SYSBACKUP logins need the password file
+P05|2 params|CDB$ROOT|PASS|REMOTE_OS_ROLES = FALSE|FALSE
+P06|2 params|CDB$ROOT|PASS|SEC_MAX_FAILED_LOGIN_ATTEMPTS <= 3|3
+P07|2 params|CDB$ROOT|PASS|SEC_PROTOCOL_ERROR_FURTHER_ACTION = (DROP,3)|(DROP,3)
+P08|2 params|CDB$ROOT|PASS|SEC_PROTOCOL_ERROR_TRACE_ACTION = LOG|LOG
+P09|2 params|CDB$ROOT|PASS|SEC_RETURN_SERVER_RELEASE_BANNER = FALSE|FALSE
+P10|2 params|CDB$ROOT|PASS|SQL92_SECURITY = TRUE|TRUE
+P11|2 params|CDB$ROOT|PASS|RESOURCE_LIMIT = TRUE|TRUE
+U01|3 users|CDB$ROOT|PASS|no OPEN account with a default password|none
+U02|3 users|CDB$ROOT|PASS|no 10G password hashes|none
+U03|3 users|CDB$ROOT|PASS|no PUBLIC database links|none
+U10|3 users|CDB$ROOT|ACCEPT|profile C##DV_BREAKGLASS_PROFILE meets the password/resource limits|INACTIVE_ACCOUNT_TIME=UNLIMITED  - users: C##DVACCTMGR_BACKUP,C##DVOWNER_BACKUP - accepted: Database Vault break-glass accounts: no inactivity lock, used and tested by procedure
+U10|3 users|CDB$ROOT|PASS|profile C##DV_PROFILE meets the password/resource limits|ok - users: C##DVACCTMGR,C##DVOWNER
+U10|3 users|CDB$ROOT|ACCEPT|profile C##SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: C##BKADMIN,C##DBZUSER,C##DGADMIN,C##KEYADMIN,C##MON - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+R01|4 privs|CDB$ROOT|PASS|no PUBLIC EXECUTE on network packages|none
+R02|4 privs|CDB$ROOT|PASS|no PUBLIC EXECUTE on file packages|none
+R03|4 privs|CDB$ROOT|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|CDB$ROOT|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|CDB$ROOT|ACCEPT|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION - accepted: LogMiner (Debezium), GoldenGate and SQLT need these; the accounts are service accounts
+R06|4 privs|CDB$ROOT|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|CDB$ROOT|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|CDB$ROOT|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|CDB$ROOT|PASS|no access to sensitive SYS tables|none
+R10|4 privs|CDB$ROOT|INFO|password file users (admin privileges)|C##BKADMIN:SYSBACKUP, C##DGADMIN:SYSDG, C##KEYADMIN:SYSKM, SYS:SYSDBA SYSOPER
+A01|5 audit|CDB$ROOT|PASS|pure unified auditing|TRUE
+A02|5 audit|CDB$ROOT|PASS|user and role management audited|all audited
+A03|5 audit|CDB$ROOT|PASS|grants and revokes audited|all audited
+A04|5 audit|CDB$ROOT|PASS|profile changes audited|all audited
+A05|5 audit|CDB$ROOT|PASS|database links and synonyms audited|all audited
+A06|5 audit|CDB$ROOT|PASS|system changes audited|all audited
+A07|5 audit|CDB$ROOT|PASS|code and trigger DDL audited|all audited
+A08|5 audit|CDB$ROOT|PASS|logon and logoff audited|all audited
+A09|5 audit|CDB$ROOT|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|C##SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'
+D01|4 privs|CDB$ROOT|PASS|Database Vault enabled where it was configured|DV_ENABLE_STATUS=TRUE
+U01|3 users|PERF|PASS|no OPEN account with a default password|none
+U02|3 users|PERF|PASS|no 10G password hashes|none
+U03|3 users|PERF|PASS|no PUBLIC database links|none
+U10|3 users|PERF|ACCEPT|profile C##DV_BREAKGLASS_PROFILE meets the password/resource limits|INACTIVE_ACCOUNT_TIME=UNLIMITED  - users: C##DVACCTMGR_BACKUP,C##DVOWNER_BACKUP - accepted: Database Vault break-glass accounts: no inactivity lock, used and tested by procedure
+U10|3 users|PERF|PASS|profile C##DV_PROFILE meets the password/resource limits|ok - users: C##DVACCTMGR,C##DVOWNER
+U10|3 users|PERF|ACCEPT|profile C##SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED	- users: C##BKADMIN,C##DBZUSER,C##DGADMIN,C##KEYADMIN,C##MON - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+U10|3 users|PERF|ACCEPT|profile PERF_SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED SESSIONS_PER_USER=40  - users: BANK - accepted: service account, credential in a wallet: no expiry, rotated by procedure; parallel query slaves count as sessions, limit 40
+U10|3 users|PERF|PASS|profile SEC_ADMIN_PROFILE meets the password/resource limits|ok - users: PDBADMIN,SEC_AUDITOR
+U10|3 users|PERF|ACCEPT|profile SEC_SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: SQLTXPLAIN - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+R01|4 privs|PERF|PASS|no PUBLIC EXECUTE on network packages|none
+R02|4 privs|PERF|PASS|no PUBLIC EXECUTE on file packages|none
+R03|4 privs|PERF|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|PERF|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|PERF|ACCEPT|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION, SQLTXADMIN:ANALYZE ANY, SQLTXADMIN:ANALYZE ANY DICTIONARY, SQLTXADMIN:SELECT ANY DICTIONARY - accepted: LogMiner (Debezium), GoldenGate and SQLT need these; the accounts are service accounts
+R06|4 privs|PERF|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|PERF|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|PERF|ACCEPT|no powerful system privileges to non-Oracle grantees|SQLTXADMIN:SELECT ANY DICTIONARY - accepted: GoldenGate and SQLT read the dictionary; the accounts are service accounts
+R09|4 privs|PERF|PASS|no access to sensitive SYS tables|none
+A01|5 audit|PERF|PASS|pure unified auditing|TRUE
+A02|5 audit|PERF|PASS|user and role management audited|all audited
+A03|5 audit|PERF|PASS|grants and revokes audited|all audited
+A04|5 audit|PERF|PASS|profile changes audited|all audited
+A05|5 audit|PERF|PASS|database links and synonyms audited|all audited
+A06|5 audit|PERF|PASS|system changes audited|all audited
+A07|5 audit|PERF|PASS|code and trigger DDL audited|all audited
+A08|5 audit|PERF|PASS|logon and logoff audited|all audited
+A09|5 audit|PERF|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|C##SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'; SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'
+D01|4 privs|PERF|PASS|Database Vault enabled where it was configured|DV_ENABLE_STATUS=TRUE
+C01|PCI 3.5|PERF|PASS|card data stored in encrypted tablespaces only|all encrypted
+C02|PCI 10.2|PERF|PASS|SELECT/INSERT/UPDATE/DELETE on BANK.CARDS audited|all four
+C03|PCI 3.4|PERF|PASS|PAN masked for non-privileged readers (redaction)|PAN:PARTIAL REDACTION
+C04|PCI 7|PERF|INFO|who has object privileges on BANK.CARDS|nobody but the owner
+C05|PCI 7.2|PERF|PASS|row-level policy on BANK.CARDS enabled (VPD)|YES
+C06|PCI 7.2|PERF|PASS|no account of ours bypasses VPD or redaction|none
+U01|3 users|GGREPL|PASS|no OPEN account with a default password|none
+U02|3 users|GGREPL|PASS|no 10G password hashes|none
+U03|3 users|GGREPL|PASS|no PUBLIC database links|none
+U10|3 users|GGREPL|ACCEPT|profile C##DV_BREAKGLASS_PROFILE meets the password/resource limits|INACTIVE_ACCOUNT_TIME=UNLIMITED  - users: C##DVACCTMGR_BACKUP,C##DVOWNER_BACKUP - accepted: Database Vault break-glass accounts: no inactivity lock, used and tested by procedure
+U10|3 users|GGREPL|PASS|profile C##DV_PROFILE meets the password/resource limits|ok - users: C##DVACCTMGR,C##DVOWNER
+U10|3 users|GGREPL|ACCEPT|profile C##SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: C##BKADMIN,C##DBZUSER,C##DGADMIN,C##KEYADMIN,C##MON - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+U10|3 users|GGREPL|ACCEPT|profile GG_SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED SESSIONS_PER_USER=40  - users: GGADMIN - accepted: service account, credential in a wallet: no expiry, rotated by procedure; GoldenGate holds 8 sessions at rest, limit 40
+U10|3 users|GGREPL|PASS|profile SEC_ADMIN_PROFILE meets the password/resource limits|ok - users: PDBADMIN
+U10|3 users|GGREPL|ACCEPT|profile SEC_SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: APP,CDC_WRITER,DBFS_USER - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+R01|4 privs|GGREPL|PASS|no PUBLIC EXECUTE on network packages|none
+R02|4 privs|GGREPL|PASS|no PUBLIC EXECUTE on file packages|none
+R03|4 privs|GGREPL|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|GGREPL|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|GGREPL|ACCEPT|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION, GGADMIN:DEQUEUE ANY QUEUE, GGADMIN:SELECT ANY DICTIONARY - accepted: LogMiner (Debezium), GoldenGate and SQLT need these; the accounts are service accounts
+R06|4 privs|GGREPL|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|GGREPL|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|GGREPL|ACCEPT|no powerful system privileges to non-Oracle grantees|GGADMIN:SELECT ANY DICTIONARY - accepted: GoldenGate and SQLT read the dictionary; the accounts are service accounts
+R09|4 privs|GGREPL|PASS|no access to sensitive SYS tables|none
+A01|5 audit|GGREPL|PASS|pure unified auditing|TRUE
+A02|5 audit|GGREPL|PASS|user and role management audited|all audited
+A03|5 audit|GGREPL|PASS|grants and revokes audited|all audited
+A04|5 audit|GGREPL|PASS|profile changes audited|all audited
+A05|5 audit|GGREPL|PASS|database links and synonyms audited|all audited
+A06|5 audit|GGREPL|PASS|system changes audited|all audited
+A07|5 audit|GGREPL|PASS|code and trigger DDL audited|all audited
+A08|5 audit|GGREPL|PASS|logon and logoff audited|all audited
+A09|5 audit|GGREPL|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|C##SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'; SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'
+C07|PCI 3.5|GGREPL|PASS|tablespace behind DBFS encrypted (GoldenGate wallet)|YES
+U01|3 users|DRILLPDB|PASS|no OPEN account with a default password|none
+U02|3 users|DRILLPDB|PASS|no 10G password hashes|none
+U03|3 users|DRILLPDB|PASS|no PUBLIC database links|none
+U10|3 users|DRILLPDB|ACCEPT|profile C##DV_BREAKGLASS_PROFILE meets the password/resource limits|INACTIVE_ACCOUNT_TIME=UNLIMITED  - users: C##DVACCTMGR_BACKUP,C##DVOWNER_BACKUP - accepted: Database Vault break-glass accounts: no inactivity lock, used and tested by procedure
+U10|3 users|DRILLPDB|PASS|profile C##DV_PROFILE meets the password/resource limits|ok - users: C##DVACCTMGR,C##DVOWNER
+U10|3 users|DRILLPDB|ACCEPT|profile C##SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: C##BKADMIN,C##DBZUSER,C##DGADMIN,C##KEYADMIN,C##MON - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+U10|3 users|DRILLPDB|PASS|profile SEC_ADMIN_PROFILE meets the password/resource limits|ok - users: PDBADMIN
+U10|3 users|DRILLPDB|ACCEPT|profile SEC_SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: BANK - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+R01|4 privs|DRILLPDB|PASS|no PUBLIC EXECUTE on network packages|none
+R02|4 privs|DRILLPDB|PASS|no PUBLIC EXECUTE on file packages|none
+R03|4 privs|DRILLPDB|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|DRILLPDB|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|DRILLPDB|ACCEPT|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION - accepted: LogMiner (Debezium), GoldenGate and SQLT need these; the accounts are service accounts
+R06|4 privs|DRILLPDB|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|DRILLPDB|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|DRILLPDB|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|DRILLPDB|PASS|no access to sensitive SYS tables|none
+A01|5 audit|DRILLPDB|PASS|pure unified auditing|TRUE
+A02|5 audit|DRILLPDB|PASS|user and role management audited|all audited
+A03|5 audit|DRILLPDB|PASS|grants and revokes audited|all audited
+A04|5 audit|DRILLPDB|PASS|profile changes audited|all audited
+A05|5 audit|DRILLPDB|PASS|database links and synonyms audited|all audited
+A06|5 audit|DRILLPDB|PASS|system changes audited|all audited
+A07|5 audit|DRILLPDB|PASS|code and trigger DDL audited|all audited
+A08|5 audit|DRILLPDB|PASS|logon and logoff audited|all audited
+A09|5 audit|DRILLPDB|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|C##SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'; SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'
+C01|PCI 3.5|DRILLPDB|PASS|card data stored in encrypted tablespaces only|all encrypted
+C02|PCI 10.2|DRILLPDB|PASS|SELECT/INSERT/UPDATE/DELETE on BANK.CARDS audited|all four
+C03|PCI 3.4|DRILLPDB|PASS|PAN masked for non-privileged readers (redaction)|PAN:PARTIAL REDACTION
+C04|PCI 7|DRILLPDB|INFO|who has object privileges on BANK.CARDS|nobody but the owner
+C05|PCI 7.2|DRILLPDB|PASS|row-level policy on BANK.CARDS enabled (VPD)|YES
+C06|PCI 7.2|DRILLPDB|PASS|no account of ours bypasses VPD or redaction|none
+U01|3 users|RCAT|PASS|no OPEN account with a default password|none
+U02|3 users|RCAT|PASS|no 10G password hashes|none
+U03|3 users|RCAT|PASS|no PUBLIC database links|none
+U10|3 users|RCAT|ACCEPT|profile C##DV_BREAKGLASS_PROFILE meets the password/resource limits|INACTIVE_ACCOUNT_TIME=UNLIMITED  - users: C##DVACCTMGR_BACKUP,C##DVOWNER_BACKUP - accepted: Database Vault break-glass accounts: no inactivity lock, used and tested by procedure
+U10|3 users|RCAT|PASS|profile C##DV_PROFILE meets the password/resource limits|ok - users: C##DVACCTMGR,C##DVOWNER
+U10|3 users|RCAT|ACCEPT|profile C##SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED	- users: C##BKADMIN,C##DBZUSER,C##DGADMIN,C##KEYADMIN,C##MON - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+U10|3 users|RCAT|PASS|profile SEC_ADMIN_PROFILE meets the password/resource limits|ok - users: PDBADMIN
+U10|3 users|RCAT|ACCEPT|profile SEC_SVC_PROFILE meets the password/resource limits|PASSWORD_LIFE_TIME=UNLIMITED  - users: RCO - accepted: service account, credential in a wallet: no expiry, rotated by procedure
+R01|4 privs|RCAT|PASS|no PUBLIC EXECUTE on network packages|none
+R02|4 privs|RCAT|PASS|no PUBLIC EXECUTE on file packages|none
+R03|4 privs|RCAT|PASS|no PUBLIC EXECUTE on crypto packages|none
+R04|4 privs|RCAT|ACCEPT|no PUBLIC EXECUTE on dynamic SQL/LOB/job/java/random packages|DBMS_JAVA,DBMS_JOB,DBMS_LOB,DBMS_RANDOM,DBMS_SCHEDULER,DBMS_SQL,DBMS_XMLGEN - accepted: used by Oracle components and applications; removing needs per-component testing
+R05|4 privs|RCAT|ACCEPT|no ANY system privileges to non-Oracle grantees|C##DBZUSER:SELECT ANY TRANSACTION - accepted: LogMiner (Debezium), GoldenGate and SQLT need these; the accounts are service accounts
+R06|4 privs|RCAT|PASS|DBA role not granted to non-Oracle grantees|none
+R07|4 privs|RCAT|PASS|no system privileges WITH ADMIN OPTION to non-Oracle grantees|none
+R08|4 privs|RCAT|PASS|no powerful system privileges to non-Oracle grantees|none
+R09|4 privs|RCAT|PASS|no access to sensitive SYS tables|none
+A01|5 audit|RCAT|PASS|pure unified auditing|TRUE
+A02|5 audit|RCAT|PASS|user and role management audited|all audited
+A03|5 audit|RCAT|PASS|grants and revokes audited|all audited
+A04|5 audit|RCAT|PASS|profile changes audited|all audited
+A05|5 audit|RCAT|PASS|database links and synonyms audited|all audited
+A06|5 audit|RCAT|PASS|system changes audited|all audited
+A07|5 audit|RCAT|PASS|code and trigger DDL audited|all audited
+A08|5 audit|RCAT|PASS|logon and logoff audited|all audited
+A09|5 audit|RCAT|INFO|exclusions in enabled audit policies (EXCEPT USER / WHEN)|C##SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'; SEC_LOGON_SUCCESS when SYS_CONTEXT('USERENV', 'AUTHENTICATED_IDENTITY') <> 'C##DGADMIN' OR SYS_CONTEXT('USERENV', 'HOST') <> 'obs-r2.rac'
+N01|6 network|prm3|PASS|server requires network encryption|SQLNET.ENCRYPTION_SERVER = REQUIRED
+N02|6 network|prm3|PASS|server requires integrity checksums|SQLNET.CRYPTO_CHECKSUM_SERVER = REQUIRED
+N03|6 network|prm3|PASS|allowed logon version >= 12a|SQLNET.ALLOWED_LOGON_VERSION_SERVER = 12a
+N04|6 network|prm3|PASS|listener admin restrictions on|ADMIN_RESTRICTIONS_LISTENER=ON
+N05|6 network|prm3|PASS|listener allows only listed machines|TCP.VALIDNODE_CHECKING = YES
+#
+# summary: ACCEPT 29  INFO 8  PASS 125  
+#   2 params: ACCEPT 1  PASS 10  
+#   3 users: ACCEPT 16  PASS 24  
+#   4 privs: ACCEPT 12  INFO 1  PASS 35  
+#   5 audit: INFO 5  PASS 40  
+#   6 network: PASS 5  
+#   PCI: INFO 2  PASS 11  

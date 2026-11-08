@@ -10,14 +10,18 @@ set -u
 d=$(cd "$(dirname "$0")" && pwd); S=${DRIFT_DIR:-$HOME/work/lab/drift}; mkdir -p "$S"
 mode=${1:?baseline or check}; now=$(date '+%F %H%M%S'); bad=0
 up() { virsh -c qemu:///system domstate "$1" 2>/dev/null | grep -q running; }
-role() { printf "set heading off feedback off pages 0\nselect database_role from v\$database;\nexit\n" | ssh -o BatchMode=yes -o ConnectTimeout=5 "oracle@$1" '. ~/.bash_profile >/dev/null 2>&1; export ORACLE_SID=$(pgrep -a -f ora_pmon_ | sed "s/.*ora_pmon_//" | head -n 1); sqlplus -s / as sysdba' 2>/dev/null | head -n 1; }
+role() { printf "set heading off feedback off pages 0\nselect database_role from v\$database;\nexit\n" | ssh -o BatchMode=yes -o ConnectTimeout=5 "oracle@$1" '. ~/.bash_profile >/dev/null 2>&1; export ORACLE_SID=$(pgrep -a -f "[o]ra_pmon_" | sed "s/.*ora_pmon_//" | head -n 1); sqlplus -s / as sysdba' 2>/dev/null | head -n 1; }
 report() { echo "$1"; logger -t lab-drift -p user.warning "$1" 2>/dev/null || true; }
 for x in "orcl prm1 stb1" "orcl3 prm3 stb3"; do
   set -- $x; db=$1; p=""
-  for h in "$2" "$3"; do up "$h" && [ "$(role "$h")" = PRIMARY ] && p=$h; done
-  [ -n "$p" ] || { echo "$db: primary is off, not checked"; continue; }
+  anyup=0
+  for h in "$2" "$3"; do up "$h" || continue; anyup=1; [ "$(role "$h")" = PRIMARY ] && p=$h; done
+  if [ -z "$p" ]; then
+    if [ "$anyup" = 1 ]; then report "$db: a VM is up but no primary was found"; bad=$((bad + 1)); else echo "$db: both sites off, not checked"; fi
+    continue
+  fi
   o=$(ASSESS_DB=$db ASSESS_HOST=$p ASSESS_RESULTS=$S "$d/assess.sh" "$db-$mode" 2>&1) || { report "$db: assessment did not finish: $(printf '%s\n' "$o" | tail -n 1 | cut -c1-100)"; bad=$((bad + 1)); continue; }
-  new=$S/$db-$mode.txt; cur=$(grep -v '^#' "$new" | awk -F'|' '{print $1"|"$3"|"$4"|"$5}' | sort)
+  new=$S/$db-$mode.txt; cur=$(grep -v '^#' "$new" | awk -F'|' '{c = ($2 ~ /network/) ? "host" : $3; print $1"|"c"|"$4"|"$5}' | sort)   # network checks name the host: not drift after a role change
   if [ "$mode" = baseline ]; then
     printf '%s\n' "$cur" > "$S/$db.baseline"; echo "$db: baseline accepted, $(wc -l < "$S/$db.baseline") checks"
   else
@@ -26,7 +30,7 @@ for x in "orcl prm1 stb1" "orcl3 prm3 stb3"; do
       if [ -n "$diffs" ]; then
         report "$db: baseline drift, $(printf '%s\n' "$diffs" | wc -l) lines"
         printf '%s\n' "$diffs" | sed 's/^</was:/; s/^>/now:/' | cut -c1-120
-        bad=$((bad + $(printf '%s\n' "$diffs" | grep -c '^>')))
+        bad=$((bad + $(printf '%s\n' "$diffs" | wc -l)))   # a check that disappeared counts too
       else echo "$db: no drift, $(printf '%s\n' "$cur" | wc -l) checks, $(printf '%s\n' "$cur" | grep -c '|FAIL|') FAIL"; fi
     fi
     if up "$2" && up "$3"; then s=$2; [ "$p" = "$2" ] && s=$3

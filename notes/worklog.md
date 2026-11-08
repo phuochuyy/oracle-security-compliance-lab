@@ -199,3 +199,13 @@
 - First run stopped at `REVOKE ... UTL_MAIL`: the package does not exist here (`ORA-04042`). Region A's script ignored every error of
   that step, including ones that mattered. Now only that code is tolerated.
 
+## Database Vault on orcl3 (Region B)
+
+- Followed the 26ai guide: backup accounts configured first, ENABLE_DV by the backup owner, restart as SYSOPER; Data Guard primary first, then the standby after it had applied everything. Regular mode, so GoldenGate, drill and catalog PDBs keep working.
+- Error codes I had guessed for "already exists" were wrong in 26ai (realm ORA-47240, object 47280, authorization 47260, rule 47320, rule set 47340, command rule 47100). The first re-run left the realm in simulation; fixed before enforcing.
+- SYS lost access to the audit trail too, which I had not planned for: a separate `SEC_AUDITOR` with `AUDIT_VIEWER`, authorized by the DV owner, reads it now.
+- `BANK` needed to be realm **owner**, not participant, to grant its table to an analyst (`ORA-47401` on GRANT).
+- My DV account profile failed our own assessment (no expiry, no inactivity limit). Everyday accounts now meet it; the break-glass accounts keep no inactivity lock, as a visible ACCEPT, because locking them would remove the only way back.
+- **My mistake:** the break-glass test reset the owner's password and stopped before saving it (`set -e` after a silent step). It became a real recovery, done with the backup accounts. The script saves the value first now.
+- A validate failed once with `ORA-19588`: the archived log housekeeping deleted a log while validate was reading the list. Ran again: clean.
+

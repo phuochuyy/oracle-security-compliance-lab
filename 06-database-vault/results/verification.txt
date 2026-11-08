@@ -1,0 +1,39 @@
+== 1. SYS reads card and customer data
+select 'cards: ' || count(*) from bank.cards
+                                       *
+ORA-01031: insufficient privileges
+select 'customers: ' || count(*) from bank.customers
+                                           *
+ORA-01031: insufficient privileges
+transactions (not in the realm): 10
+== 2. C##DVOWNER, the security administrator, reads card data
+select 'cards: ' || count(*) from bank.cards
+                                       *
+ORA-00942: table or view "BANK"."CARDS" does not exist
+== 3. BANK from an application host (prm3), and from prm1
+BANK on prm3, cards: 384000
+ERROR:
+ORA-47306: 20461: BANK may only connect from an application host
+SP2-0640: Not connected
+== 4. account management: SYS, then C##DVACCTMGR, creates a user
+create user dv_test_sys identified by "********"
+ORA-01031: insufficient privileges
+created by the account manager: ANALYST_DV
+== 5. an analyst of the NORTH region: role through the realm, rows through VPD
+analyst sees cards: 76930
+== 6. cleanup of the test user, by the account manager
+left: 0
+== 7. realm violations and rule failures in the unified audit trail (last 30 minutes), read by the auditor
+SYS:
+select count(*) from unified_audit_trail where rownum = 1
+                     *
+ORA-01031: insufficient privileges
+SEC_AUDITOR (AUDIT_VIEWER, authorized by the Database Vault owner):
+SYS	      Realm Violation Audit			  1031 8
+SYS	      Command Failure Audit	    Can Maintain A1031 4
+BANK	      Realm Violation Audit			  47401 1
+C##DVOWNER    Add Realm Auth Audit			  0 1
+C##DVOWNER    Realm Update Audit			  0 1
+C##DVOWNER    CommandRule Update Audit	    BANK login	  0 1
+C##DVOWNER    Update Realm Auth Audit			  0 1
+C##DVOWNER    Authorize Audit_Viewer Audit		  0 1

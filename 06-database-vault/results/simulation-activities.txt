@@ -1,0 +1,30 @@
+# activities run while the realm and the connect rule are in simulation, 08:20:28
+## 1. workloads as BANK (statement, monthly, transfers)
+16-database-vault/r9-sim-statement 16-database-vault/r9-sim-statement		 4 2380511	 30 79343.44 	 1.9  
+16-database-vault/r9-sim-monthly 16-database-vault/r9-sim-monthly		 4	 2927	 60	 48.76 	 5  
+16-database-vault/r9-sim-transfer 16-database-vault/r9-sim-transfer		 4	 11918	 30	 397.2 	 1	 0  
+## 2. plan regression check (SYS)
+case1: same plan 2098581459, gets 11 -> 11
+case2: same plan 1299576448, gets 60 -> 60
+case5: same plan 309643821, gets 3832 -> 3832
+## 3. assessment
+# summary: ACCEPT 24  FAIL 5  INFO 8  PASS 118  
+## 4. health check
+health rc=1
+## 5. VPD test users (analysts query CARDS)
+ORA-01031: insufficient privileges
+ORA-00955: name is already used by an existing object
+ORA-01921: role name 'CARD_ANALYST' conflicts with another user or role name
+## 6. SYS reads card data
+  COUNT(*)
+    384000
+  COUNT(*)
+    320000
+## 7. BANK connects from prm1 (not an application host)
+BANK connected from prm1
+## 8. audit archive job
+unified_19700101_20260803.csv: 13849 records
+unified_20260803_20260804.csv: 0 records
+unified_20260804_20261102.csv: 179610 records
+## 9. backup level 1 (C##BKADMIN)
+RMAN> RMAN> RMAN> RMAN> mode 1 rc=0 elapsed 28 s, log /u02/backup/logs/backup_1_20261108_082322.log

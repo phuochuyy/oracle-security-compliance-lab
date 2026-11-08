@@ -1,0 +1,26 @@
+# operations with the realm and the connect rule enforced, 08:52:06
+## backup level 1 and validate (C##BKADMIN, SYSBACKUP)
+RMAN> RMAN> RMAN> RMAN> mode 1 rc=0 elapsed 13 s, log /u02/backup/logs/backup_1_20261108_085207.log
+Finished restore at 08-NOV-26
+validate elapsed 215 s
+## GoldenGate, one row each way
+A->B insert arrived: 10 s
+A->B delete arrived: 3 s
+B->A insert arrived: 13 s
+B->A delete arrived: 5 s
+## assessment
+# summary: ACCEPT 29  INFO 8  PASS 123  
+## health check
+health exit=0
+## audit archive (AUDIT_MGR, authorized)
+unified_20260803_20260804.csv: 0 records
+unified_20260804_20261102.csv: 179610 records
+## plan regression check
+case1: same plan 2098581459, gets 11 -> 11
+case2: same plan 1299576448, gets 60 -> 60
+case5: same plan 309643821, gets 3832 -> 3832
+## workloads after (case 1 and case 5)
+16-database-vault/r9-after-statement1 16-database-vault/r9-after-statement1		 4 4343373	 60 72369.91 	 1.9  
+16-database-vault/r9-after-monthly1 16-database-vault/r9-after-monthly1		 4	 5667	 120	 47.2 	 5  
+16-database-vault/r9-after-statement2 16-database-vault/r9-after-statement2		 4 4061089	 60 67668.44 	 1.9  
+16-database-vault/r9-after-monthly2 16-database-vault/r9-after-monthly2		 4	 5269	 120	 43.89 	 5  

@@ -16,6 +16,7 @@ Card data unreadable outside the database, every access to it recorded, each acc
 | Access | Profiles, schema-only owner, PUBLIC grants revoked, separate Data Guard administrator, Privilege Analysis | [Assessment](../05-assessment/assess.sh) |
 | Display | Data Redaction of card numbers | Test users. A `WHERE` clause still sees the real value, which the next layer limits |
 | Rows | Virtual Private Database: an analyst reaches only their own region's cards | [Test users of two regions and one without an assignment](../03-hardening/06_vpd.sh) |
+| Administrators | Database Vault in Region B: `SYS` cannot read card or customer data or create users; a separate owner, account manager and auditor | [Verification](../06-database-vault/README.md) |
 | Records | Unified Auditing, archive then purge, daily off-host copy, and a summary of each record sent off the machine as it is written | [Test scenario](../04-auditing/README.md) |
 
 ## Running it
@@ -32,4 +33,4 @@ Security has a price, and it should be known: [TDE](https://github.com/phuochuyy
 
 ## Limits
 
-The checks are my own script in the style of the CIS benchmark, not DBSAT (no support contract), and they are not mapped to CIS numbers. No real central log server (the host stands in for one), no HSM, no Database Vault, and one person holds every key: a bank separates these duties. No release updates applied. Passing my own checks is not a compliance claim.
+The checks are my own script in the style of the CIS benchmark, not DBSAT (no support contract), and they are not mapped to CIS numbers. No real central log server (the host stands in for one), no HSM, Database Vault in Region B only, and one person holds every key: a bank separates these duties. No release updates applied. Passing my own checks is not a compliance claim.
