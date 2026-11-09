@@ -13,6 +13,14 @@ dir=$(cd "$(dirname "$0")" && pwd); out=$dir/$label.txt; : > "$out"
 ENV=". ~/.bash_profile >/dev/null 2>&1"
 T=/tmp/plain
 P=${PLAIN_HOST:-prm1} S=${PLAIN_STB-stb1} PDB=${PLAIN_PDB:-SECPDB}
+# Database Vault (06-database-vault): when it is on in the PDB, reading and inserting a card as SYS needs a change window
+. "$dir/../../06-database-vault/dv_helpers.sh"
+if dv_on "$P" "$PDB"; then
+  case "$(dv_region "$P"):$PDB" in A:SECPDB|B:PERF) ;; *) echo "Database Vault is on in $PDB, but dv.sh opens windows for SECPDB / PERF only: stop"; exit 1 ;; esac
+  # test card removed (if the script stopped after inserting it) before the window closes
+  trap 'printf "alter session set container=$PDB;\ndelete bank.cards where card_id = 999999;\ncommit;\nexit\n" | ssh -o BatchMode=yes oracle@$P "$ENV; sqlplus -s / as sysdba" >/dev/null; dv_window "$P" close' EXIT
+  dv_window "$P" open "plaintext check on $PDB: SYS reads one card and inserts, then deletes, a test card"
+fi
 val() { printf "set heading off feedback off pages 0 lines 300\n%s\nexit\n" "$2" \
         | ssh -o BatchMode=yes oracle@$1 "$ENV; sqlplus -s / as sysdba" | grep -vE "^$" | sed 's/[[:space:]]*$//'; }
 hits() {   # hits <host> <asm file or path> <what>

@@ -1,0 +1,109 @@
+# Region A with the realm and the connect rule enforced, 2026-11-09 18:40:52
+## verification
+== 1. SYS reads card and customer data
+select 'cards: ' || count(*) from bank.cards
+                                       *
+ORA-01031: insufficient privileges
+select 'customers: ' || count(*) from bank.customers
+                                           *
+ORA-01031: insufficient privileges
+transactions (not in the realm): 10
+== 2. C##DVOWNER, the security administrator, reads card data
+select 'cards: ' || count(*) from bank.cards
+                                       *
+ORA-00942: table or view "BANK"."CARDS" does not exist
+== 3. the connect rule set 'BANK login', through a temporary account APP_DV, from prm1 and from prm3
+BANK, SEC_ADMIN authentication: SEC_ADMIN=NONE, BANK=NONE
+APP_DV from prm1 got in
+ERROR:
+ORA-47306: 20461: BANK may only connect from an application host
+SP2-0640: Not connected
+== 4. account management: SYS, then C##DVACCTMGR, creates a user
+create user dv_test_sys identified by "********"
+ORA-01031: insufficient privileges
+created by the account manager: ANALYST_DV
+== 5. an analyst of the NORTH region: role through the realm, rows through VPD
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant, SYS=Owner
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant
+analyst sees cards: 4831
+== 6. cleanup of the test user, by the account manager
+left: 0
+== 7. realm violations and rule failures in the unified audit trail (last 30 minutes), read by the auditor
+SYS:
+select count(*) from unified_audit_trail where rownum = 1
+                     *
+ORA-01031: insufficient privileges
+SEC_AUDITOR (AUDIT_VIEWER, authorized by the Database Vault owner):
+SYS	      Realm Violation Audit			  1031 5
+SYS	      Command Failure Audit	    Can Maintain A1031 4
+APP_DV	      Command Failure Audit	    BANK login	  20461 1
+C##DVOWNER    Realm Update Audit			  0 2
+C##DVOWNER    Add Realm Auth Audit			  0 6
+C##DVOWNER    CommandRule Update Audit	    BANK login	  0 5
+C##DVOWNER    CommandRule Creation Audit    BANK login	  0 3
+C##DVOWNER    Delete Realm Auth Audit			  0 2
+C##DVOWNER    Rule Update Audit 			  0 1
+C##DVOWNER    CommandRule Deletion Audit		  0 1
+C##DVOWNER    Realm Creation Audit			  0 1
+C##DVOWNER    Add Realm Object Audit			  0 3
+C##DVOWNER    Rule Creation Audit			  0 1
+C##DVOWNER    Rule Set Creation Audit			  0 1
+C##DVOWNER    Add Rule To Rule Set Audit		  0 1
+C##DVOWNER    Authorize Audit_Admin Audit		  0 2
+C##DVOWNER    Authorize Audit_Viewer Audit		  0 1
+C##DVOWNER    Unauthorize Audit_Admin Audit		  0 1
+## redaction test (change window, users by the account manager)
+account manager: User created.
+account manager: User created.
+change window OPEN 2026-11-09 18:41:01: redaction test: test users ANALYST2 and FRAUD_OPS read CARDS (realm authorizations added: SYS analyst2 fraud_ops)
+realm authorizations: ANALYST2=Participant, BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, FRAUD_OPS=Participant, SEC_ADMIN=Pa
+PL/SQL procedure successfully completed.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+== ANALYST2 (no role)
+account manager: User dropped.
+account manager: User dropped.
+STOP: unexpected error above
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-29504/
+## VPD on the Active Data Guard standby
+a change window is already open (redaction test: test users ANALYST2 and FRAUD_OPS read CARDS): close it first
+STOP: unexpected error above
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-29504/
+## plaintext check
+a change window is already open (redaction test: test users ANALYST2 and FRAUD_OPS read CARDS): close it first
+STOP: unexpected error above
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-29504/
+## REPORT_RO reports
+5 rows selected.
+no rows selected
+3 rows selected.
+## assessment
+# summary: ACCEPT 7  INFO 4  PASS 62  
+## audit archive
+unified_20260809_20260811.csv: 0 records
+unified_20260809_20260811.csv: 0 records
+## health
+prm1 health exit=0
+stb1 health exit=0
+## RAC level 1 and validate on stb1
+Result=success
+level 1 546 s
+Result=success
+validate 125 s
+## GoldenGate
+A->B insert arrived: 7 s
+A->B delete arrived: 6 s
+B->A insert arrived: 5 s
+B->A delete arrived: 6 s
+## realm authorizations at the end
+GRANTEE        AUTH_OPTIONS
+-------------- -----------------------------------------------------------------------------------------------------------------------------
+BANK_READ      Participant
+SEC_ADMIN      Participant
+CARD_ANALYST   Participant
+BANK	       Owner
+## done 18:52:56

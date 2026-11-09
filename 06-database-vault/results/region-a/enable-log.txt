@@ -1,0 +1,257 @@
+# Region A, 2026-11-09 17:56:23
+## save-privs
+saved 774 privileges
+## accounts
+Profile created.
+Profile created.
+PL/SQL procedure successfully completed.
+User altered.
+User altered.
+rows will be truncated
+rows will be truncated
+USERNAME
+------------------------------------------------------------------------------------------------------------------------
+C##DVACCTMGR
+C##DVACCTMGR_BACKUP
+C##DVOWNER
+C##DVOWNER_BACKUP
+600 /home/huy/work/lab/breakglass/orcl-dv.env
+## guaranteed restore point
+Restore point created.
+NAME																 GUA
+-------------------------------------------------------------------------------------------------------------------------------- ---
+BEFORE_DV															 YES
+1 row selected.
+## enable-root 17:56:40
+GG_A exta: No transactions found.
+OGG$CAP_EXTA required_checkpoint_scn 126709572 ENABLED
+PL/SQL procedure successfully completed.
+1 row selected.
+PL/SQL procedure successfully completed.
+1 row selected.
+		  0
+1 row selected.
+			  0
+1 row selected.
+Function created.
+PL/SQL procedure successfully completed.
+Function dropped.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+restart the primary
+bash: line 1: olsnodes: command not found
+Instance orcl1 is not running on node prm1
+Instance orcl2 is not running on node prm2
+EXTRACT     ABENDED     EXTA        INTEGRATED                  00:00:00           00:01:02    
+REPLICAT    RUNNING     REPA        PARALLEL INT                00:00:00           00:00:06    
+GG_A EXTA ABENDED -> start
+2026-11-09T11:05:16Z  INFO    OGG-15426  Extract group EXTA started.
+    CON_ID NAME 	       STATUS
+---------- ------------------- --------------
+	 1 DV_CONFIGURE_STATUS TRUE
+	 1 DV_ENABLE_STATUS    TRUE
+	 1 DV_APP_PROTECTION   NOT CONFIGURED
+broker stays disabled until the standby step
+enable-root rc=0 in 517 s
+# note: the first restart printed 'olsnodes: command not found' (not in the oracle user's PATH) and started no instance; srvctl start service ogg_a in the next function started orcl1. Path fixed.
+## grant-primary 18:05:41
+Grant succeeded.
+Grant succeeded.
+rows will be truncated
+rows will be truncated
+rows will be truncated
+GRANTEE
+------------------------------------------------------------------------------------------------------------------------
+C##DVACCTMGR
+C##DVACCTMGR_BACKUP
+C##DVOWNER
+C##DVOWNER_BACKUP
+## enable-pdb 18:05:44
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+Pluggable database altered.
+Pluggable database altered.
+rows will be truncated
+rows will be truncated
+CON
+------------------------------------------------------------------------------------------------------------------------
+CDB$ROOT
+CDB$ROOT
+CDB$ROOT
+SECPDB
+SECPDB
+SECPDB
+CDB$ROOT  DV_APP_PROTECTION	NOT CONFIGURED
+CDB$ROOT  DV_CONFIGURE_STATUS	TRUE
+CDB$ROOT  DV_ENABLE_STATUS	TRUE
+SECPDB	  DV_APP_PROTECTION	NOT CONFIGURED
+SECPDB	  DV_CONFIGURE_STATUS	TRUE
+SECPDB	  DV_ENABLE_STATUS	TRUE
+## secpdb_app was down after the PDB close/open: started by hand, script now starts the PDB's services
+## standby 18:06:11
+NAME			       VALUE
+------------------------------ --------------------
+os_roles		       FALSE
+remote_login_passwordfile      EXCLUSIVE
+remote_os_roles 	       FALSE
+sql92_security		       TRUE
+enable configuration did not succeed: stop
+standby rc=1 in 194 s
+## first standby run stopped: dgmgrl -silent prints nothing on enable configuration, my check waited for 'Enabled'; the configuration was enabled (SUCCESS). Check fixed, step run again 18:09:43
+NAME			       VALUE
+------------------------------ --------------------
+os_roles		       FALSE
+remote_login_passwordfile      EXCLUSIVE
+remote_os_roles 	       FALSE
+sql92_security		       TRUE
+Instance orcl_stb1 is running on node stb1. Instance status: Open,Readonly,HOME=/u01/app/oracle/product/23.26.0/dbhome_1.
+Instance orcl_stb2 is not running on node stb2
+Configuration Status:
+SUCCESS   (status updated 14 seconds ago)
+rows will be truncated
+rows will be truncated
+CON
+------------------------------------------------------------------------------------------------------------------------
+CDB$ROOT
+CDB$ROOT
+CDB$ROOT
+SECPDB
+SECPDB
+SECPDB
+standby rc=0 in 106 s
+CDB$ROOT  DV_CONFIGURE_STATUS	TRUE
+CDB$ROOT  DV_ENABLE_STATUS	TRUE
+SECPDB	  DV_CONFIGURE_STATUS	TRUE
+SECPDB	  DV_ENABLE_STATUS	TRUE
+## GoldenGate after the restart: EXTA ABENDED twice (18:04, 18:05:23) with OGG-06219, capture OGG$CAP_EXTA DISABLED ORA-01013, while the Region A broker configuration was disabled; first ping A->B timed out. Started again at 18:14 after the broker was back: RUNNING, ping A->B 7 s, B->A 6 s. Same OGG-06219 as the unexplained abend after the run 6 failover; HANDLEDLFAILOVER is set.
+## realm sim 18:16:26
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+rows will be truncated
+rows will be truncated
+NAME
+BANK customer data
+## rule sim 18:16:27
+PL/SQL procedure successfully completed.
+PL/SQL procedure successfully completed.
+rows will be truncated
+COMMAND    OBJECT_OWN RULE_SET_NAME
+---------- ---------- --------------------------------------------------------------------------------------------------
+CONNECT    BANK       BANK login
+## auth 18:16:28
+PL/SQL procedure successfully completed.
+GRANTEE
+AUDIT_MGR
+PL/SQL procedure successfully completed.
+## auditor 18:16:28
+User created.
+Grant succeeded.
+PL/SQL procedure successfully completed.
+## audit 18:16:29
+PL/SQL procedure successfully completed.
+Audit policy created.
+Audit succeeded.
+Audit policy created.
+Audit succeeded.
+Audit succeeded.
+rows will be truncated
+POLICY_NAME
+ORA_DV_SCHEMA_CHANGES
+DV_BANK_REALM
+DV_BANK_LOGIN
+PL/SQL procedure successfully completed.
+## realm sim + rule sim again 18:33:13: BANK_READ participant (REPORT_RO's reports), connect rule also for REPORT_RO (BANK and SEC_ADMIN are schema-only in SECPDB: the first BANK logons failed with ORA-01017 for that reason)
+BEGIN dbms_macadm.add_object_to_realm('BANK customer data', 'BANK', 'CARDS', 'TABLE'); END;
+*
+ERROR at line 1:
+ORA-47280: Realm object TABLE, BANK.CARDS exists already in realm BANK customer data.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 747
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-47280/
+BEGIN dbms_macadm.add_object_to_realm('BANK customer data', 'BANK', 'CUSTOMERS', 'TABLE'); END;
+*
+ERROR at line 1:
+ORA-47280: Realm object TABLE, BANK.CUSTOMERS exists already in realm BANK customer data.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 747
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-47280/
+BEGIN dbms_macadm.add_object_to_realm('BANK customer data', 'BANK', 'ACCOUNTS', 'TABLE'); END;
+*
+ERROR at line 1:
+ORA-47280: Realm object TABLE, BANK.ACCOUNTS exists already in realm BANK customer data.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 747
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-47280/
+BEGIN dbms_macadm.add_auth_to_realm('BANK customer data', 'BANK', null, dbms_macutl.g_realm_auth_owner); END;
+*
+ERROR at line 1:
+ORA-47260: Realm authorization to BANK for realm BANK customer data is already defined.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 653
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-47260/
+BEGIN dbms_macadm.add_auth_to_realm('BANK customer data', 'SEC_ADMIN', null, dbms_macutl.g_realm_auth_participant); END;
+*
+ERROR at line 1:
+ORA-47260: Realm authorization to SEC_ADMIN for realm BANK customer data is already defined.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 653
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-47260/
+BEGIN dbms_macadm.add_auth_to_realm('BANK customer data', 'CARD_ANALYST', null, dbms_macutl.g_realm_auth_participant); END;
+*
+ERROR at line 1:
+ORA-47260: Realm authorization to CARD_ANALYST for realm BANK customer data is already defined.
+ORA-06512: at "DVSYS.DBMS_MACADM", line 653
+ORA-06512: at line 1
+Help: https://docs.oracle.com/error-help/db/ora-47260/
+rows will be truncated
+rows will be truncated
+NAME
+BANK customer data
+rows will be truncated
+COMMAND    OBJECT_OWN RULE_SET_NAME
+---------- ---------- --------------------------------------------------------------------------------------------------
+CONNECT    REPORT_RO  BANK login
+CONNECT    BANK       BANK login
+## enforce 18:33:27
+rows will be truncated
+rows will be truncated
+NAME
+BANK customer data
+rows will be truncated
+COMMAND    OBJECT_OWN RULE_SET_NAME
+---------- ---------- --------------------------------------------------------------------------------------------------
+CONNECT    REPORT_RO  BANK login
+CONNECT    BANK       BANK login
+NAME			   E REALM_TYP
+-------------------------- - ---------
+BANK customer data	   Y MANDATORY
+OWNER																 OBJECT_NAME
+-------------------------------------------------------------------------------------------------------------------------------- -----------
+BANK																 ACCOUNTS
+BANK																 CARDS
+BANK																 CUSTOMERS
+GRANTEE        AUTH_OPTIONS
+-------------- -----------------------------------------------------------------------------------------------------------------------------
+BANK_READ      Participant
+SEC_ADMIN      Participant
+CARD_ANALYST   Participant
+BANK	       Owner
+## window test 18:40:26
+change window OPEN 2026-11-09 18:40:26: test of the change window itself (realm authorizations added: SYS )
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant, SYS=Owner
+change window CLOSED 2026-11-09 18:40:27
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant
+## rule with every Region A node address (public, VIP, SCAN, GoldenGate VIP) 18:40:27
+rows will be truncated
+COMMAND    OBJECT_OWN RULE_SET_NAME
+---------- ---------- --------------------------------------------------------------------------------------------------
+CONNECT    REPORT_RO  BANK login
+CONNECT    BANK       BANK login
+sys_context('userenv', 'ip_address') is null or sys_context('userenv', 'ip_address') in ('127.0.0.1', '192.168.104.10', '192.168.104.11', '192.168.104.12', '192
+.168.104.13', '192.168.104.14', '192.168.104.15', '192.168.104.16', '192.168.104.18', '192.168.105.10', '192.168.105.11', '192.168.105.12', '192.168.105.13', '1
+92.168.105.14', '192.168.105.15', '192.168.105.16')

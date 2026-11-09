@@ -1,0 +1,8 @@
+USERNAME       COMMAND	    OBJECT		     VIOLATION_TYPE	     COUNT
+-------------- ------------ ------------------------ ---------------------- ------
+SYS	       SELECT	    BANK.CARDS		     Realm Violation		 4
+REPORT_RO      SELECT	    BANK.CUSTOMERS	     Realm Violation		 2
+SYS	       GRANT	    BANK.CARDS		     Realm Violation		 2
+REPORT_RO      SELECT	    BANK.ACCOUNTS	     Realm Violation		 1
+SYS	       INSERT	    BANK.CARDS		     Realm Violation		 1
+SYS	       DELETE	    BANK.CARDS		     Realm Violation		 1

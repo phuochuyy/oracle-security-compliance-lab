@@ -1,0 +1,59 @@
+# Region A activities in simulation, 2026-11-09 18:17:31
+## BANK from prm1 (application host) and from prm3 (not)
+ERROR:
+ORA-01017: invalid credential or not authorized; logon denied
+Help: https://docs.oracle.com/error-help/db/ora-01017/
+SP2-0640: Not connected
+Help: https://docs.oracle.com/error-help/db/sp2-0640/
+ERROR:
+ORA-01017: invalid credential or not authorized; logon denied
+Help: https://docs.oracle.com/error-help/db/ora-01017/
+SP2-0640: Not connected
+Help: https://docs.oracle.com/error-help/db/sp2-0640/
+## reports as REPORT_RO (Privilege Analysis workload)
+VIP		  590
+
+3 rows selected.
+
+## redaction test (creates and drops its users)
+Help: https://docs.oracle.com/error-help/db/sp2-0751/
+(the guessed values are the BIN of card 1 and the full PAN — run as the analyst, who only sees masks)
+ORA-01918: user 'ANALYST2' does not exist
+ORA-01918: user 'FRAUD_OPS' does not exist
+## VPD on the Active Data Guard standby
+ORA-01917: user or role 'ANALYST_ADG' does not exist
+prm1: ERROR: ORA-01017: invalid credential or not authorized; logon denied Help: https://docs.oracle.com/error-help/
+stb1: ERROR: ORA-01017: invalid credential or not authorized; logon denied Help: https://docs.oracle.com/error-help/
+ORA-01918: user 'ANALYST_ADG' does not exist
+## plaintext check (PAN in datafiles, redo, backup)
+PAN of card 1: 9000********0018 (full value only used for the grep)
+TDE: BANK_DATA=YES
+prm1   BANK_DATA datafile (primary)               hits=0
+stb1   BANK_DATA datafile (standby)               hits=0
+prm1   archived log with a new test card          hits=2
+prm1   RMAN backup piece (uncompressed)           hits=0
+## assessment
+# summary: ACCEPT 7  INFO 4  PASS 62  
+## audit archive, SECPDB and root
+unified_20260808_20260809.csv: 0 records
+unified_20260809_20260811.csv: 0 records
+unified_20260808_20260809.csv: 0 records
+unified_20260809_20260811.csv: 0 records
+## health check prm1, stb1
+WARN fra disk group         +FRA: 2608 MB free of 20480 MB
+prm1 health exit=0
+WARN fs /                   82 % used, 5775 MB free
+stb1 health exit=0
+## RAC backup level 1 and validate on stb1 (C##BKADMIN)
+Result=success
+ExecMainStatus=0
+level 1 555 s
+Result=success
+ExecMainStatus=0
+validate 120 s
+## GoldenGate both ways
+A->B insert arrived: 4 s
+A->B delete arrived: 4 s
+B->A insert arrived: 5 s
+B->A delete arrived: 5 s
+## done 18:30:26

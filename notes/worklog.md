@@ -209,3 +209,13 @@
 - **My mistake:** the break-glass test reset the owner's password and stopped before saving it (`set -e` after a silent step). It became a real recovery, done with the backup accounts. The script saves the value first now.
 - A validate failed once with `ORA-19588`: the archived log housekeeping deleted a log while validate was reading the list. Ran again: clean.
 
+## Database Vault on the RAC (Region A, SECPDB)
+
+- Same script with `DV_REGION=A`; reviewed twice before running. The first review caught a missing `-force` on `srvctl stop` (CRS refuses with DBFS and XAG depending on the database), an extra parenthesis in the connect rule, and Region B passwords that would have been used against Region A.
+- What the review could not see, the run did: `olsnodes` is not in the oracle user's path; `dgmgrl -silent` prints nothing on success; the PDB's services stay down after a close and open. All three fixed in the script.
+- `BANK` and `SEC_ADMIN` are schema-only here: the first BANK logons in the simulation were `ORA-01017`, not a rule. The real application account is `REPORT_RO`, through `BANK_READ`; the simulation showed exactly its reads.
+- Change windows: with the realm owner unable to log in, `SYS` is made realm owner for planned work and removed after; the close checks that nothing is left.
+- **Finding 14:** the simulation log stored a test card number in SYSAUX, unencrypted; the plaintext check caught it in the archived log. My own test put the card in a statement that was a realm violation at that moment.
+- **Finding 15 / my mistake:** the redaction test had not been run since VPD and stopped on 0 rows; its cleanup then dropped the users before closing the window, and the close failed. SYS had been removed first. The order is fixed: region rows, window, users.
+- A test for `REPORT_RO` from a foreign host would have read its password from the automation vault in a new script: refused by the permission check; a temporary account bound to the same rule set was used instead.
+

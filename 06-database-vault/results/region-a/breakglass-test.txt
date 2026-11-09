@@ -1,0 +1,10 @@
+== 0. SYS tries to give DV_OWNER (it cannot)
+ORA-47410: Insufficient realm privileges to GRANT on DV_OWNER.
+== 1. backup owner takes DV_OWNER from the everyday owner
+C##DVOWNER holds DV_OWNER: 0
+== 2. account manager resets the everyday owner's password
+password reset for: C##DVOWNER OPEN
+== 3. backup owner gives DV_OWNER back
+C##DVOWNER holds DV_OWNER: 1
+== 4. the everyday owner is back
+C##DVOWNER sees realm: BANK customer data, enforced=Y
