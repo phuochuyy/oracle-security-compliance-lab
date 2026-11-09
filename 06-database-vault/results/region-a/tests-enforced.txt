@@ -1,0 +1,66 @@
+# rerun of the three test scripts, 2026-11-09 18:54:06
+## redaction
+account manager: User created.
+account manager: User created.
+change window OPEN 2026-11-09 18:54:07: redaction test: test users ANALYST2 and FRAUD_OPS read CARDS (realm authorizations added: SYS analyst2 fraud_ops)
+realm authorizations: ANALYST2=Participant, BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, FRAUD_OPS=Participant, SEC_ADMIN=Pa
+PL/SQL procedure successfully completed.
+Grant succeeded.
+Grant succeeded.
+Grant succeeded.
+1 row created.
+1 row created.
+== ANALYST2 (no role)
+   CARD_ID PAN			EXPIR
+---------- -------------------- -----
+	14 ************0141	02/27
+	16 ************0166	05/27
+	35 ************0356	03/26
+== FRAUD_OPS (CARD_FULL_VIEW) — database returns the full PAN, middle digits replaced by # by this script
+   CARD_ID PAN			EXPIR
+---------- -------------------- -----
+	14 9000########0141	02/27
+	16 9000########0166	05/27
+	35 9000########0356	03/26
+== ANALYST2: the WHERE clause still uses the real value (redaction is display masking, not access control)
+change window CLOSED 2026-11-09 18:54:10
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant
+account manager: User dropped.
+account manager: User dropped.
+## VPD on the Active Data Guard standby
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant, SYS=Owner
+prm1: database role: PRIMARY cards visible: 4831
+stb1: database role: PHYSICAL STANDBY cards visible: 4831
+change window CLOSED 2026-11-09 18:54:24
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant
+## plaintext check
+PAN of card 1: 9000********0018 (full value only used for the grep)
+TDE: BANK_DATA=YES
+prm1   BANK_DATA datafile (primary)               hits=0
+stb1   BANK_DATA datafile (standby)               hits=0
+prm1   archived log with a new test card          hits=0
+prm1   RMAN backup piece (uncompressed)           hits=0
+change window CLOSED 2026-11-09 18:55:12
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant
+## realm authorizations after
+GRANTEE        AUTH_OPTIONS
+-------------- -----------------------------------------------------------------------------------------------------------------------------
+BANK_READ      Participant
+SEC_ADMIN      Participant
+CARD_ANALYST   Participant
+BANK	       Owner
+no window open
+## redaction, second run 18:55:24 (first: min(card_id) kept a tab, grep found nothing, set -e stopped before the WHERE test)
+== ANALYST2: the WHERE clause still uses the real value (redaction is display masking, not access control)
+CARDS_MATCHING_GUESS
+--------------------
+		4831
+EXACT_MATCH
+-----------
+	  1
+(the guessed values are the BIN of card 14 and the full PAN — run as the analyst, who only sees masks)
+change window CLOSED 2026-11-09 18:55:28
+realm authorizations: BANK=Owner, BANK_READ=Participant, CARD_ANALYST=Participant, SEC_ADMIN=Participant
+account manager: User dropped.
+account manager: User dropped.
+no window open

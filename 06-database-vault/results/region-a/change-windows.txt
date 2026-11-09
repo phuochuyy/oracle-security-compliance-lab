@@ -1,0 +1,14 @@
+change window OPEN 2026-11-09 18:40:26: test of the change window itself (realm authorizations added: SYS )
+change window CLOSED 2026-11-09 18:40:27
+change window OPEN 2026-11-09 18:40:57: verify.sh: grant on CARDS to a test analyst (realm authorizations added: SYS )
+change window CLOSED 2026-11-09 18:40:58
+change window OPEN 2026-11-09 18:41:01: redaction test: test users ANALYST2 and FRAUD_OPS read CARDS (realm authorizations added: SYS analyst2 fraud_ops)
+# 18:41 the redaction test stopped (0 rows under VPD, set -e), its cleanup dropped the test users before closing the window: close failed on the dropped grantees (ORA-29504). SYS was removed (first in the list), the dropped users' authorizations went with them; the leftover state file was removed by hand at 18:53:56 after checking the realm authorizations.
+change window OPEN 2026-11-09 18:54:07: redaction test: test users ANALYST2 and FRAUD_OPS read CARDS (realm authorizations added: SYS analyst2 fraud_ops)
+change window CLOSED 2026-11-09 18:54:10
+change window OPEN 2026-11-09 18:54:12: VPD check on the standby: grant on CARDS to its test user (realm authorizations added: SYS )
+change window CLOSED 2026-11-09 18:54:24
+change window OPEN 2026-11-09 18:54:25: plaintext check on SECPDB: SYS reads one card and inserts, then deletes, a test card (realm authorizations added: SYS )
+change window CLOSED 2026-11-09 18:55:12
+change window OPEN 2026-11-09 18:55:25: redaction test: test users ANALYST2 and FRAUD_OPS read CARDS (realm authorizations added: SYS analyst2 fraud_ops)
+change window CLOSED 2026-11-09 18:55:28

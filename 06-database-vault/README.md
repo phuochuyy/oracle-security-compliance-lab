@@ -1,8 +1,11 @@
-# Database Vault on orcl3: even SYS cannot read card data
+# Database Vault: even SYS cannot read card data
 
-Every earlier control stops people who are not DBAs. A DBA, or anyone who gets `SYS`, could still read every card number: VPD and redaction do not apply to `SYS`. Database Vault closes that, and separates the people who administer the database from the people who administer security and accounts. Done in Region B (`orcl3`, PDB `PERF`, standby `ORCL3_STB`), following the *Database Vault Administrator's Guide* for Oracle AI Database 26ai: chapter 3 for a CDB, 11.3 for Data Guard.
+Every earlier control stops people who are not DBAs. A DBA, or anyone who gets `SYS`, could still read every card number: VPD and redaction do not apply to `SYS`. Database Vault closes that, and separates the people who administer the database from the people who administer security and accounts. Done in both regions, following the *Database Vault Administrator's Guide* for Oracle AI Database 26ai: chapter 3 for a CDB (3.2.5 for RAC), 11.3 for Data Guard:
 
-Script: [`dv.sh`](dv.sh), one step per call. Evidence: [`results/`](results/).
+- Region B: `orcl3`, PDB `PERF`, standby `ORCL3_STB` (sections below up to *Licensing*)
+- Region A: the RAC `orcl`, PDB `SECPDB`, RAC standby `orcl_stb` ([its own section](#region-a-the-rac))
+
+Script: [`dv.sh`](dv.sh), one step per call, `DV_REGION=A` for Region A. Evidence: [`results/`](results/) (Region B) and [`results/region-a/`](results/region-a/).
 
 ## Who does what now
 
@@ -83,4 +86,46 @@ The statement query is 12 % lower after, the report unchanged. The statement que
 
 ## Licensing and limits
 
-Database Vault is an extra-cost option of Enterprise Edition (Licensing Information, Security table). Region B only: the card data of Region A (`SECPDB` on the RAC) is not protected this way yet; a RAC enablement is rolling and also involves its standby, XAG and GoldenGate. The OS user `oracle` can still stop the database or read datafiles, which are encrypted by TDE: Database Vault controls SQL access, TDE protects the files, and neither replaces separate OS accounts.
+Database Vault is an extra-cost option of Enterprise Edition (Licensing Information, Security table). The OS user `oracle` can still stop the database or read datafiles, which are encrypted by TDE: Database Vault controls SQL access, TDE protects the files, and neither replaces separate OS accounts.
+
+## Region A: the RAC
+
+Same procedure, same accounts (own passwords per database), with what the RAC and this PDB changed.
+
+**Enabling** ([log](results/region-a/enable-log.txt)): broker and FSFO off; `CONFIGURE_DV` and `ENABLE_DV` in the root by the backup accounts; every instance restarted with `srvctl` (`-force`: DBFS, XAG and GoldenGate depend on the database); then `SECPDB`; then the standby, restarted with `srvctl` after it had applied everything; broker and FSFO back: `SUCCESS`, Database Vault enabled on both sites' root and `SECPDB`. Only one instance per site was running, so this was a full restart, not the rolling enablement the guide allows; prm2 and stb2 read the new state when they next start.
+
+**What was different here**
+
+- `BANK` and `SEC_ADMIN` are schema-only accounts in `SECPDB` (finding 7): nobody logs in as them. The account that logs in is `REPORT_RO`, whose role `BANK_READ` reads `ACCOUNTS` and `CUSTOMERS` for three reports (Privilege Analysis). The simulation logged exactly those reads; `BANK_READ` became a realm participant and the next run logged nothing. The connect rule covers `REPORT_RO` and `BANK`.
+- The application hosts are every address of the four RAC nodes: public, node VIPs, SCAN and the GoldenGate VIP (15 addresses). A session to an address on the same node takes that address as its source.
+- With the realm owner unable to log in, planned work on the realm's tables (a grant to a test analyst, the plaintext check reading a card) runs in a **change window**: `dv.sh window open <reason> [test users]` makes `SYS` realm owner and the test users participants, `window close` removes them and checks; every window is in [`change-windows.txt`](results/region-a/change-windows.txt) and in the audit trail as `Add Realm Auth` / `Delete Realm Auth`.
+- `SYS` cannot create users as soon as Database Vault is enabled, even with the realm still in simulation. The redaction, VPD-on-standby and plaintext tests now let the account manager create and drop their users ([`dv_helpers.sh`](dv_helpers.sh)).
+
+**Verification, enforced** ([verification](results/region-a/verification.txt), [tests](results/region-a/tests-enforced.txt), [operations](results/region-a/operations-enforced.txt))
+
+| Test | Result |
+|------|--------|
+| `SYS` reads `CARDS`, `CUSTOMERS` / `TRANSACTIONS` | `ORA-01031` / works |
+| `C##DVOWNER` reads `CARDS` | `ORA-00942` |
+| An account bound to the connect rule set, from prm1 / from prm3 | in / `ORA-47306` |
+| `SYS` / `C##DVACCTMGR` creates a user | `ORA-01031` / works |
+| Analyst of NORTH through `CARD_ANALYST`, primary and Active Data Guard standby | 4,831 cards on both |
+| Redaction: analyst / fraud role | `************0141` / full number (masked by the script); WHERE-clause inference still works |
+| Plaintext check (datafile both sites, archived log, backup piece) | 0 hits in all four |
+| `REPORT_RO` reports | work |
+| Level 1 on the standby, validate (`C##BKADMIN`) | success, 546 s and 125 s |
+| GoldenGate both ways | 5 to 7 s |
+| Assessment | 0 FAIL, D01 PASS in root and `SECPDB` |
+| Switchover to stb1 and back | 73 s and 75 s; DV on, `SYS` refused on each new primary; GoldenGate followed ([log](results/region-a/switchover-with-dv.txt)) |
+| Break-glass procedure | owner restored at the first try ([log](results/region-a/breakglass-test.txt)) |
+
+The same 34 privileges were revoked as in Region B ([diff](results/region-a/privs-revoked-by-dv.txt)).
+
+**Not tested here:** `REPORT_RO` from a foreign host (its password is in the automation lab's vault); a temporary account bound to the same rule set stood in for it. No workload cost: Region A has no performance workload on `SECPDB`.
+
+**Problems on the way**
+
+- **A card number in clear, caused by the simulation itself** (finding 14). In simulation mode Database Vault stores the full SQL text of every violation in `DVSYS.SIMULATION_LOG$`, in SYSAUX. TDE here encrypts the data tablespaces, not SYSAUX, so the plaintext check's test card (inserted by `SYS` while the realm was simulating) reached the archived log in clear: hits=2, after 0 in every run since TDE. Enforced, the same check is back to 0. Lessons: run the simulation with statements that carry no card numbers; encrypting SYSTEM and SYSAUX too would close it; I found no documented way to purge the simulation log.
+- GoldenGate's Extract abended twice (`OGG-06219`) after the primary restart, while the broker configuration was disabled, and started cleanly once it was enabled again. The same error followed the failover of HA/DR run 6 and is still unexplained there.
+- My script errors, each caught by the next step: `olsnodes` not in the oracle user's path (no instance started; the GoldenGate service start brought it up); `dgmgrl -silent` prints nothing on `enable configuration` and my check waited for "Enabled"; the PDB's services stayed down after the close and open; the redaction test, broken since VPD (finding 15), stopped half-way and its cleanup dropped the test users before closing the window, so the close failed on them (`ORA-29504`). `SYS` had been removed first; the order is fixed.
+

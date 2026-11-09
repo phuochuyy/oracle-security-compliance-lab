@@ -1,0 +1,41 @@
+== prm1
+DB_UNIQUE_NAME		       DATABASE_ROLE	OPEN_MODE
+------------------------------ ---------------- --------------------
+orcl			       PRIMARY		READ WRITE
+NAME				 VALUE
+-------------------------------- --------------------
+os_roles			 FALSE
+remote_login_passwordfile	 EXCLUSIVE
+remote_os_roles 		 FALSE
+sql92_security			 TRUE
+rows will be truncated
+CON																 NAME
+-------------------------------------------------------------------------------------------------------------------------------- -----------
+CDB$ROOT															 DV_APP_PROT
+CDB$ROOT															 DV_CONFIGUR
+CDB$ROOT															 DV_ENABLE_S
+SECPDB																 DV_APP_PROT
+SECPDB																 DV_CONFIGUR
+SECPDB																 DV_ENABLE_S
+== stb1
+DB_UNIQUE_NAME		       DATABASE_ROLE	OPEN_MODE
+------------------------------ ---------------- --------------------
+orcl_stb		       PHYSICAL STANDBY READ ONLY WITH APPLY
+NAME				 VALUE
+-------------------------------- --------------------
+os_roles			 FALSE
+remote_login_passwordfile	 EXCLUSIVE
+remote_os_roles 		 FALSE
+sql92_security			 TRUE
+rows will be truncated
+CON																 NAME
+-------------------------------------------------------------------------------------------------------------------------------- -----------
+CDB$ROOT															 DV_APP_PROT
+CDB$ROOT															 DV_CONFIGUR
+CDB$ROOT															 DV_ENABLE_S
+SECPDB																 DV_APP_PROT
+SECPDB																 DV_CONFIGUR
+SECPDB																 DV_ENABLE_S
+Fast-Start Failover: Enabled in Zero Data Loss Mode
+Configuration Status:
+SUCCESS   (status updated 56 seconds ago)
