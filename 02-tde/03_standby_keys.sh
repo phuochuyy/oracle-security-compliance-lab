@@ -12,7 +12,7 @@ REPO=$(cd "$(dirname "$0")/.." && pwd)
 mode=${1:?mode}
 dir=$(cd "$(dirname "$0")" && pwd); out=$dir/results/07-standby-$mode.log; : > "$out"
 PRM=prm1 STB=stb1
-ESCROW=${ESCROW:-$HOME/oracle-lab/keystore-backup/orcl}
+ESCROW=${ESCROW:-$HOME/work/lab/keystore-backup/orcl}
 ENV=". ~/.bash_profile >/dev/null 2>&1"
 ALERT=/u01/app/oracle/diag/rdbms/orcl_stb/orcl_stb1/trace/alert_orcl_stb1.log
 mask() { sed "s/$(printf '%s' "$TDE_KEYSTORE_PASSWORD" | sed 's/[]\/$*.^[]/\\&/g')/********/g"; }

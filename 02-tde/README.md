@@ -39,7 +39,7 @@ not affected (apply lag 0 after the keys were created, before the standby had th
 
 - Back the keystore up after **every** key change (`SET KEY`, `REKEY`, password change) and copy it to the
   standby **before** the first encrypted change reaches it.
-- The off-host copy and the keystore password are stored apart (here: `~/oracle-lab/keystore-backup/`,
+- The off-host copy and the keystore password are stored apart (here: `~/work/lab/keystore-backup/`,
   password in the git-ignored `lab.env`). The password is never on a command line.
 
 ## 2. Online tablespace encryption — [`02_encrypt_online.sh`](02_encrypt_online.sh)

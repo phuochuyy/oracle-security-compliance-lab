@@ -15,7 +15,7 @@ REPO=$(cd "$(dirname "$0")/.." && pwd)
 . "$REPO/lab.env"
 : "${TDE_KEYSTORE_PASSWORD:?}"
 PRM=prm1 STB=stb1
-ESCROW=${ESCROW:-$HOME/oracle-lab/keystore-backup/orcl}   # off-host copy, outside every git repo
+ESCROW=${ESCROW:-$HOME/work/lab/keystore-backup/orcl}   # off-host copy, outside every git repo
 ENV=". ~/.bash_profile >/dev/null 2>&1"
 G=/u01/app/23.26.0/grid/bin
 # a failing ADMINISTER KEY statement is echoed back by sqlplus WITH the password: mask every output
