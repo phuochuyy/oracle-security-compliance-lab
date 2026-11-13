@@ -30,8 +30,8 @@ SQL
   ;;
 work)
   # password of REPORT_RO from the automation lab's vault, sent on stdin
-  pw=$(cd ~/work/oracle-dba-automation-cdc/01-ansible && ~/.venvs/dba/bin/ansible-vault view group_vars/all/vault.yml \
-       | ~/.venvs/dba/bin/python -c "import sys,yaml; print(yaml.safe_load(sys.stdin)['vault_user_passwords']['report_ro'])")
+  pw=$(cd ~/work/oracle-dba-automation-cdc/01-ansible && ~/work/tools/venvs/dba/bin/ansible-vault view group_vars/all/vault.yml \
+       | ~/work/tools/venvs/dba/bin/python -c "import sys,yaml; print(yaml.safe_load(sys.stdin)['vault_user_passwords']['report_ro'])")
   # the connect line (with the password) and the reports go on one stdin stream: a pipe plus a heredoc on the
   # same command would let the heredoc win and the password never arrive (first run: ORA-01017)
   { printf 'connect report_ro/"%s"@//prm1.rac:1521/secpdb_app.rac\n' "$pw"; cat <<'SQL'
